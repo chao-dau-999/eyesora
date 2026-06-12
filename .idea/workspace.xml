@@ -115,7 +115,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/eyesora-be" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -261,7 +261,7 @@
       <workItem from="1780556251586" duration="13107000" />
       <workItem from="1780646571747" duration="1692000" />
       <workItem from="1781244396707" duration="4497000" />
-      <workItem from="1781254353611" duration="816000" />
+      <workItem from="1781254353611" duration="1116000" />
     </task>
     <servers />
   </component>
