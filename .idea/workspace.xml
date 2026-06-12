@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="16ba602b-5b2d-48db-84ac-50de8a194593" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/EyesoraApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/EyesoraApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/config/DataInitializer.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/config/DataInitializer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/dto/request/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/request/LoginRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/dto/response/TokenResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/response/TokenResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/entity/RefreshToken.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/RefreshToken.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/entity/Role.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/Role.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/exceptions/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/exceptions/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/exceptions/RefreshTokenException.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/exceptions/RefreshTokenException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/exceptions/ResourceNotFoundException.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/exceptions/ResourceNotFoundException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/filters/JwtAuthFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/filters/JwtAuthFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/repository/RefreshTokenRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/RefreshTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/repository/RoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/RoleRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/service/IRefreshTokenService.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IRefreshTokenService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/service/IUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/service/impl/RefreshTokenServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/RefreshTokenServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/service/impl/UserDetailsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserDetailsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eatery/util/JwtUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/util/JwtUtil.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotChats">
+    <option name="panelChat">
+      <chat>
+        <option name="activeSessionId" value="13446a04-46e8-4e0c-8ff2-9028ae596557" />
+        <option name="sessions">
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="52b66373-4ce9-4080-b021-d0a8c15230c7" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="status" value="Completed" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="73615e51-88d6-441b-9345-6a416037eebf" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="2e8032db-96df-42ef-8fe1-7c9f8a40e089" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="status" value="Completed" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="08883df0-2f0f-45aa-aed1-52cdb40a90e4" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="status" value="Completed" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="0da537d2-c655-421d-a7b0-84b9e9e34ae0" />
+            <option name="modeId" value="Ask" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+          <session>
+            <option name="chatType" value="PANEL" />
+            <option name="id" value="13446a04-46e8-4e0c-8ff2-9028ae596557" />
+            <option name="modeId" value="Agent" />
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+            <option name="targetType" value="LOCAL" />
+          </session>
+        </option>
+        <option name="type" value="PANEL" />
+      </chat>
+    </option>
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_/Users/nhutlm/Workspace/FPT/SU26/EXE101/eatery" value="3Ef4NJXcc5fYBA1XiC7IYUvMuwz" />
+      <entry key="_/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora" value="3F1ZAbQ5xK4EwTOP4e49JHJNwTN" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="agent-panel" value="Auto" />
+      <entry key="chat-panel" value="Auto" />
+    </selectedModels>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/eyesora-be" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;chao-dau-999&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/chao-dau-999/eyesora.git&quot;,
+    &quot;accountId&quot;: &quot;cbc5677a-13d3-47aa-8b0e-b4b106216a6d&quot;
+  }
+}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3Ef4NJXcc5fYBA1XiC7IYUvMuwz" />
+  <component name="ProjectSessionTemplates">
+    <option name="panelTemplate">
+      <template>
+        <option name="modeId" value="Agent" />
+        <option name="model">
+          <model>
+            <option name="modelType" value="builtin_family" />
+            <option name="modelValue" value="auto" />
+          </model>
+        </option>
+        <option name="targetType" value="LOCAL" />
+      </template>
+    </option>
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.EateryApplication.executor": "Run",
+    "Spring Boot.EyesoraApplication (1).executor": "Run",
+    "Spring Boot.EyesoraApplication .executor": "Run",
+    "Spring Boot.EyesoraApplication.executor": "Run",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "MavenSettings",
+    "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "DatabaseDriversLRU": [
+      "mysql"
+    ]
+  }
+}]]></component>
+  <component name="ReactDesignerToolWindowState">
+    <option name="myId2Visible">
+      <map>
+        <entry key="com.intellij.reactbuddy.reactComponents" value="false" />
+        <entry key="com.intellij.reactbuddy.reactInspector" value="false" />
+        <entry key="com.intellij.reactbuddy.storybook" value="false" />
+      </map>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/java/vn/edu/fpt/eatery" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="vn.edu.fpt.eatery.service.impl" />
+      <recent name="vn.edu.fpt.eatery.service" />
+      <recent name="vn.edu.fpt.eatery.repository" />
+      <recent name="vn.edu.fpt.eatery.dto.response" />
+      <recent name="vn.edu.fpt.eatery.util" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="EyesoraApplication " type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="eyesora" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="vn.edu.fpt.eyesora.EyesoraApplication" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="vn.edu.fpt.eyesora.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.EyesoraApplication " />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.24374.151" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.24374.151" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="Logical" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="16ba602b-5b2d-48db-84ac-50de8a194593" name="Changes" comment="" />
+      <created>1780556249962</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1780556249962</updated>
+      <workItem from="1780556251586" duration="13107000" />
+      <workItem from="1780646571747" duration="1692000" />
+      <workItem from="1781244396707" duration="4497000" />
+      <workItem from="1781254353611" duration="816000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>
