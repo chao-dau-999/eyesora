@@ -13,16 +13,19 @@ import java.util.Set;
 @Getter
 @Setter
 public class Role {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "roleid")
-    private Long roleId;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "roleid", length = 36)
+    private String roleId;
+
+    @Column(name = "name")
     private String name;
 
     @ManyToMany(mappedBy = "roles")
     private Set<User> users;
 
-    public Role(Long roleId, String name, Set<User> users) {
+    public Role(String roleId, String name, Set<User> users) {
         this.roleId = roleId;
         this.name = name;
     }
