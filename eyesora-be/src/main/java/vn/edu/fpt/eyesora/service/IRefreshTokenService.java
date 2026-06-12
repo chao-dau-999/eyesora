@@ -7,4 +7,6 @@ public interface IRefreshTokenService {
     RefreshToken verifyRefreshToken(String token);
     RefreshToken rotate(RefreshToken old);
     void revokeByToken(String token);
+    void deleteByToken(String token);
+
 }
