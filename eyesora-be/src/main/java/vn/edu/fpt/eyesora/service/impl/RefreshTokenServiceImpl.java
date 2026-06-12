@@ -66,4 +66,11 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
             refreshTokenRepository.save(rt);
         });
     }
+
+    @Override
+    @Transactional
+    public void deleteByToken(String token) {
+        refreshTokenRepository.findByToken(token)
+                .ifPresent(refreshTokenRepository::delete);
+    }
 }

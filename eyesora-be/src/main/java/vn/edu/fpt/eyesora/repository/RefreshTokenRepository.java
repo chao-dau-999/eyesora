@@ -7,7 +7,7 @@ import vn.edu.fpt.eyesora.entity.RefreshToken;
 import java.util.Optional;
 
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+public interface RefreshTokenRepository extends JpaRepository<RefreshToken, String> {
     Optional<RefreshToken> findByToken(String token);
 
     void deleteByUsernameAndSource(String username, String source);
