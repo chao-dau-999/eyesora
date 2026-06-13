@@ -8,8 +8,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -17,9 +15,11 @@ import java.util.Set;
 @Getter
 @Setter
 public class User implements UserDetails {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
+    private String id;
 
     @Column(nullable = false, unique = true, length = 50)
     private String username;
@@ -30,7 +30,8 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 100)
     private String full_name;
 
-    private Integer facility_id;
+    @Column(length = 36)
+    private String facility_id;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -76,13 +77,6 @@ public class User implements UserDetails {
         if (status == null) {
             status = AccountStatus.ACTIVE;
         }
-    }
-
-    public enum RoleType {
-        SUPER_ADMIN,
-        DISTRICT_ADMIN,
-        FACILITY_ADMIN,
-        EXAMINER
     }
 
     public enum AccountStatus {
