@@ -30,6 +30,9 @@ public class UserServiceImpl implements IUserService {
         if (userRepository.existsByUsername(request.username())) {
             throw new RuntimeException("Username already exists");
         }
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new RuntimeException("Confirm password does not match");
+        }
 
         User user = new User();
         user.setUsername(request.username());
