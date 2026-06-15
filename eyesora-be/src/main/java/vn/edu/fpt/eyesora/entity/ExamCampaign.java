@@ -19,8 +19,8 @@ public class ExamCampaign {
     @Column(name = "campaign_title", nullable = false)
     private String campaignTitle;
 
-    @Column(name = "school_year", nullable = false, length = 20)
-    private String schoolYear;
+    @Column(name = "facility_year", nullable = false, length = 20)
+    private String facilityYear;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -30,6 +30,6 @@ public class ExamCampaign {
     private Facility organization;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "target_school_id", nullable = false)
-    private Facility targetSchool;
+    @JoinColumn(name = "target_facility_id", nullable = false)
+    private Facility targetfacility;
 }

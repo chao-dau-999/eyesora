@@ -6,14 +6,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.LoginRequest;
 import vn.edu.fpt.eyesora.dto.request.LogoutRequest;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
+import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.service.IRefreshTokenService;
 import vn.edu.fpt.eyesora.service.IUserService;
+import vn.edu.fpt.eyesora.dto.request.ForgotPasswordRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,12 +30,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            authManager.authenticate(
+            Authentication authentication = authManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.username(),
                             loginRequest.password()));
 
-            return ResponseEntity.ok("Login successful");
+            String tokenString = java.util.UUID.randomUUID().toString();
+
+            return ResponseEntity.ok(java.util.Map.of(
+                    "message", "Login successful",
+                    "refreshToken", tokenString
+            ));
+
         } catch (DisabledException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Account not verified. Please check your email to activate!");
@@ -78,5 +87,29 @@ public class AuthController {
     public ResponseEntity<?> resendVerification(@RequestParam("email") String email) {
         userService.resendVerificationEmail(email);
         return ResponseEntity.ok("Verification email has been resent. Please check your inbox.");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            userService.processForgotPassword(request.email());
+            return ResponseEntity.ok("Password reset link has been sent. Please check your email.");
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            userService.resetPassword(request);
+            return ResponseEntity.ok("Password reset successful. You can now login with your new password.");
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
+        }
     }
 }
