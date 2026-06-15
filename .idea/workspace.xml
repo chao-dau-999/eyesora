@@ -5,7 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="16ba602b-5b2d-48db-84ac-50de8a194593" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/VerificationToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/exceptions/BadRequestException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/VerificationTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/request/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/request/RegisterRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -249,6 +261,9 @@
       <workItem from="1781256254541" duration="4068000" />
       <workItem from="1781260526230" duration="1369000" />
       <workItem from="1781264139353" duration="88000" />
+      <workItem from="1781436688559" duration="1185000" />
+      <workItem from="1781438118079" duration="1966000" />
+      <workItem from="1781511668697" duration="1970000" />
     </task>
     <servers />
   </component>
