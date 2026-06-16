@@ -1,5 +1,6 @@
 package vn.edu.fpt.eyesora.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,7 @@ public class Patient {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ward_id", nullable = false)
+    @JsonIgnore
     private Ward ward;
 
     @Column(name = "patient_name", nullable = false, length = 150)
@@ -39,6 +41,14 @@ public class Patient {
     @ColumnDefault("0")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id")
+    private ExamCampaign examCampaign;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facility_id")
+    private Facility facility;
 
     @CreationTimestamp
     @Column(name = "created_at")

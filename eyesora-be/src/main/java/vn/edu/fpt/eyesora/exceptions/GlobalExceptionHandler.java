@@ -49,4 +49,12 @@ public class GlobalExceptionHandler {
                 .body(ex.getMessage());
     }
 
+
+    @ExceptionHandler(vn.edu.fpt.eyesora.exceptions.BusinessException.class)
+    public ResponseEntity<?> handleBusinessException(vn.edu.fpt.eyesora.exceptions.BusinessException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ex.getMessage());
+    }
 }
+
