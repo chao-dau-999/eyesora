@@ -2,6 +2,8 @@ package vn.edu.fpt.eyesora.service.impl;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.FacilityRequest;
@@ -10,22 +12,31 @@ import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Ward;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
 import vn.edu.fpt.eyesora.repository.WardRepository;
+import vn.edu.fpt.eyesora.service.IFacilityService;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class FacilityServiceImpl {
+public class FacilityServiceImpl implements IFacilityService {
     private final FacilityRepository facilityRepository;
     private final WardRepository wardRepository;
 
-    public List<FacilityResponse> getAllFacilities() {
-        return facilityRepository.findAll().stream()
-                .map(f -> new FacilityResponse(f.getId(), f.getFacilityName(), f.getFacilityType(), f.getAddress(), f.getPhone(), f.getWard().getWardName()))
-                .toList();
+    @Override
+    public Page<FacilityResponse> getAllFacilities(Pageable pageable) {
+        return facilityRepository.findAll(pageable)
+                .map(f -> new FacilityResponse(
+                        f.getId(),
+                        f.getFacilityName(),
+                        f.getFacilityType(),
+                        f.getAddress(),
+                        f.getPhone(),
+                        f.getWard().getWardName()
+                ));
     }
 
+    @Override
     public FacilityResponse createFacility(FacilityRequest req) {
         Ward ward = wardRepository.findById(req.wardId())
                 .orElseThrow(() -> new RuntimeException("Ward not found"));
@@ -41,6 +52,7 @@ public class FacilityServiceImpl {
         return new FacilityResponse(f.getId(), f.getFacilityName(), f.getFacilityType(), f.getAddress(), f.getPhone(), ward.getWardName());
     }
 
+    @Override
     public FacilityResponse updateFacility(String id, FacilityRequest req) {
         Facility existing = facilityRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Facility not found"));

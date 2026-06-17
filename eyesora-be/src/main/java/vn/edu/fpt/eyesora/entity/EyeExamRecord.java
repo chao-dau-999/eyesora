@@ -28,7 +28,7 @@ public class EyeExamRecord {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class classField;
+    private Classes classesField;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "examiner_id")

@@ -2,6 +2,8 @@ package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
+import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.PasswordResetToken;
 import vn.edu.fpt.eyesora.entity.Role;
 import vn.edu.fpt.eyesora.entity.User;
@@ -22,6 +25,7 @@ import vn.edu.fpt.eyesora.repository.VerificationTokenRepository;
 import vn.edu.fpt.eyesora.service.IUserService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -224,5 +228,27 @@ public class UserServiceImpl implements IUserService {
             log.error("Failed to send password reset email to {}. Error: {}", email, e.getMessage());
             e.printStackTrace();
         }
+    }
+
+
+
+    @Override
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(u -> new UserResponse(
+                        u.getId(),
+                        u.getUsername(),
+                        u.getEmail(),
+                        u.getFull_name(),
+                        u.getStatus().name(),
+                        u.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toSet())
+                ));
+    }
+    @Override
+    public void updateUserStatus(String userId, User.AccountStatus status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setStatus(status);
+        userRepository.save(user);
     }
 }

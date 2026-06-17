@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "classes")
-public class Class {
+public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "class_id", nullable = false, length = 36)

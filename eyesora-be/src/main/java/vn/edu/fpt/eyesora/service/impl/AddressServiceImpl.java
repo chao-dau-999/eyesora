@@ -1,6 +1,8 @@
 package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.DistrictRequest;
@@ -11,16 +13,18 @@ import vn.edu.fpt.eyesora.entity.District;
 import vn.edu.fpt.eyesora.entity.Ward;
 import vn.edu.fpt.eyesora.repository.DistrictRepository;
 import vn.edu.fpt.eyesora.repository.WardRepository;
+import vn.edu.fpt.eyesora.service.IAddressService;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class AddressServiceImpl {
+public class AddressServiceImpl implements IAddressService {
     private final DistrictRepository districtRepository;
     private final WardRepository wardRepository;
 
+    @Override
     public DistrictResponse createDistrict(DistrictRequest req) {
         District d = new District();
         d.setDistrictName(req.districtName());
@@ -28,6 +32,7 @@ public class AddressServiceImpl {
         return new DistrictResponse(d.getId(), d.getDistrictName());
     }
 
+    @Override
     public DistrictResponse updateDistrict(String id, DistrictRequest req) {
         District d = districtRepository.findById(id).orElseThrow();
         d.setDistrictName(req.districtName());
@@ -35,23 +40,31 @@ public class AddressServiceImpl {
         return new DistrictResponse(d.getId(), d.getDistrictName());
     }
 
-    public List<DistrictResponse> getAllDistricts() {
-        return districtRepository.findAll().stream()
-                .map(d -> new DistrictResponse(d.getId(), d.getDistrictName()))
-                .toList();
+
+    @Override
+    public Page<DistrictResponse> getAllDistricts(Pageable pageable) {
+        return districtRepository.findAll(pageable)
+                .map(d -> new DistrictResponse(d.getId(), d.getDistrictName()));
     }
 
-    public List<WardResponse> getAllWards(String districtId) {
+    @Override
+    public Page<WardResponse> getAllWards(String districtId, Pageable pageable) {
+        Page<Ward> wardPage;
+
         if (districtId != null) {
-            return wardRepository.findByDistrictId(districtId).stream()
-                    .map(w -> new WardResponse(w.getId(), w.getWardName(), w.getDistrict().getDistrictName()))
-                    .toList();
+            wardPage = wardRepository.findByDistrictId(districtId, pageable);
+        } else {
+            wardPage = wardRepository.findAll(pageable);
         }
-        return wardRepository.findAll().stream()
-                .map(w -> new WardResponse(w.getId(), w.getWardName(), w.getDistrict().getDistrictName()))
-                .toList();
+
+        return wardPage.map(w -> new WardResponse(
+                w.getId(),
+                w.getWardName(),
+                w.getDistrict().getDistrictName()
+        ));
     }
 
+    @Override
     public WardResponse createWard(WardRequest req) {
         District d = districtRepository.findById(req.districtId()).orElseThrow();
         Ward w = new Ward();
@@ -61,6 +74,7 @@ public class AddressServiceImpl {
         return new WardResponse(w.getId(), w.getWardName(), d.getDistrictName());
     }
 
+    @Override
     public WardResponse updateWard(String id, WardRequest req) {
         Ward w = wardRepository.findById(id).orElseThrow();
         w.setWardName(req.wardName());
