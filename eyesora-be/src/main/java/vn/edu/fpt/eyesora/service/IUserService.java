@@ -6,4 +6,6 @@ import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 
 public interface IUserService {
     void register(RegisterRequest request);
+    void verifyEmail(String token);
+    void resendVerificationEmail(String email);
 }

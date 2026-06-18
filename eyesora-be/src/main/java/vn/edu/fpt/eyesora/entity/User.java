@@ -24,6 +24,9 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 50)
     private String username;
 
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
     @Column(nullable = false)
     private String password_hash;
 
@@ -43,7 +46,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private AccountStatus status = AccountStatus.ACTIVE;
+    private AccountStatus status = AccountStatus.UNVERIFIED;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -75,12 +78,13 @@ public class User implements UserDetails {
     @PrePersist
     void prePersist() {
         if (status == null) {
-            status = AccountStatus.ACTIVE;
+            status = AccountStatus.UNVERIFIED;
         }
     }
 
     public enum AccountStatus {
         ACTIVE,
-        LOCKED
+        LOCKED,
+        UNVERIFIED
     }
 }

@@ -4,7 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="16ba602b-5b2d-48db-84ac-50de8a194593" name="Changes" comment="" />
+    <list default="true" id="16ba602b-5b2d-48db-84ac-50de8a194593" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/VerificationToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/exceptions/BadRequestException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/VerificationTokenRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/request/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/dto/request/RegisterRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/entity/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/repository/UserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/IUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/java/vn/edu/fpt/eyesora/service/impl/UserServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/eyesora-be/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/eyesora-be/src/main/resources/application.properties" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,7 +27,7 @@
   <component name="CopilotChats">
     <option name="panelChat">
       <chat>
-        <option name="activeSessionId" value="8dc15548-92d4-4548-b096-95acdf65c3bc" />
+        <option name="activeSessionId" value="13446a04-46e8-4e0c-8ff2-9028ae596557" />
         <option name="sessions">
           <session>
             <option name="chatType" value="PANEL" />
@@ -66,14 +80,6 @@
             <option name="modelValue" value="auto" />
             <option name="targetType" value="LOCAL" />
           </session>
-          <session>
-            <option name="chatType" value="PANEL" />
-            <option name="id" value="8dc15548-92d4-4548-b096-95acdf65c3bc" />
-            <option name="modeId" value="Agent" />
-            <option name="modelType" value="builtin_family" />
-            <option name="modelValue" value="auto" />
-            <option name="targetType" value="LOCAL" />
-          </session>
         </option>
         <option name="type" value="PANEL" />
       </chat>
@@ -83,7 +89,6 @@
     <persistenceIdMap>
       <entry key="_/Users/nhutlm/Workspace/FPT/SU26/EXE101/eatery" value="3Ef4NJXcc5fYBA1XiC7IYUvMuwz" />
       <entry key="_/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora" value="3F1ZAbQ5xK4EwTOP4e49JHJNwTN" />
-      <entry key="_/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora/eyesora-be" value="3F4Nm3LwATujBwXUvMFHWEgkk7X" />
     </persistenceIdMap>
   </component>
   <component name="CopilotUserSelectedModel">
@@ -151,44 +156,44 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Spring Boot.EateryApplication.executor": "Run",
-    "Spring Boot.EyesoraApplication (1).executor": "Run",
-    "Spring Boot.EyesoraApplication .executor": "Run",
-    "Spring Boot.EyesoraApplication.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Spring Boot.EateryApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EyesoraApplication (1).executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EyesoraApplication .executor&quot;: &quot;Run&quot;,
+    &quot;Spring Boot.EyesoraApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;QUY&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/nhutlm/Workspace/FPT/SU26/EXE101/eyesora&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="ReactDesignerToolWindowState">
     <option name="myId2Visible">
       <map>
@@ -254,17 +259,12 @@
       <workItem from="1781244396707" duration="4497000" />
       <workItem from="1781254353611" duration="1116000" />
       <workItem from="1781256254541" duration="4068000" />
-      <workItem from="1781260526230" duration="1317000" />
+      <workItem from="1781260526230" duration="1369000" />
+      <workItem from="1781264139353" duration="88000" />
+      <workItem from="1781436688559" duration="1185000" />
+      <workItem from="1781438118079" duration="1966000" />
+      <workItem from="1781511668697" duration="1970000" />
     </task>
-    <task id="LOCAL-00001">
-      <option name="closed" value="true" />
-      <created>1781330813227</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1781330813227</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
