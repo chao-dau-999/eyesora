@@ -9,15 +9,15 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "classes")
-public class Class {
+public class Classes {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "class_id", nullable = false, length = 36)
     private String id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "school_id", nullable = false)
-    private Facility school;
+    @JoinColumn(name = "facility_id", nullable = false)
+    private Facility facility;
 
     @Column(name = "class_name", nullable = false, length = 50)
     private String className;
