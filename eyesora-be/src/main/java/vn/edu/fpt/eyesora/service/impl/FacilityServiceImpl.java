@@ -1,6 +1,5 @@
 package vn.edu.fpt.eyesora.service.impl;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +9,10 @@ import vn.edu.fpt.eyesora.dto.request.FacilityRequest;
 import vn.edu.fpt.eyesora.dto.response.FacilityResponse;
 import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Ward;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
 import vn.edu.fpt.eyesora.repository.WardRepository;
 import vn.edu.fpt.eyesora.service.IFacilityService;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,22 +22,16 @@ public class FacilityServiceImpl implements IFacilityService {
     private final WardRepository wardRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public Page<FacilityResponse> getAllFacilities(Pageable pageable) {
         return facilityRepository.findAll(pageable)
-                .map(f -> new FacilityResponse(
-                        f.getId(),
-                        f.getFacilityName(),
-                        f.getFacilityType(),
-                        f.getAddress(),
-                        f.getPhone(),
-                        f.getWard().getWardName()
-                ));
+                .map(this::mapToResponse);
     }
 
     @Override
     public FacilityResponse createFacility(FacilityRequest req) {
         Ward ward = wardRepository.findById(req.wardId())
-                .orElseThrow(() -> new RuntimeException("Ward not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
 
         Facility f = new Facility();
         f.setFacilityName(req.facilityName());
@@ -49,13 +41,13 @@ public class FacilityServiceImpl implements IFacilityService {
         f.setWard(ward);
 
         f = facilityRepository.save(f);
-        return new FacilityResponse(f.getId(), f.getFacilityName(), f.getFacilityType(), f.getAddress(), f.getPhone(), ward.getWardName());
+        return mapToResponse(f);
     }
 
     @Override
     public FacilityResponse updateFacility(String id, FacilityRequest req) {
         Facility existing = facilityRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Facility not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + id));
 
         existing.setFacilityName(req.facilityName());
         existing.setFacilityType(req.facilityType());
@@ -64,18 +56,23 @@ public class FacilityServiceImpl implements IFacilityService {
 
         if (req.wardId() != null && !req.wardId().equals(existing.getWard().getId())) {
             Ward newWard = wardRepository.findById(req.wardId())
-                    .orElseThrow(() -> new RuntimeException("Ward not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Ward not found with ID: " + req.wardId()));
             existing.setWard(newWard);
         }
 
-        Facility saved = facilityRepository.save(existing);
+        return mapToResponse(facilityRepository.save(existing));
+    }
+
+    private FacilityResponse mapToResponse(Facility f) {
         return new FacilityResponse(
-                saved.getId(),
-                saved.getFacilityName(),
-                saved.getFacilityType(),
-                saved.getAddress(),
-                saved.getPhone(),
-                saved.getWard().getWardName()
+                f.getId(),
+                f.getFacilityName(),
+                f.getFacilityType(),
+                f.getAddress(),
+                f.getPhone(),
+                f.getWard() != null ? f.getWard().getWardName() : null,
+                f.getWard() != null ? f.getWard().getId() : null,
+                f.getWard() != null ? f.getWard().getDistrict().getId() : null
         );
     }
 }

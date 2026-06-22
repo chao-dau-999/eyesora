@@ -8,5 +8,7 @@ public record FacilityResponse(
         Facility.FacilityType facilityType,
         String address,
         String phone,
-        String wardName
+        String wardName,
+        String wardId,
+        String districtId
 ) {}

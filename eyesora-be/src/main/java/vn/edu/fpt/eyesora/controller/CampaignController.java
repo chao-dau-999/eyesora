@@ -1,5 +1,6 @@
 package vn.edu.fpt.eyesora.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,11 +35,14 @@ public class CampaignController {
     }
 
     @PostMapping
-    public ResponseEntity<String> create(@RequestBody CampaignRequest req) {
-        campaignService.createCampaign(req);
-        return ResponseEntity.ok("Exam campaign created successfully");
+    public ResponseEntity<?> create(@Valid @RequestBody CampaignRequest req) {
+        try {
+            return ResponseEntity.ok(campaignService.createCampaign(req));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
     }
-
     @PatchMapping("/{id}/status/{status}")
     public ResponseEntity<?> updateStatus(
             @PathVariable String id,

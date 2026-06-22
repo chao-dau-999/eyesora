@@ -1,5 +1,6 @@
 package vn.edu.fpt.eyesora.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +43,7 @@ public class PatientController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createPatient(@RequestBody PatientRequest req) {
+    public ResponseEntity<String> createPatient(@Valid @RequestBody PatientRequest req) {
         patientService.createPatient(req);
         return ResponseEntity.ok("Patient created successfully!");
     }

@@ -7,6 +7,8 @@ import vn.edu.fpt.eyesora.dto.request.CampaignRequest;
 import vn.edu.fpt.eyesora.dto.response.CampaignResponse;
 import vn.edu.fpt.eyesora.entity.ExamCampaign;
 import vn.edu.fpt.eyesora.entity.Facility;
+import vn.edu.fpt.eyesora.exceptions.BusinessException;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.CampaignRepository;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
 import vn.edu.fpt.eyesora.service.ICampaignService;
@@ -42,11 +44,21 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     public CampaignResponse createCampaign(CampaignRequest req) {
-        Facility org = facilityRepository.findById(req.orgId())
-                .orElseThrow(() -> new RuntimeException("Organization not found with ID: " + req.orgId()));
+        // 1. Kiểm tra đầu vào
+        if (req.orgId() == null || req.targetId() == null) {
+            throw new BusinessException("Organization and Target are required.");
+        }
 
+        // 2. Tìm kiếm (Sử dụng ID từ request)
+        Facility org = facilityRepository.findById(req.orgId())
+                .orElseThrow(() -> new ResourceNotFoundException("Org not found: " + req.orgId()));
         Facility target = facilityRepository.findById(req.targetId())
-                .orElseThrow(() -> new RuntimeException("Target facility not found with ID: " + req.targetId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Target not found: " + req.targetId()));
+
+        // 3. Logic nghiệp vụ
+        if (org.getFacilityType() == Facility.FacilityType.SCHOOL) {
+            throw new BusinessException("Organization must be a Medical Facility.");
+        }
 
         ExamCampaign campaign = new ExamCampaign();
         campaign.setCampaignTitle(req.title());

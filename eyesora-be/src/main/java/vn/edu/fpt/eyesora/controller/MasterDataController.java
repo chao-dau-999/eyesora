@@ -1,5 +1,6 @@
 package vn.edu.fpt.eyesora.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,6 @@ import vn.edu.fpt.eyesora.dto.request.WardRequest;
 import vn.edu.fpt.eyesora.service.IAddressService;
 import vn.edu.fpt.eyesora.service.IClassesService;
 import vn.edu.fpt.eyesora.service.IFacilityService;
-import vn.edu.fpt.eyesora.service.impl.FacilityServiceImpl;
 
 @RestController
 @RequestMapping("/api/master-data")
@@ -25,64 +25,66 @@ public class MasterDataController {
     private final IFacilityService facilityService;
     private final IClassesService classesService;
 
+    // --- Districts ---
     @GetMapping("/districts")
     public ResponseEntity<?> getAllDistricts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(addressService.getAllDistricts(pageable));
     }
 
     @PostMapping("/districts")
-    public ResponseEntity<?> createDistrict(@RequestBody DistrictRequest req) {
+    public ResponseEntity<?> createDistrict(@Valid @RequestBody DistrictRequest req) {
         return ResponseEntity.ok(addressService.createDistrict(req));
     }
 
     @PutMapping("/districts/{id}")
-    public ResponseEntity<?> updateDistrict(@PathVariable String id, @RequestBody DistrictRequest req) {
+    public ResponseEntity<?> updateDistrict(@PathVariable String id, @Valid @RequestBody DistrictRequest req) {
         return ResponseEntity.ok(addressService.updateDistrict(id, req));
     }
 
+    // --- Wards ---
     @GetMapping("/wards")
     public ResponseEntity<?> getAllWards(
             @RequestParam(required = false) String districtId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(addressService.getAllWards(districtId, pageable));
     }
+
     @PostMapping("/wards")
-    public ResponseEntity<?> createWard(@RequestBody WardRequest req) {
+    public ResponseEntity<?> createWard(@Valid @RequestBody WardRequest req) {
         return ResponseEntity.ok(addressService.createWard(req));
     }
 
     @PutMapping("/wards/{id}")
-    public ResponseEntity<?> updateWard(@PathVariable String id, @RequestBody WardRequest req) {
+    public ResponseEntity<?> updateWard(@PathVariable String id, @Valid @RequestBody WardRequest req) {
         return ResponseEntity.ok(addressService.updateWard(id, req));
     }
 
+    // --- Facilities ---
     @GetMapping("/facilities")
     public ResponseEntity<?> getFacilities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "facilityName") String sortBy) {
-
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
         return ResponseEntity.ok(facilityService.getAllFacilities(pageable));
     }
 
     @PostMapping("/facilities")
-    public ResponseEntity<?> createFacility(@RequestBody FacilityRequest req) {
+    public ResponseEntity<?> createFacility(@Valid @RequestBody FacilityRequest req) {
         return ResponseEntity.ok(facilityService.createFacility(req));
     }
 
     @PutMapping("/facilities/{id}")
-    public ResponseEntity<?> updateFacility(@PathVariable String id, @RequestBody FacilityRequest req) {
+    public ResponseEntity<?> updateFacility(@PathVariable String id, @Valid @RequestBody FacilityRequest req) {
         return ResponseEntity.ok(facilityService.updateFacility(id, req));
     }
 
+    // --- Classes ---
     @GetMapping("/classes")
     public ResponseEntity<?> getAllClasses(
             @PageableDefault(size = 10, sort = "className") Pageable pageable) {
@@ -90,12 +92,12 @@ public class MasterDataController {
     }
 
     @PostMapping("/classes")
-    public ResponseEntity<?> createClass(@RequestBody ClassesRequest req) {
+    public ResponseEntity<?> createClass(@Valid @RequestBody ClassesRequest req) {
         return ResponseEntity.ok(classesService.createClass(req));
     }
 
     @PutMapping("/classes/{id}")
-    public ResponseEntity<?> updateClass(@PathVariable String id, @RequestBody ClassesRequest req) {
+    public ResponseEntity<?> updateClass(@PathVariable String id, @Valid @RequestBody ClassesRequest req) {
         return ResponseEntity.ok(classesService.updateClass(id, req));
     }
 }
