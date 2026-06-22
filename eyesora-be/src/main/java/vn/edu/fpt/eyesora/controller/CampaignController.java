@@ -39,9 +39,11 @@ public class CampaignController {
         return ResponseEntity.ok("Exam campaign created successfully");
     }
 
-    @PatchMapping("/{id}/lock")
-    public ResponseEntity<String> lock(@PathVariable String id) {
-        campaignService.lockCampaign(id);
-        return ResponseEntity.ok("Campaign locked successfully");
+    @PatchMapping("/{id}/status/{status}")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String id,
+            @PathVariable String status) {
+        campaignService.setCampaignStatus(id, status);
+        return ResponseEntity.ok("Status updated to " + status);
     }
 }

@@ -61,13 +61,18 @@ public class CampaignServiceImpl implements ICampaignService {
     }
 
     @Override
-    public void lockCampaign(String id) {
+    public void setCampaignStatus(String id, String statusStr) {
         ExamCampaign campaign = campaignRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Exam campaign not found with ID: " + id));
-        campaign.setStatus(ExamCampaign.CampaignStatus.LOCKED);
-        campaignRepository.save(campaign);
-    }
+                .orElseThrow(() -> new RuntimeException("Campaign not found with ID: " + id));
 
+        try {
+            ExamCampaign.CampaignStatus newStatus = ExamCampaign.CampaignStatus.valueOf(statusStr.toUpperCase());
+            campaign.setStatus(newStatus);
+            campaignRepository.save(campaign);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + statusStr);
+        }
+    }
     private CampaignResponse mapToResponse(ExamCampaign campaign) {
         return CampaignResponse.builder()
                 .campaignId(campaign.getCampaignId())

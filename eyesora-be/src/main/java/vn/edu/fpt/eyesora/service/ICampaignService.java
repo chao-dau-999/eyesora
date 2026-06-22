@@ -10,5 +10,5 @@ public interface ICampaignService {
 //    List<ExamCampaign> getAllCampaigns();
     List<CampaignResponse> getAllCampaigns();
     CampaignResponse createCampaign(CampaignRequest req);
-    void lockCampaign(String campaignId);
+    void setCampaignStatus(String id, String statusStr);
 }
