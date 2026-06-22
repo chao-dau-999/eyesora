@@ -210,7 +210,7 @@ public class UserServiceImpl implements IUserService {
         try {
             log.info("Attempting to send password reset email to: {}", email);
 
-            String link = "http://localhost:5173/reset-password?token=" + token;
+            String link = "http://localhost:8080/api/auth/reset-password?token=" + token;
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(email);
             msg.setSubject("[Eyesora] Password Reset Request");
