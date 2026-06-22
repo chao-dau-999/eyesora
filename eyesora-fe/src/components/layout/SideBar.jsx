@@ -1,13 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, University, GraduationCap, UsersRound, Eye, X } from "lucide-react";
+import { LayoutDashboard, University, GraduationCap, UsersRound, Eye, X, CalendarDays, ShieldAlert } from "lucide-react";
 
 const MENU_ITEMS = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/' },
     { icon: <University className="w-5 h-5" />, label: 'Facilities', path: '/facilities' },
     { icon: <GraduationCap className="w-5 h-5" />, label: 'Classes', path: '/classes' },
     { icon: <UsersRound className="w-5 h-5" />, label: 'Patients', path: '/patients' },
+    { icon: <CalendarDays className="w-5 h-5" />, label: 'Campaigns', path: '/campaigns' },
+    { icon: <ShieldAlert className="w-5 h-5" />, label: 'Admin Users', path: '/admin/users' },
 ];
-
 const SideBar = ({ isOpen, setIsOpen }) => {
     return (
         <>
