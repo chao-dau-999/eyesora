@@ -1,6 +1,8 @@
 package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.CampaignRequest;
@@ -25,37 +27,21 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CampaignResponse> getAllCampaigns() {
-        return campaignRepository.findAll().stream().map(campaign ->
-                CampaignResponse.builder()
-                        .campaignId(campaign.getCampaignId())
-                        .campaignTitle(campaign.getCampaignTitle())
-                        .facilityYear(campaign.getFacilityYear())
-                        .startDate(campaign.getStartDate())
-                        .managerName(campaign.getManagerName())
-                        .status(campaign.getStatus() != null ? campaign.getStatus().name() : "ACTIVE")
-                        .organizationName(campaign.getOrganization() != null ?
-                                campaign.getOrganization().getFacilityName() : null)
-                        .targetFacilityName(campaign.getTargetfacility() != null ?
-                                campaign.getTargetfacility().getFacilityName() : null)
-                        .build()
-        ).toList();
+    public Page<CampaignResponse> getAllCampaigns(Pageable pageable) {
+        return campaignRepository.findByStatusNot(ExamCampaign.CampaignStatus.DELETED, pageable)
+                .map(this::mapToResponse);
     }
-
     @Override
     public CampaignResponse createCampaign(CampaignRequest req) {
-        // 1. Kiểm tra đầu vào
         if (req.orgId() == null || req.targetId() == null) {
             throw new BusinessException("Organization and Target are required.");
         }
 
-        // 2. Tìm kiếm (Sử dụng ID từ request)
         Facility org = facilityRepository.findById(req.orgId())
                 .orElseThrow(() -> new ResourceNotFoundException("Org not found: " + req.orgId()));
         Facility target = facilityRepository.findById(req.targetId())
                 .orElseThrow(() -> new ResourceNotFoundException("Target not found: " + req.targetId()));
 
-        // 3. Logic nghiệp vụ
         if (org.getFacilityType() == Facility.FacilityType.SCHOOL) {
             throw new BusinessException("Organization must be a Medical Facility.");
         }
@@ -85,6 +71,23 @@ public class CampaignServiceImpl implements ICampaignService {
             throw new RuntimeException("Invalid status: " + statusStr);
         }
     }
+
+    @Override
+    public void deleteCampaign(String id) {
+        ExamCampaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found"));
+
+        campaign.setStatus(ExamCampaign.CampaignStatus.DELETED);
+        campaignRepository.save(campaign);
+    }
+
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Page<CampaignResponse> getDeletedCampaigns(Pageable pageable) {
+//        return campaignRepository.findByStatus(ExamCampaign.CampaignStatus.DELETED, pageable)
+//                .map(this::mapToResponse);
+//    }
+
     private CampaignResponse mapToResponse(ExamCampaign campaign) {
         return CampaignResponse.builder()
                 .campaignId(campaign.getCampaignId())

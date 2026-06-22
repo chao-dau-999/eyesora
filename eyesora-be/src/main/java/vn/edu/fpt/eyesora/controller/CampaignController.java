@@ -2,6 +2,9 @@ package vn.edu.fpt.eyesora.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.CampaignRequest;
@@ -25,8 +28,9 @@ public class CampaignController {
 //    }
 
     @GetMapping
-    public ResponseEntity<List<CampaignResponse>> getAllCampaigns() {
-        return ResponseEntity.ok(campaignService.getAllCampaigns());
+    public ResponseEntity<Page<CampaignResponse>> getAllCampaigns(
+            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
+        return ResponseEntity.ok(campaignService.getAllCampaigns(pageable));
     }
 
     @GetMapping("/{campaignId}/patient-count")
@@ -49,5 +53,17 @@ public class CampaignController {
             @PathVariable String status) {
         campaignService.setCampaignStatus(id, status);
         return ResponseEntity.ok("Status updated to " + status);
+    }
+
+//    @GetMapping("/deleted")
+//    public ResponseEntity<Page<CampaignResponse>> getDeletedCampaigns(
+//            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
+//        return ResponseEntity.ok(campaignService.getDeletedCampaigns(pageable));
+//    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCampaign(@PathVariable String id) {
+        campaignService.deleteCampaign(id);
+        return ResponseEntity.noContent().build();
     }
 }

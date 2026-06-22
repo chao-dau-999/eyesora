@@ -1,5 +1,7 @@
 package vn.edu.fpt.eyesora.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import vn.edu.fpt.eyesora.dto.request.CampaignRequest;
 import vn.edu.fpt.eyesora.dto.response.CampaignResponse;
 import vn.edu.fpt.eyesora.entity.ExamCampaign;
@@ -7,8 +9,9 @@ import vn.edu.fpt.eyesora.entity.ExamCampaign;
 import java.util.List;
 
 public interface ICampaignService {
-//    List<ExamCampaign> getAllCampaigns();
-    List<CampaignResponse> getAllCampaigns();
+    Page<CampaignResponse> getAllCampaigns(Pageable pageable);
     CampaignResponse createCampaign(CampaignRequest req);
     void setCampaignStatus(String id, String statusStr);
+    void deleteCampaign(String id);
+//    Page<CampaignResponse> getDeletedCampaigns(Pageable pageable);
 }
