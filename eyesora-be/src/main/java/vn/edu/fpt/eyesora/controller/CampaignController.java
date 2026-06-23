@@ -38,6 +38,11 @@ public class CampaignController {
         return ResponseEntity.ok(Map.of("count", patientService.countPatientsByCampaign(campaignId)));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CampaignResponse> getCampaignDetail(@PathVariable String id) {
+        return ResponseEntity.ok(campaignService.getCampaignDetail(id));
+    }
+
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CampaignRequest req) {
         try {

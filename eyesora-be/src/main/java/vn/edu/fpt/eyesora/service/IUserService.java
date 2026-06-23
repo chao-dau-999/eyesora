@@ -17,4 +17,5 @@ public interface IUserService {
     void processForgotPassword(String email);
     Page<UserResponse> getAllUsers(Pageable pageable);
     void updateUserStatus(String userId, User.AccountStatus status);
+    UserResponse getUserDetail(String id);
 }

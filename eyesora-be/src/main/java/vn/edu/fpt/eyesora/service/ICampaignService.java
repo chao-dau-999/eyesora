@@ -10,8 +10,14 @@ import java.util.List;
 
 public interface ICampaignService {
     Page<CampaignResponse> getAllCampaigns(Pageable pageable);
+
     CampaignResponse createCampaign(CampaignRequest req);
+
     void setCampaignStatus(String id, String statusStr);
+
     void deleteCampaign(String id);
-//    Page<CampaignResponse> getDeletedCampaigns(Pageable pageable);
+
+    //    Page<CampaignResponse> getDeletedCampaigns(Pageable pageable);
+    
+    CampaignResponse getCampaignDetail(String id);
 }

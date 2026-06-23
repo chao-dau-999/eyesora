@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axiosClient from "../axios/axiosClient";
-import { Building2, ChevronLeft, ChevronRight, X, SquarePen } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, X, SquarePen, Eye } from "lucide-react";
 import FacilityActions from "../components/FacilityActions";
 
 const FacilitiesPage = () => {
@@ -9,9 +9,11 @@ const FacilitiesPage = () => {
     const [wards, setWards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [errors, setErrors] = useState({});
     const [pageData, setPageData] = useState({ page: 0, totalPages: 0, totalElements: 0 });
+    const [selectedFacility, setSelectedFacility] = useState(null);
 
     const [formData, setFormData] = useState({
         facilityName: '', facilityType: 'CLINIC', address: '', phone: '', wardId: '', districtId: ''
@@ -41,6 +43,14 @@ const FacilitiesPage = () => {
             const res = await axiosClient.get(`/master-data/wards?districtId=${dId}&size=100`);
             setWards(res.data.content || []);
         } catch (error) { console.error("Error fetching wards:", error); }
+    };
+
+    const openDetail = async (f) => {
+        try {
+            const res = await axiosClient.get(`/master-data/facilities/${f.id}`);
+            setSelectedFacility(res.data);
+            setIsDetailOpen(true);
+        } catch (error) { alert("Error loading facility details"); }
     };
 
     useEffect(() => { fetchData(); }, []);
@@ -104,7 +114,7 @@ const FacilitiesPage = () => {
                         <th className="px-8 py-5">STT</th>
                         <th className="px-8 py-5">Facility Name</th>
                         <th className="px-8 py-5">Type</th>
-                        <th className="px-8 py-5">Address</th>
+                        {/*<th className="px-8 py-5">Address</th>*/}
                         <th className="px-8 py-5 text-right">Actions</th>
                     </tr>
                     </thead>
@@ -114,16 +124,15 @@ const FacilitiesPage = () => {
                             <td className="px-8 py-5 font-bold text-gray-500">{(pageData.page * 10) + index + 1}</td>
                             <td className="px-8 py-5 font-bold">{f.facilityName}</td>
                             <td className="px-8 py-5 font-semibold text-blue-700">{f.facilityType}</td>
-                            <td className="px-8 py-5 text-gray-600">{f.address}</td>
-                            <td className="px-8 py-5 text-right">
-                                <button onClick={() => handleEdit(f)} className="text-blue-900 hover:text-blue-700"><SquarePen size={20} /></button>
+                            {/*<td className="px-8 py-5 text-gray-600">{f.address}</td>*/}
+                            <td className="px-8 py-5 text-right flex justify-end gap-2">
+                                <button onClick={() => openDetail(f)} className="text-gray-500 hover:text-gray-900 transition-colors"><Eye size={20} /></button>
+                                <button onClick={() => handleEdit(f)} className="text-blue-900 hover:text-blue-700 transition-colors"><SquarePen size={20} /></button>
                             </td>
                         </tr>
                     ))}
                     </tbody>
                 </table>
-
-                {/* Thanh phân trang thông minh */}
                 <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
                     <div className="text-sm font-semibold text-gray-500">Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}</div>
                     <div className="flex items-center gap-1.5">
@@ -139,6 +148,49 @@ const FacilitiesPage = () => {
                     </div>
                 </div>
             </div>
+            {/* Modal Detail*/}
+            {isDetailOpen && selectedFacility && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white p-8 rounded-3xl w-full max-w-sm shadow-2xl">
+                        {/* Header */}
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-xl font-black text-gray-950">Facility Details</h2>
+                            <button
+                                onClick={() => setIsDetailOpen(false)}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            >
+                                <X size={20} className="text-gray-400"/>
+                            </button>
+                        </div>
+
+                        {/* List Info */}
+                        <div className="space-y-5">
+                            {[
+                                { label: 'Name', value: selectedFacility.facilityName },
+                                { label: 'Type', value: selectedFacility.facilityType },
+                                { label: 'Phone', value: selectedFacility.phone },
+                                { label: 'Address', value: selectedFacility.address },
+                                { label: 'Ward', value: selectedFacility.wardName || 'N/A' }
+                            ].map((item, index) => (
+                                <div key={index} className="flex justify-between items-center border-b border-gray-100 pb-3">
+                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.label}</span>
+                                    <span className="text-sm font-black text-gray-800 text-right ml-4">
+                            {item.value}
+                        </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setIsDetailOpen(false)}
+                            className="w-full mt-10 py-4 bg-gray-950 text-white rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {isCreateOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

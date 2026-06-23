@@ -50,6 +50,10 @@ public class Patient {
     @JoinColumn(name = "facility_id")
     private Facility facility;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private Classes classes;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;

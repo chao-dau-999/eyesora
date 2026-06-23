@@ -9,4 +9,5 @@ public interface IFacilityService {
     Page<FacilityResponse> getAllFacilities(Pageable pageable);
     FacilityResponse createFacility(FacilityRequest req);
     FacilityResponse updateFacility(String id, FacilityRequest req);
+    FacilityResponse getFacilityDetail(String facilityId);
 }

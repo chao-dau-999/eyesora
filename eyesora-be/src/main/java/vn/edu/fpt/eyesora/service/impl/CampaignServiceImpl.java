@@ -88,17 +88,29 @@ public class CampaignServiceImpl implements ICampaignService {
 //                .map(this::mapToResponse);
 //    }
 
-    private CampaignResponse mapToResponse(ExamCampaign campaign) {
+    private CampaignResponse mapToResponse(ExamCampaign c) {
+
+        Long count = campaignRepository.countPatientsByCampaignId(c.getCampaignId());
+
         return CampaignResponse.builder()
-                .campaignId(campaign.getCampaignId())
-                .campaignTitle(campaign.getCampaignTitle())
-                .facilityYear(campaign.getFacilityYear())
-                .startDate(campaign.getStartDate())
-                .managerName(campaign.getManagerName())
-                .status(campaign.getStatus() != null ? campaign.getStatus().name() : "ACTIVE")
-                .organizationName(campaign.getOrganization() != null ? campaign.getOrganization().getFacilityName() : null)
-                .targetFacilityName(campaign.getTargetfacility() != null ? campaign.getTargetfacility().getFacilityName() : null)
+                .campaignId(c.getCampaignId())
+                .campaignTitle(c.getCampaignTitle())
+                .facilityYear(c.getFacilityYear())
+                .startDate(c.getStartDate())
+                .managerName(c.getManagerName())
+                .status(c.getStatus().name())
+                .organizationName(c.getOrganization() != null ? c.getOrganization().getFacilityName() : null)
+                .targetFacilityName(c.getTargetfacility() != null ? c.getTargetfacility().getFacilityName() : null)
+                .patientCount(count != null ? count : 0L) 
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CampaignResponse getCampaignDetail(String id) {
+        ExamCampaign campaign = campaignRepository.findWithDetailByCampaignId(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found"));
+        return mapToResponse(campaign);
     }
 
 }

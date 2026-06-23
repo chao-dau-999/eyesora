@@ -18,16 +18,14 @@ import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.entity.VerificationToken;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
-import vn.edu.fpt.eyesora.repository.PasswordResetTokenRepository;
-import vn.edu.fpt.eyesora.repository.RoleRepository;
-import vn.edu.fpt.eyesora.repository.UserRepository;
-import vn.edu.fpt.eyesora.repository.VerificationTokenRepository;
+import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IUserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +38,7 @@ public class UserServiceImpl implements IUserService {
     private final VerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JavaMailSender mailSender;
+    private final FacilityRepository facilityRepository;
 
     @Override
     @Transactional
@@ -232,22 +231,43 @@ public class UserServiceImpl implements IUserService {
 
 
 
+
+    private UserResponse mapToUserResponse(User user) {
+        String facilityName = "N/A";
+        if (user.getFacility_id() != null) {
+            facilityName = facilityRepository.findById(user.getFacility_id())
+                    .map(facility -> facility.getFacilityName())
+                    .orElse("Unknown Facility");
+        }
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFull_name(),
+                user.getStatus().name(),
+                user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()),
+                facilityName
+        );
+    }
+
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(u -> new UserResponse(
-                        u.getId(),
-                        u.getUsername(),
-                        u.getEmail(),
-                        u.getFull_name(),
-                        u.getStatus().name(),
-                        u.getRoles().stream().map(Role::getName).collect(java.util.stream.Collectors.toSet())
-                ));
+        return userRepository.findAll(pageable).map(this::mapToUserResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserDetail(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        return mapToUserResponse(user);
+    }
+
     @Override
     public void updateUserStatus(String userId, User.AccountStatus status) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setStatus(status);
         userRepository.save(user);
     }

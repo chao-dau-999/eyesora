@@ -13,6 +13,8 @@ import vn.edu.fpt.eyesora.dto.request.DistrictRequest;
 import vn.edu.fpt.eyesora.dto.request.FacilityRequest;
 import vn.edu.fpt.eyesora.dto.request.WardRequest;
 
+import vn.edu.fpt.eyesora.dto.response.ClassDetailResponse;
+import vn.edu.fpt.eyesora.dto.response.FacilityResponse;
 import vn.edu.fpt.eyesora.service.IAddressService;
 import vn.edu.fpt.eyesora.service.IClassesService;
 import vn.edu.fpt.eyesora.service.IFacilityService;
@@ -74,6 +76,11 @@ public class MasterDataController {
         return ResponseEntity.ok(facilityService.getAllFacilities(pageable));
     }
 
+    @GetMapping("/facilities/{id}")
+    public ResponseEntity<FacilityResponse> getFacilityDetail(@PathVariable String id) {
+        return ResponseEntity.ok(facilityService.getFacilityDetail(id));
+    }
+
     @PostMapping("/facilities")
     public ResponseEntity<?> createFacility(@Valid @RequestBody FacilityRequest req) {
         return ResponseEntity.ok(facilityService.createFacility(req));
@@ -83,6 +90,7 @@ public class MasterDataController {
     public ResponseEntity<?> updateFacility(@PathVariable String id, @Valid @RequestBody FacilityRequest req) {
         return ResponseEntity.ok(facilityService.updateFacility(id, req));
     }
+
 
     // --- Classes ---
     @GetMapping("/classes")
@@ -99,5 +107,12 @@ public class MasterDataController {
     @PutMapping("/classes/{id}")
     public ResponseEntity<?> updateClass(@PathVariable String id, @Valid @RequestBody ClassesRequest req) {
         return ResponseEntity.ok(classesService.updateClass(id, req));
+    }
+
+    @GetMapping("/classes/{id}/patients")
+    public ResponseEntity<ClassDetailResponse> getClassDetail(
+            @PathVariable String id,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(classesService.getClassDetail(id, pageable));
     }
 }

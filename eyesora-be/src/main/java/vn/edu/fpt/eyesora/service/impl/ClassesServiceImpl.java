@@ -2,16 +2,23 @@ package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.ClassesRequest;
+import vn.edu.fpt.eyesora.dto.response.ClassDetailResponse;
 import vn.edu.fpt.eyesora.dto.response.ClassesResponse;
+import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.entity.Classes;
 import vn.edu.fpt.eyesora.entity.Facility;
+import vn.edu.fpt.eyesora.entity.Patient;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.ClassesRepository;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
 import vn.edu.fpt.eyesora.service.IClassesService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -63,5 +70,39 @@ public class ClassesServiceImpl implements IClassesService {
     private ClassesResponse mapToResponse(Classes c) {
         return new ClassesResponse(c.getId(), c.getFacility().getFacilityName(),
                 c.getClassName(), c.getGrade(), c.getSchoolYear());
+    }
+
+    public ClassDetailResponse getClassDetail(String classId, Pageable pageable) {
+        Classes cls = classesRepository.findWithPatientsById(classId)
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found"));
+
+        List<Patient> allPatients = cls.getPatients();
+
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allPatients.size());
+
+        List<PatientResponse> content = (start > allPatients.size())
+                ? List.of()
+                : allPatients.subList(start, end).stream()
+                .map(p -> new PatientResponse(
+                        p.getPatientId(),
+                        p.getPatientName(),
+                        p.getDob(),
+                        p.getGender().name(),
+                        p.getParentPhone(),
+                        (p.getWard() != null) ? p.getWard().getWardName() : "N/A"
+                ))
+                .toList();
+
+        Page<PatientResponse> patientPage = new PageImpl<>(content, pageable, allPatients.size());
+
+        return new ClassDetailResponse(
+                cls.getId(),
+                cls.getClassName(),
+                cls.getGrade(),
+                cls.getPatientCount(),
+                patientPage
+        );
     }
 }

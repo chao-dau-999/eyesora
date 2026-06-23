@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.UserStatusRequest;
+import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.service.impl.UserServiceImpl;
 
 @RestController
@@ -31,5 +32,10 @@ public class UserController {
     public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestBody UserStatusRequest req) {
         userService.updateUserStatus(id, req.status());
         return ResponseEntity.ok("Account status updated to " + req.status());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserDetail(@PathVariable String id) {
+        return ResponseEntity.ok(userService.getUserDetail(id));
     }
 }

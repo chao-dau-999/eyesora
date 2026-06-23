@@ -75,4 +75,13 @@ public class FacilityServiceImpl implements IFacilityService {
                 f.getWard() != null ? f.getWard().getDistrict().getId() : null
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FacilityResponse getFacilityDetail(String facilityId) {
+        Facility facility = facilityRepository.findWithDetailById(facilityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
+
+        return mapToResponse(facility);
+    }
 }
