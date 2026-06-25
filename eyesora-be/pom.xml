@@ -107,6 +107,13 @@
             <version>2.8.16</version>
         </dependency>
 
+        <!--       VALIDATION -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
