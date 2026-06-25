@@ -39,5 +39,5 @@ public class ExamCampaign {
     @JoinColumn(name = "target_facility_id")
     private Facility targetfacility;
 
-    public enum CampaignStatus { ACTIVE, LOCKED }
+    public enum CampaignStatus { ACTIVE, LOCKED, DELETED }
 }

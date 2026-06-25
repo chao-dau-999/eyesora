@@ -1,5 +1,6 @@
 package vn.edu.fpt.eyesora.dto.response;
 
+
 import java.time.LocalDate;
 
 public record PatientResponse(

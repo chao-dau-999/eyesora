@@ -2,6 +2,8 @@ package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,21 +11,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
+import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.PasswordResetToken;
 import vn.edu.fpt.eyesora.entity.Role;
 import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.entity.VerificationToken;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
-import vn.edu.fpt.eyesora.repository.PasswordResetTokenRepository;
-import vn.edu.fpt.eyesora.repository.RoleRepository;
-import vn.edu.fpt.eyesora.repository.UserRepository;
-import vn.edu.fpt.eyesora.repository.VerificationTokenRepository;
+import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IUserService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class UserServiceImpl implements IUserService {
     private final VerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JavaMailSender mailSender;
+    private final FacilityRepository facilityRepository;
 
     @Override
     @Transactional
@@ -206,7 +209,7 @@ public class UserServiceImpl implements IUserService {
         try {
             log.info("Attempting to send password reset email to: {}", email);
 
-            String link = "http://localhost:5173/reset-password?token=" + token;
+            String link = "http://localhost:8080/api/auth/reset-password?token=" + token;
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(email);
             msg.setSubject("[Eyesora] Password Reset Request");
@@ -224,5 +227,48 @@ public class UserServiceImpl implements IUserService {
             log.error("Failed to send password reset email to {}. Error: {}", email, e.getMessage());
             e.printStackTrace();
         }
+    }
+
+
+
+
+    private UserResponse mapToUserResponse(User user) {
+        String facilityName = "N/A";
+        if (user.getFacility_id() != null) {
+            facilityName = facilityRepository.findById(user.getFacility_id())
+                    .map(facility -> facility.getFacilityName())
+                    .orElse("Unknown Facility");
+        }
+
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFull_name(),
+                user.getStatus().name(),
+                user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet()),
+                facilityName
+        );
+    }
+
+    @Override
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::mapToUserResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserDetail(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+        return mapToUserResponse(user);
+    }
+
+    @Override
+    public void updateUserStatus(String userId, User.AccountStatus status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setStatus(status);
+        userRepository.save(user);
     }
 }

@@ -7,16 +7,22 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.LoginRequest;
 import vn.edu.fpt.eyesora.dto.request.LogoutRequest;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
+import vn.edu.fpt.eyesora.dto.response.TokenResponse;
+import vn.edu.fpt.eyesora.entity.RefreshToken;
+import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.service.IRefreshTokenService;
 import vn.edu.fpt.eyesora.service.IUserService;
 import vn.edu.fpt.eyesora.dto.request.ForgotPasswordRequest;
+import vn.edu.fpt.eyesora.util.JwtUtil;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,28 +32,23 @@ public class AuthController {
     private final IUserService userService;
     private final AuthenticationManager authManager;
     private final IRefreshTokenService refreshTokenService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
+    @Transactional
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            Authentication authentication = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginRequest.username(),
-                            loginRequest.password()));
+        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
 
-            String tokenString = java.util.UUID.randomUUID().toString();
+        User user = (User) authentication.getPrincipal();
+        String id = user.getId();
+//        String img = user.getImg();
+        String source = "";
+        String role = user.getAuthorities().iterator().next().getAuthority();
 
-            return ResponseEntity.ok(java.util.Map.of(
-                    "message", "Login successful",
-                    "refreshToken", tokenString
-            ));
+        String accessToken = jwtUtil.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername(), source);
 
-        } catch (DisabledException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Account not verified. Please check your email to activate!");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
+        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken(), id, user.getUsername(), null, role));
     }
 
     @PostMapping("/register")

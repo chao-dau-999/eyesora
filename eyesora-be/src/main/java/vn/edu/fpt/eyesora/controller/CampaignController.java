@@ -1,6 +1,10 @@
 package vn.edu.fpt.eyesora.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.CampaignRequest;
@@ -24,8 +28,9 @@ public class CampaignController {
 //    }
 
     @GetMapping
-    public ResponseEntity<List<CampaignResponse>> getAllCampaigns() {
-        return ResponseEntity.ok(campaignService.getAllCampaigns());
+    public ResponseEntity<Page<CampaignResponse>> getAllCampaigns(
+            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
+        return ResponseEntity.ok(campaignService.getAllCampaigns(pageable));
     }
 
     @GetMapping("/{campaignId}/patient-count")
@@ -33,15 +38,37 @@ public class CampaignController {
         return ResponseEntity.ok(Map.of("count", patientService.countPatientsByCampaign(campaignId)));
     }
 
-    @PostMapping
-    public ResponseEntity<String> create(@RequestBody CampaignRequest req) {
-        campaignService.createCampaign(req);
-        return ResponseEntity.ok("Exam campaign created successfully");
+    @GetMapping("/{id}")
+    public ResponseEntity<CampaignResponse> getCampaignDetail(@PathVariable String id) {
+        return ResponseEntity.ok(campaignService.getCampaignDetail(id));
     }
 
-    @PatchMapping("/{id}/lock")
-    public ResponseEntity<String> lock(@PathVariable String id) {
-        campaignService.lockCampaign(id);
-        return ResponseEntity.ok("Campaign locked successfully");
+    @PostMapping
+    public ResponseEntity<?> create(@Valid @RequestBody CampaignRequest req) {
+        try {
+            return ResponseEntity.ok(campaignService.createCampaign(req));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getMessage());
+        }
+    }
+    @PatchMapping("/{id}/status/{status}")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String id,
+            @PathVariable String status) {
+        campaignService.setCampaignStatus(id, status);
+        return ResponseEntity.ok("Status updated to " + status);
+    }
+
+//    @GetMapping("/deleted")
+//    public ResponseEntity<Page<CampaignResponse>> getDeletedCampaigns(
+//            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
+//        return ResponseEntity.ok(campaignService.getDeletedCampaigns(pageable));
+//    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCampaign(@PathVariable String id) {
+        campaignService.deleteCampaign(id);
+        return ResponseEntity.noContent().build();
     }
 }

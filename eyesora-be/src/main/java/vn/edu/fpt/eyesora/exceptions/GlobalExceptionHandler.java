@@ -56,5 +56,24 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ex.getMessage());
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGlobalException(Exception ex) {
+        ex.printStackTrace(); 
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Server error: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleJsonParseException(
+            org.springframework.http.converter.HttpMessageNotReadableException ex) {
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "message", "Invalid JSON format. Please check your request body."
+                ));
+    }
 }
 

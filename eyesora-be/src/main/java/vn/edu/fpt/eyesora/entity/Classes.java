@@ -1,8 +1,12 @@
 package vn.edu.fpt.eyesora.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Formula;
+
+import java.util.List;
 
 
 @Getter
@@ -27,4 +31,11 @@ public class Classes {
 
     @Column(name = "school_year", nullable = false, length = 20)
     private String schoolYear;
+
+    @OneToMany(mappedBy = "classes", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Patient> patients;
+
+    @Formula("(SELECT COUNT(*) FROM patients p WHERE p.class_id = class_id AND p.is_deleted = false)")
+    private Long patientCount;
 }

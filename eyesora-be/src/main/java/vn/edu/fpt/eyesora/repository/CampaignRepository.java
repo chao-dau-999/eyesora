@@ -1,14 +1,27 @@
 package vn.edu.fpt.eyesora.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import vn.edu.fpt.eyesora.entity.ExamCampaign;
-import java.util.List;
+
+import java.util.Optional;
 
 @Repository
 public interface CampaignRepository extends JpaRepository<ExamCampaign, String> {
 
     @EntityGraph(attributePaths = {"organization", "targetfacility"})
-    List<ExamCampaign> findAll();
+    Page<ExamCampaign> findByStatusNot(ExamCampaign.CampaignStatus status, Pageable pageable);
+
+
+    @EntityGraph(attributePaths = {"organization", "targetfacility"})
+    Optional<ExamCampaign> findWithDetailByCampaignId(String campaignId);
+
+    @Query("SELECT COUNT(p) FROM Patient p WHERE p.examCampaign.campaignId = :campaignId")
+    Long countPatientsByCampaignId(@Param("campaignId") String campaignId);
 }

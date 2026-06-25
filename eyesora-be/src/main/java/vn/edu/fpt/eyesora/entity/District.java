@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -16,4 +18,7 @@ public class District {
 
     @Column(name = "district_name", nullable = false, length = 100)
     private String districtName;
+
+    @OneToMany(mappedBy = "district", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Ward> wards;
 }

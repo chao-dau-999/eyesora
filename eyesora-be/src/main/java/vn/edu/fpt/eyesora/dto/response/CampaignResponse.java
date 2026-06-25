@@ -14,5 +14,6 @@ public record CampaignResponse(
         String managerName,
         String status,
         String organizationName,
-        String targetFacilityName
+        String targetFacilityName,
+        Long patientCount
 ) {}
