@@ -1,10 +1,12 @@
 package vn.edu.fpt.eyesora.dto.response;
 
+import java.util.Set;
+
 public record TokenResponse(
         String accessToken,
         String refreshToken,
         String id,
         String username,
         String img,
-        String role
+        Set<String> roles
 ) {}

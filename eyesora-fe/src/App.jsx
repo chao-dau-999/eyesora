@@ -1,6 +1,6 @@
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
 import AppLayout from "./components/layout/AppLayout"; // Bỏ đuôi file
-import { Dashboard } from "./pages/Dashboard.jsx";
+import AdminDashboard from "./pages/Dashboard.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import PatientPage from "./pages/PatientPage.jsx"; // Bỏ đuôi file (hoặc bỏ {} nếu export default)
 import ClassesPage from "./pages/ClassesPage.jsx";
@@ -16,7 +16,7 @@ function App() {
             <Routes>
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/" element={<AppLayout />}>
-                    <Route index element={<Dashboard />} />
+                    <Route index element={<AdminDashboard />} />
                     <Route path="/classes" element={<ClassesPage />} />
                     <Route path="/patients" element={<PatientPage />} />
                     <Route path="/facilities" element={<FacilitiesPage />} />
