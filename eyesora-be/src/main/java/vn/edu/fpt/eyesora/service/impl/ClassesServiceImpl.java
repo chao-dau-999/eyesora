@@ -31,19 +31,13 @@ public class ClassesServiceImpl implements IClassesService {
     @Transactional(readOnly = true)
     public Page<ClassesResponse> getAllClasses(Pageable pageable) {
         return classesRepository.findAll(pageable)
-                .map(c -> new ClassesResponse(
-                        c.getId(),
-                        c.getFacility().getFacilityName(),
-                        c.getClassName(),
-                        c.getGrade(),
-                        c.getSchoolYear()
-                ));
+                .map(this::mapToResponse);
     }
 
     @Override
     public ClassesResponse createClass(ClassesRequest req) {
         Facility facility = facilityRepository.findById(req.facilityId())
-                .orElseThrow(() -> new RuntimeException("Facility not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + req.facilityId()));
 
         Classes newClass = new Classes();
         newClass.setFacility(facility);
@@ -58,7 +52,13 @@ public class ClassesServiceImpl implements IClassesService {
     @Override
     public ClassesResponse updateClass(String id, ClassesRequest req) {
         Classes existing = classesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + id));
+
+        if (req.facilityId() != null && !req.facilityId().equals(existing.getFacility().getId())) {
+            Facility newFacility = facilityRepository.findById(req.facilityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + req.facilityId()));
+            existing.setFacility(newFacility);
+        }
 
         existing.setClassName(req.className());
         existing.setGrade(req.grade());
@@ -68,15 +68,20 @@ public class ClassesServiceImpl implements IClassesService {
     }
 
     private ClassesResponse mapToResponse(Classes c) {
-        return new ClassesResponse(c.getId(), c.getFacility().getFacilityName(),
-                c.getClassName(), c.getGrade(), c.getSchoolYear());
+        return new ClassesResponse(
+                c.getId(),
+                c.getFacility() != null ? c.getFacility().getFacilityName() : "N/A",
+                c.getClassName(),
+                c.getGrade(),
+                c.getSchoolYear()
+        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public ClassDetailResponse getClassDetail(String classId, Pageable pageable) {
         Classes cls = classesRepository.findWithPatientsById(classId)
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + classId));
 
         List<Patient> allPatients = cls.getPatients();
 
@@ -89,11 +94,23 @@ public class ClassesServiceImpl implements IClassesService {
                 .map(p -> new PatientResponse(
                         p.getPatientId(),
                         p.getPatientName(),
-                        cls.getClassName(),
+
+                        p.getClasses() != null ? p.getClasses().getId() : null,
+                        p.getClasses() != null ? p.getClasses().getClassName() : null,
+
+                        p.getFacility() != null ? p.getFacility().getId() : null,
+                        p.getFacility() != null ? p.getFacility().getFacilityName() : null,
+
+                        p.getExamCampaign() != null
+                        ? p.getExamCampaign().getCampaignId()
+                        : null,
+
                         p.getDob(),
                         p.getGender().name(),
                         p.getParentPhone(),
-                        (p.getWard() != null) ? p.getWard().getWardName() : "N/A"
+                        p.getWard() != null
+                        ? p.getWard().getWardName()
+                        : null
                 ))
                 .toList();
 
