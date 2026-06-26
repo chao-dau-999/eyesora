@@ -1,14 +1,14 @@
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
-import AppLayout from "./components/layout/AppLayout"; // Bỏ đuôi file
-import AdminDashboard from "./pages/Dashboard.jsx";
-import LoginPage from "./pages/LoginPage.jsx";
-import PatientPage from "./pages/PatientPage.jsx"; // Bỏ đuôi file (hoặc bỏ {} nếu export default)
-import ClassesPage from "./pages/ClassesPage.jsx";
-import FacilitiesPage from "./pages/FacilitiesPage.jsx";
-import CampaignsPage from "./pages/CampaignsPage.jsx";
-import UsersPage from "./pages/UsersPage.jsx";
-import DistrictsPage from "./pages/DistrictsPage.jsx";
-import WardsPage from "./pages/WardsPage.jsx";
+import AppLayout from "./shared/layout/AppLayout"; // Bỏ đuôi file
+import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
+import LoginPage from "./features/auth/page/LoginPage.jsx";
+import PatientPage from "./features/patient/pages/PatientPage.jsx"; // Bỏ đuôi file (hoặc bỏ {} nếu export default)
+import ClassesPage from "./features/class/pages/ClassesPage.jsx";
+import FacilitiesPage from "./features/facility/pages/FacilitiesPage.jsx";
+import CampaignsPage from "./features/campaign/pages/CampaignsPage.jsx";
+import UsersPage from "./features/user/pages/UsersPage.jsx";
+import DistrictsPage from "./features/district/pages/DistrictsPage.jsx";
+import WardsPage from "./features/ward/pages/WardsPage.jsx";
 
 function App() {
     return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 import { SquarePen, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
-import AddressActions from "../components/AddressActions";
+import AddressActions from "../../../shared/components/AddressActions.jsx";
 
 const DistrictsPage = () => {
     const [districts, setDistricts] = useState([]);

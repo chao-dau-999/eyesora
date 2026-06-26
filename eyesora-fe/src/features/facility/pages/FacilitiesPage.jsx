@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 import { Building2, ChevronLeft, ChevronRight, X, SquarePen, Eye } from "lucide-react";
-import FacilityActions from "../components/FacilityActions";
+import FacilityActions from "../../patient/components/FacilityActions.jsx";
 
 const FacilitiesPage = () => {
     const [facilities, setFacilities] = useState([]);

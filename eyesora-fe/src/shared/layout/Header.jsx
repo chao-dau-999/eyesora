@@ -1,7 +1,7 @@
 import  { useState, useRef, useEffect } from 'react';
 import { Search, Bell, User, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from "../../../store/authStore.js";
+import { useAuthStore } from "../../features/auth/store/authStore.js";
 
 const Header = ({ onMenuClick }) => {
     const navigate = useNavigate();

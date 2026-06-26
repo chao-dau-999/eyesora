@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 import { Trash, SquarePen, X, Users, ChevronLeft, ChevronRight } from "lucide-react";
-import ClassActions from "../components/ClassActions";
+import ClassActions from "../components/ClassActions.jsx";
 
 const ClassesPage = () => {
     const [classes, setClasses] = useState([]);
