@@ -5,17 +5,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.PatientRequest;
 import vn.edu.fpt.eyesora.dto.response.PatientResponse;
-import vn.edu.fpt.eyesora.entity.Classes;
-import vn.edu.fpt.eyesora.entity.ExamCampaign;
-import vn.edu.fpt.eyesora.entity.Facility;
-import vn.edu.fpt.eyesora.entity.Patient;
+import vn.edu.fpt.eyesora.entity.*;
 import vn.edu.fpt.eyesora.exceptions.BusinessException;
-import vn.edu.fpt.eyesora.repository.CampaignRepository;
-import vn.edu.fpt.eyesora.repository.ClassesRepository;
-import vn.edu.fpt.eyesora.repository.FacilityRepository;
-import vn.edu.fpt.eyesora.repository.PatientRepository;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
+import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IPatientService;
 
 import jakarta.persistence.criteria.Predicate;
@@ -31,6 +27,7 @@ public class PatientServiceImpl implements IPatientService {
     private final CampaignRepository campaignRepository;
     private final FacilityRepository facilityRepository;
     private final ClassesRepository classesRepository;
+    private final WardRepository wardRepository;
 
     @Override
     public Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, Pageable pageable) {
@@ -110,5 +107,46 @@ public class PatientServiceImpl implements IPatientService {
     @Override
     public Integer countPatientsByCampaign(String campaignId) {
         return patientRepository.countByExamCampaign_CampaignIdAndIsDeletedFalse(campaignId);
+    }
+
+    @Override
+    @Transactional
+    public PatientResponse updatePatient(String id, PatientRequest req) {
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
+
+        System.out.println("Updating patient with ID: " + id);
+        ExamCampaign campaign = campaignRepository.findById(req.campaignId())
+                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + req.campaignId()));
+
+        System.out.println("Updating campaign with ID: " + req.campaignId());
+
+        if (campaign.getStatus() == ExamCampaign.CampaignStatus.LOCKED) {
+            throw new BusinessException("Cannot update patient! This campaign is already locked.");
+        }
+
+        Facility facility = facilityRepository.findById(req.facilityId())
+                .orElseThrow(() -> new ResourceNotFoundException("School not found with ID: " + req.facilityId()));
+
+        Classes patientClass = classesRepository.findById(req.classId())
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + req.classId()));
+
+        Ward patientWard = wardRepository.findById(req.wardId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+
+        patient.setPatientName(req.patientName());
+        patient.setDob(req.dob());
+        patient.setGender(Patient.Gender.valueOf(req.gender().toUpperCase()));
+        patient.setParentPhone(req.parentPhone());
+
+        patient.setExamCampaign(campaign);
+        patient.setFacility(facility);
+        patient.setClasses(patientClass);
+        patient.setWard(patientWard);
+
+        System.out.println("Patient updated with new details: " + patient);
+
+        Patient updatedPatient = patientRepository.save(patient);
+        return convertToDto(updatedPatient);
     }
 }

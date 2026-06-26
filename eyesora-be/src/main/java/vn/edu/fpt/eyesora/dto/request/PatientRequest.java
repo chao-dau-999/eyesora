@@ -26,5 +26,8 @@ public record PatientRequest(
         String campaignId,
 
         @NotBlank(message = "Facility ID is required")
-        String facilityId
+        String facilityId,
+
+        @NotBlank(message = "Ward ID is required")
+        String wardId
 ) {}

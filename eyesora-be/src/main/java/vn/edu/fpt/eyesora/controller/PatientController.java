@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.PatientRequest;
+import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.service.IPatientService;
 
 import java.util.Collections;
@@ -46,5 +47,14 @@ public class PatientController {
     public ResponseEntity<String> createPatient(@Valid @RequestBody PatientRequest req) {
         patientService.createPatient(req);
         return ResponseEntity.ok("Patient created successfully!");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PatientResponse> updatePatient(
+            @PathVariable String id,
+            @Valid @RequestBody PatientRequest req) {
+
+        PatientResponse updatedPatient = patientService.updatePatient(id, req);
+        return ResponseEntity.ok(updatedPatient);
     }
 }
