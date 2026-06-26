@@ -72,12 +72,13 @@ public class ClassesServiceImpl implements IClassesService {
                 c.getClassName(), c.getGrade(), c.getSchoolYear());
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public ClassDetailResponse getClassDetail(String classId, Pageable pageable) {
         Classes cls = classesRepository.findWithPatientsById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found"));
 
         List<Patient> allPatients = cls.getPatients();
-
 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), allPatients.size());
@@ -88,6 +89,7 @@ public class ClassesServiceImpl implements IClassesService {
                 .map(p -> new PatientResponse(
                         p.getPatientId(),
                         p.getPatientName(),
+                        cls.getClassName(),
                         p.getDob(),
                         p.getGender().name(),
                         p.getParentPhone(),
