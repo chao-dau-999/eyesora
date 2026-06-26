@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,9 @@ import vn.edu.fpt.eyesora.service.IRefreshTokenService;
 import vn.edu.fpt.eyesora.service.IUserService;
 import vn.edu.fpt.eyesora.dto.request.ForgotPasswordRequest;
 import vn.edu.fpt.eyesora.util.JwtUtil;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -42,13 +46,15 @@ public class AuthController {
         User user = (User) authentication.getPrincipal();
         String id = user.getId();
 //        String img = user.getImg();
-        String source = "";
-        String role = user.getAuthorities().iterator().next().getAuthority();
+        String source = "user";
+        Set<String> roles = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
 
         String accessToken = jwtUtil.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername(), source);
 
-        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken(), id, user.getUsername(), null, role));
+        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken(), id, user.getUsername(), null, roles));
     }
 
     @PostMapping("/register")

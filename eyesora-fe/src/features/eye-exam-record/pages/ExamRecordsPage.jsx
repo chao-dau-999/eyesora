@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import SearchExamRecords from "../components/SearchExamRecords";
+import SearchExamRecords from "../../../shared/components/SearchExamRecords.jsx";
 import ExamRecordAction from "../components/ExamRecordAction.jsx";
 import { View, Trash, SquarePen, ChevronLeft, ChevronRight, X } from "lucide-react";
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const ExamRecordsPage = () => {
     const [records, setRecords] = useState([]);

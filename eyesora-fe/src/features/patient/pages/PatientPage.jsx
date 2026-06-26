@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import SearchBar from "../components/SearchBar";
+import SearchBar from "../../../shared/components/SearchBar.jsx";
 import PatientAction from "../components/PatientAction.jsx";
 import {View, Trash, SquarePen, MoveLeft, MoveRight} from "lucide-react";
 

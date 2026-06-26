@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 import { Lock, Unlock, Trash2, ChevronLeft, ChevronRight, X, Eye } from "lucide-react";
-import CampaignActions from "../components/CampaignActions";
+import CampaignActions from "../components/CampaignActions.jsx";
 
 const CampaignsPage = () => {
     const [campaigns, setCampaigns] = useState([]);

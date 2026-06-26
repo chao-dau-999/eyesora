@@ -15,7 +15,6 @@ npm run lint
 
 - Tailwind CSS v4 wired into Vite
 - A polished Eyesora landing page scaffold
-- Reusable UI blocks in `src/components`
-- Shared page content in `src/data/site.js`
+- Reusable UI blocks in `src/shared/components`
 
 Use this as the base for dashboards, patient flows, authentication, or any other Eyesora screens.

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { User, Lock, Eye, EyeOff, ShieldCheck, BarChart3, FileText, ScanEye, ArrowRight, Loader2 } from 'lucide-react';
-import { authService } from '../services/authService'; // Import service vừa tạo
+import { authService } from '../api/authService.js'; // Import service vừa tạo
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axiosClient from "../axios/axiosClient";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 import { UserCog, ChevronLeft, ChevronRight, Lock, Unlock, Eye, X } from "lucide-react";
 
 const UsersPage = () => {
