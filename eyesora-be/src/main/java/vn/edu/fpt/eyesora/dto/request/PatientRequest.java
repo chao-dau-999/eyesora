@@ -9,6 +9,9 @@ public record PatientRequest(
         @Size(max = 255)
         String patientName,
 
+        @NotBlank(message = "Class ID is required")
+        String classId,
+
         @NotNull(message = "Date of birth is required")
         @Past(message = "Date of birth must be in the past")
         LocalDate dob,
