@@ -14,7 +14,12 @@ public record CampaignRequest (
         @NotNull(message = "Start date is required")
         LocalDate startDate,
 
+        @NotBlank(message = "Manager is required")
         String managerName,
+
+        @NotBlank(message = "Organization is required")
         String orgId,
+
+        @NotBlank(message = "Target School is required")
         String targetId
 ){}

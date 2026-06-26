@@ -81,17 +81,8 @@ public class CampaignServiceImpl implements ICampaignService {
         campaignRepository.save(campaign);
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Page<CampaignResponse> getDeletedCampaigns(Pageable pageable) {
-//        return campaignRepository.findByStatus(ExamCampaign.CampaignStatus.DELETED, pageable)
-//                .map(this::mapToResponse);
-//    }
-
     private CampaignResponse mapToResponse(ExamCampaign c) {
-
         Long count = campaignRepository.countPatientsByCampaignId(c.getCampaignId());
-
         return CampaignResponse.builder()
                 .campaignId(c.getCampaignId())
                 .campaignTitle(c.getCampaignTitle())

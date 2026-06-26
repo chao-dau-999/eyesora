@@ -14,10 +14,10 @@ import java.util.Optional;
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, String>, JpaSpecificationExecutor<Patient> {
 
-    @EntityGraph(attributePaths = {"ward", "classes"})
+    @EntityGraph(attributePaths = {"classes"})
     Page<Patient> findAll(Specification<Patient> spec, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"ward", "classes"})
+    @EntityGraph(attributePaths = {"classes"})
     Optional<Patient> findByPatientId(String patientId);
 
     Integer countByExamCampaign_CampaignIdAndIsDeletedFalse(String campaignId);

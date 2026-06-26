@@ -2,6 +2,7 @@ package vn.edu.fpt.eyesora.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,7 +12,6 @@ import vn.edu.fpt.eyesora.dto.request.PatientRequest;
 import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.service.IPatientService;
 
-import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -22,7 +22,7 @@ public class PatientController {
     private final IPatientService patientService;
 
     @GetMapping
-    public ResponseEntity<?> getPatients(
+    public ResponseEntity<Page<PatientResponse>> getPatients(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name,
@@ -34,12 +34,12 @@ public class PatientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPatientDetail(@PathVariable String id) {
+    public ResponseEntity<PatientResponse> getPatientDetail(@PathVariable String id) {
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
     @GetMapping("/count/{campaignId}")
-    public ResponseEntity<?> countPatients(@PathVariable String campaignId) {
+    public ResponseEntity<Map<String, Integer>> countPatients(@PathVariable String campaignId) {
         return ResponseEntity.ok(Map.of("count", patientService.countPatientsByCampaign(campaignId)));
     }
 
