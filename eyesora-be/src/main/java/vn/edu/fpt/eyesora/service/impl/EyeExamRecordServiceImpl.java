@@ -10,6 +10,7 @@ import vn.edu.fpt.eyesora.dto.request.EyeExamRecordRequest;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 import vn.edu.fpt.eyesora.entity.Classes;
 import vn.edu.fpt.eyesora.entity.EyeExamRecord;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IEyeExamRecordService;
 
@@ -43,7 +44,7 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
             }
 
             if (classId != null && !classId.isBlank()) {
-                predicates.add(criteriaBuilder.equal(root.get("classField").get("id"), classId));
+                predicates.add(criteriaBuilder.equal(root.get("classesField").get("id"), classId));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -126,6 +127,15 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         EyeExamRecord savedEntity = eyeExamRecordRepository.save(entity);
 
         return mapToResponse(savedEntity);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public EyeExamRecordResponse getExamRecordDetail(String examId) {
+        EyeExamRecord eyeExamRecord = eyeExamRecordRepository.findById(examId)
+                .orElseThrow(() -> new ResourceNotFoundException("Exam record not found"));
+
+        return mapToResponse(eyeExamRecord);
     }
 
     private EyeExamRecordResponse mapToResponse(EyeExamRecord entity) {

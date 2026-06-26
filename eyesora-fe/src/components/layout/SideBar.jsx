@@ -1,14 +1,13 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, University, GraduationCap, UsersRound, Eye, X, CalendarDays, ShieldAlert ,MapPin, Building } from "lucide-react";
+import { LayoutDashboard, University, GraduationCap, UsersRound, Eye, X, CalendarDays, ShieldAlert, ClipboardList } from "lucide-react";
 
 const MENU_ITEMS = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/' },
     { icon: <University className="w-5 h-5" />, label: 'Facilities', path: '/facilities' },
     { icon: <GraduationCap className="w-5 h-5" />, label: 'Classes', path: '/classes' },
+    { icon: <ClipboardList className="w-5 h-5" />, label: 'Exam Records', path: '/eye-exam-records' },
     { icon: <UsersRound className="w-5 h-5" />, label: 'Patients', path: '/patients' },
     { icon: <CalendarDays className="w-5 h-5" />, label: 'Campaigns', path: '/campaigns' },
-    { icon: <MapPin className="w-5 h-5" />, label: 'Districts', path: '/districts' },
-    { icon: <Building className="w-5 h-5" />, label: 'Wards', path: '/wards' },
     { icon: <ShieldAlert className="w-5 h-5" />, label: 'Admin Users', path: '/admin/users' },
 ];
 const SideBar = ({ isOpen, setIsOpen }) => {
@@ -48,7 +47,6 @@ const SideBar = ({ isOpen, setIsOpen }) => {
                                 </span>
                             </div>
                         </div>
-
                         {/* Nút đóng Sidebar chỉ xuất hiện trên Mobile */}
                         <button
                             onClick={() => setIsOpen(false)}

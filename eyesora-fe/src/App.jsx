@@ -7,8 +7,7 @@ import ClassesPage from "./pages/ClassesPage.jsx";
 import FacilitiesPage from "./pages/FacilitiesPage.jsx";
 import CampaignsPage from "./pages/CampaignsPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
-import DistrictsPage from "./pages/DistrictsPage.jsx";
-import WardsPage from "./pages/WardsPage.jsx";
+import ExamRecordsPage from "./pages/ExamRecordsPage.jsx";
 
 function App() {
     return (
@@ -19,11 +18,10 @@ function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="/classes" element={<ClassesPage />} />
                     <Route path="/patients" element={<PatientPage />} />
+                    <Route path="/eye-exam-records" element={<ExamRecordsPage />} />
                     <Route path="/facilities" element={<FacilitiesPage />} />
                     <Route path="/campaigns" element={<CampaignsPage />} />
                     <Route path="/admin/users" element={<UsersPage />} />
-                    <Route path="/districts" element={<DistrictsPage />} />
-                    <Route path="/wards" element={<WardsPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

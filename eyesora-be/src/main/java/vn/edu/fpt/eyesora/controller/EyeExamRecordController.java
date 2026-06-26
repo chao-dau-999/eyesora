@@ -27,6 +27,12 @@ public class EyeExamRecordController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/{examId}")
+    public ResponseEntity<EyeExamRecordResponse> getExamRecordDetail(@PathVariable String examId) {
+        EyeExamRecordResponse result = eyeExamRecordService.getExamRecordDetail(examId);
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping
     public ResponseEntity<EyeExamRecordResponse> createExamRecord(
             @Valid @RequestBody EyeExamRecordRequest request) {
