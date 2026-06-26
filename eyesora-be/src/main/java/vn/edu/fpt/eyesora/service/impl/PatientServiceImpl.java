@@ -15,6 +15,7 @@ import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IPatientService;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,10 @@ public class PatientServiceImpl implements IPatientService {
     public Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, Pageable pageable) {
         Specification<Patient> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
-            if (wardId != null && !wardId.isEmpty()) predicates.add(cb.equal(root.get("ward").get("id"), wardId));
+            if (wardId != null && !wardId.isEmpty()) {
+                predicates.add(cb.equal(root.get("facility").get("ward").get("id"), wardId));
+            }
+
             predicates.add(cb.equal(root.get("isDeleted"), false));
             if (name != null && !name.isEmpty()) predicates.add(cb.like(root.get("patientName"), "%" + name + "%"));
             if (birthYear != null) {
@@ -77,10 +81,6 @@ public class PatientServiceImpl implements IPatientService {
         patient.setFacility(facility);
         patient.setClasses(patientClass);
 
-        if (facility.getWard() != null) {
-            patient.setWard(facility.getWard());
-        }
-
         patient.setIsDeleted(false);
 
         patientRepository.save(patient);
@@ -110,7 +110,6 @@ public class PatientServiceImpl implements IPatientService {
             Facility facility = facilityRepository.findById(req.facilityId())
                     .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
             existing.setFacility(facility);
-            existing.setWard(facility.getWard());
         }
 
         if (existing.getClasses() == null || !existing.getClasses().getId().equals(req.classId())) {
@@ -122,26 +121,22 @@ public class PatientServiceImpl implements IPatientService {
     }
 
     private PatientResponse convertToDto(Patient p) {
+        String wardName = (p.getFacility() != null && p.getFacility().getWard() != null)
+                ? p.getFacility().getWard().getWardName()
+                : "N/A";
+
         return new PatientResponse(
                 p.getPatientId(),
                 p.getPatientName(),
-
                 p.getClasses() != null ? p.getClasses().getId() : null,
                 p.getClasses() != null ? p.getClasses().getClassName() : null,
-
                 p.getFacility() != null ? p.getFacility().getId() : null,
                 p.getFacility() != null ? p.getFacility().getFacilityName() : null,
-
-                p.getExamCampaign() != null
-                        ? p.getExamCampaign().getCampaignId()
-                        : null,
-
+                p.getExamCampaign() != null ? p.getExamCampaign().getCampaignId() : null,
                 p.getDob(),
-                p.getGender().name(),
+                p.getGender() != null ? p.getGender().name() : null,
                 p.getParentPhone(),
-                p.getWard() != null
-                        ? p.getWard().getWardName()
-                        : null
+                wardName
         );
     }
 

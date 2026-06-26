@@ -20,11 +20,6 @@ public class Patient {
     @Column(name = "patient_id", nullable = false, length = 36)
     private String patientId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ward_id", nullable = false)
-    @JsonIgnore
-    private Ward ward;
-
     @Column(name = "patient_name", nullable = false, length = 150)
     private String patientName;
 

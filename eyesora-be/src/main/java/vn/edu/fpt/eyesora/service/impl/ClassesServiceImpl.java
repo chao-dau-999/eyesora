@@ -108,9 +108,9 @@ public class ClassesServiceImpl implements IClassesService {
                         p.getDob(),
                         p.getGender().name(),
                         p.getParentPhone(),
-                        p.getWard() != null
-                        ? p.getWard().getWardName()
-                        : null
+                        (p.getFacility() != null && p.getFacility().getWard() != null)
+                        ? p.getFacility().getWard().getWardName()
+                        : "N/A"
                 ))
                 .toList();
 
