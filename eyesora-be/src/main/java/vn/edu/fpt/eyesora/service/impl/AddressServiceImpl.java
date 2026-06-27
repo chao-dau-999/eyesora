@@ -11,6 +11,7 @@ import vn.edu.fpt.eyesora.dto.response.DistrictResponse;
 import vn.edu.fpt.eyesora.dto.response.WardResponse;
 import vn.edu.fpt.eyesora.entity.District;
 import vn.edu.fpt.eyesora.entity.Ward;
+import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.DistrictRepository;
 import vn.edu.fpt.eyesora.repository.WardRepository;
 import vn.edu.fpt.eyesora.service.IAddressService;
@@ -40,6 +41,14 @@ public class AddressServiceImpl implements IAddressService {
         return new DistrictResponse(d.getId(), d.getDistrictName());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public DistrictResponse getDistrictById(String id) {
+        return districtRepository.findById(id)
+                .map(district -> new DistrictResponse(district.getId(), district.getDistrictName()))
+                .orElseThrow(() -> new ResourceNotFoundException("District not found with ID: " + id));
+    }
+
 
     @Override
     public Page<DistrictResponse> getAllDistricts(Pageable pageable) {
@@ -48,20 +57,31 @@ public class AddressServiceImpl implements IAddressService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<WardResponse> getAllWards(String districtId, Pageable pageable) {
-        Page<Ward> wardPage;
-
-        if (districtId != null) {
-            wardPage = wardRepository.findByDistrictId(districtId, pageable);
-        } else {
-            wardPage = wardRepository.findAll(pageable);
-        }
+        Page<Ward> wardPage = (districtId != null) ?
+                wardRepository.findByDistrictId(districtId, pageable) :
+                wardRepository.findAll(pageable);
 
         return wardPage.map(w -> new WardResponse(
                 w.getId(),
                 w.getWardName(),
+                w.getDistrict().getId(),
                 w.getDistrict().getDistrictName()
         ));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WardResponse getWardById(String id) {
+        return wardRepository.findById(id)
+                .map(w -> new WardResponse(
+                        w.getId(),
+                        w.getWardName(),
+                        w.getDistrict().getId(),
+                        w.getDistrict().getDistrictName()
+                ))
+                .orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
     }
 
     @Override
@@ -71,7 +91,7 @@ public class AddressServiceImpl implements IAddressService {
         w.setWardName(req.wardName());
         w.setDistrict(d);
         w = wardRepository.save(w);
-        return new WardResponse(w.getId(), w.getWardName(), d.getDistrictName());
+        return new WardResponse(w.getId(), w.getWardName(), d.getId(), d.getDistrictName());
     }
 
     @Override
@@ -83,6 +103,6 @@ public class AddressServiceImpl implements IAddressService {
             w.setDistrict(d);
         }
         w = wardRepository.save(w);
-        return new WardResponse(w.getId(), w.getWardName(), w.getDistrict().getDistrictName());
+        return new WardResponse(w.getId(), w.getWardName(), w.getDistrict().getId(), w.getDistrict().getDistrictName());
     }
 }

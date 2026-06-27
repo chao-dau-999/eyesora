@@ -8,11 +8,15 @@ import vn.edu.fpt.eyesora.dto.response.DistrictResponse;
 import vn.edu.fpt.eyesora.dto.response.WardResponse;
 
 public interface IAddressService {
+    Page<DistrictResponse> getAllDistricts(Pageable pageable);
+    DistrictResponse getDistrictById(String id);
     DistrictResponse createDistrict(DistrictRequest req);
     DistrictResponse updateDistrict(String id, DistrictRequest req);
-    Page<DistrictResponse> getAllDistricts(Pageable pageable);
+
     Page<WardResponse> getAllWards(String districtId, Pageable pageable);
+    WardResponse getWardById(String id);
     WardResponse createWard(WardRequest req);
     WardResponse updateWard(String id, WardRequest req);
+
 
 }

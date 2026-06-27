@@ -35,6 +35,16 @@ public class ClassesServiceImpl implements IClassesService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ClassesResponse getClassById(String id) {
+        return classesRepository.findById(id)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + id));
+    }
+
+
+
+    @Override
     public ClassesResponse createClass(ClassesRequest req) {
         Facility facility = facilityRepository.findById(req.facilityId())
                 .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + req.facilityId()));
@@ -83,45 +93,35 @@ public class ClassesServiceImpl implements IClassesService {
         Classes cls = classesRepository.findWithPatientsById(classId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + classId));
 
-        List<Patient> allPatients = cls.getPatients();
+        List<Patient> allPatients = cls.getPatients() != null ? cls.getPatients() : List.of();
 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), allPatients.size());
 
-        List<PatientResponse> content = (start > allPatients.size())
+        List<PatientResponse> content = (start >= allPatients.size())
                 ? List.of()
                 : allPatients.subList(start, end).stream()
                 .map(p -> new PatientResponse(
                         p.getPatientId(),
                         p.getPatientName(),
-
                         p.getClasses() != null ? p.getClasses().getId() : null,
                         p.getClasses() != null ? p.getClasses().getClassName() : null,
-
                         p.getFacility() != null ? p.getFacility().getId() : null,
                         p.getFacility() != null ? p.getFacility().getFacilityName() : null,
-
-                        p.getExamCampaign() != null
-                        ? p.getExamCampaign().getCampaignId()
-                        : null,
-
+                        p.getExamCampaign() != null ? p.getExamCampaign().getCampaignId() : null,
                         p.getDob(),
-                        p.getGender().name(),
+                        p.getGender() != null ? p.getGender().name() : "N/A",
                         p.getParentPhone(),
-                        (p.getFacility() != null && p.getFacility().getWard() != null)
-                        ? p.getFacility().getWard().getWardName()
-                        : "N/A"
+                        (p.getWard() != null) ? p.getWard().getWardName() : "Chưa cập nhật"
                 ))
                 .toList();
-
-        Page<PatientResponse> patientPage = new PageImpl<>(content, pageable, allPatients.size());
 
         return new ClassDetailResponse(
                 cls.getId(),
                 cls.getClassName(),
                 cls.getGrade(),
                 cls.getPatientCount(),
-                patientPage
+                new PageImpl<>(content, pageable, allPatients.size())
         );
     }
 }
