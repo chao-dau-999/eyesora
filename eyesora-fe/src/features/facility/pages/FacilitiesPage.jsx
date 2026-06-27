@@ -96,15 +96,19 @@ const FacilitiesPage = () => {
     };
 
     return (
-        <div className="p-8 h-full overflow-y-auto bg-gray-50 text-gray-950">
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-8 flex items-center justify-between">
+        <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
+            {/* Khối Header đồng nhất cấu trúc hoàn toàn với trang Patient */}
+            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-black flex items-center gap-3">
-                        <Building2 className="text-blue-900" size={32} /> Facilities Management
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <Building2 className="text-blue-900" size={22} /> Quản lý cơ sở (Facilities)
                     </h2>
-                    <p className="text-gray-500 font-semibold mt-1">Total: {pageData.totalElements} records</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Tổng số: {pageData.totalElements} cơ sở</p>
                 </div>
-                <FacilityActions onAdd={() => { setEditingId(null); setErrors({}); setIsCreateOpen(true); }} />
+
+                <div className="flex items-center gap-3">
+                    <FacilityActions onAdd={() => { setEditingId(null); setErrors({}); setIsCreateOpen(true); }} />
+                </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">

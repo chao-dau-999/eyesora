@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
 import SearchBar from "../../../shared/components/SearchBar.jsx";
 import PatientAction from "../components/PatientAction.jsx";
 import PatientTable from "../components/PatientTable.jsx";
 import PatientDetailModal from "../components/PatientDetailModal.jsx";
-import PatientFormModal from "../components/PatientFormModal.jsx";
 
 const PatientPage = () => {
+    const navigate = useNavigate(); // 2. Khởi tạo hook điều hướng
+
     const [patients, setPatients] = useState([]);
     const [pageInfo, setPageInfo] = useState({ pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 1 });
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
 
@@ -38,43 +39,36 @@ const PatientPage = () => {
         fetchPatients(pageInfo.pageNumber);
     }, [pageInfo.pageNumber]);
 
-    const handleSave = async (payload) => {
-        const method = selectedPatient ? 'PUT' : 'POST';
-        const url = selectedPatient
-            ? `http://localhost:8080/api/patients/${selectedPatient.patientId}`
-            : 'http://localhost:8080/api/patients';
-
-        const response = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            // Cố gắng đọc message từ Backend (ví dụ: "Campaign is locked")
-            const errorText = await response.text();
-            throw new Error(errorText || "Lỗi không xác định");
-        }
-
-        setIsFormModalOpen(false);
-        fetchPatients(pageInfo.pageNumber);
-    };
-
     const formatDate = (dateStr) => {
         if (!dateStr) return '---';
         return dateStr;
     };
 
     return (
-        <div className="p-6 h-full overflow-y-auto">
-            <div className="bg-white border p-4 rounded-xl mb-6 flex justify-between items-center">
+        <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
+
+            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        Hồ sơ Học sinh / Bệnh nhân
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">Tổng số: {pageInfo.totalElements} học sinh</p>
+                </div>
+
+                {/* Nút thao tác dồn về bên phải */}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => navigate('/patients/create')}
+                        className="bg-blue-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-800 active:scale-95 transition-all cursor-pointer flex-shrink-0"
+                    >
+                        + Thêm bệnh nhân
+                    </button>
+                </div>
+            </div>
+
+            {/* Thanh tìm kiếm & Bộ lọc riêng biệt (Sử dụng Reusable SearchBar của bạn) */}
+            <div className="mb-6">
                 <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-                <button
-                    onClick={() => { setSelectedPatient(null); setIsFormModalOpen(true); }}
-                    className="bg-blue-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-800 transition-all"
-                >
-                    + Thêm bệnh nhân
-                </button>
             </div>
 
             <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
@@ -83,25 +77,16 @@ const PatientPage = () => {
                     loading={loading}
                     pageInfo={pageInfo}
                     formatDate={formatDate}
+
                     onEdit={(p) => {
-                        console.log("Editing patient:", p);
-                        setSelectedPatient(p);
-                        setIsFormModalOpen(true);
+                        console.log("Navigating to edit form page for patient:", p);
+                        navigate(`/patients/edit/${p.patientId}`);
                     }}
                     onDetail={(p) => { setSelectedPatient(p); setIsDetailModalOpen(true); }}
                 />
             </div>
 
-            {/* Modal Form Create/Edit */}
-            {isFormModalOpen && (
-                <PatientFormModal
-                    patient={selectedPatient}
-                    onClose={() => setIsFormModalOpen(false)}
-                    onSave={handleSave}
-                />
-            )}
-
-            {/* Modal Detail */}
+            {/* Modal Detail giữ lại làm hộp thoại xem nhanh thông tin */}
             {isDetailModalOpen && (
                 <PatientDetailModal
                     patient={selectedPatient}

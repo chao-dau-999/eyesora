@@ -72,6 +72,9 @@ public class PatientServiceImpl implements IPatientService {
         Classes patientClass = classesRepository.findById(req.classId())
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found: " + req.classId()));
 
+        Ward patientWard = wardRepository.findById(req.wardId())
+                .orElseThrow(() -> new ResourceNotFoundException("Ward not found" + req.wardId()));
+
         Patient patient = new Patient();
         patient.setPatientName(req.patientName());
         patient.setDob(req.dob());
@@ -80,6 +83,7 @@ public class PatientServiceImpl implements IPatientService {
 
         patient.setExamCampaign(campaign);
         patient.setFacility(facility);
+        patient.setWard(patientWard);
         patient.setClasses(patientClass);
 
         patient.setIsDeleted(false);

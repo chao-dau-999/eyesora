@@ -68,11 +68,14 @@ const CampaignsPage = () => {
     };
 
     return (
-        <div className="p-8 h-full overflow-y-auto bg-gray-50 text-gray-950">
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-8 flex items-center justify-between">
+        <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
+            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-950">Examination Campaigns</h2>
-                    <p className="text-sm text-gray-600 font-semibold mt-1">Total: {pageData.totalElements} campaigns</p>
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        Examination Campaigns
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                        Total: {pageData.totalElements} campaigns</p>
                 </div>
                 <CampaignActions onAdd={() => {
                     setErrors({});

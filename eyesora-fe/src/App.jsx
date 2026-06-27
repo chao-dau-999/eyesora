@@ -9,6 +9,7 @@ import CampaignsPage from "./features/campaign/pages/CampaignsPage.jsx";
 import UsersPage from "./features/user/pages/UsersPage.jsx";
 import DistrictsPage from "./features/district/pages/DistrictsPage.jsx";
 import WardsPage from "./features/ward/pages/WardsPage.jsx";
+import PatientFormPage from "./features/patient/pages/PatientFormPage.jsx";
 
 function App() {
     return (
@@ -19,6 +20,8 @@ function App() {
                     <Route index element={<AdminDashboard />} />
                     <Route path="/classes" element={<ClassesPage />} />
                     <Route path="/patients" element={<PatientPage />} />
+                    <Route path="/patients/create" element={<PatientFormPage />} />
+                    <Route path="/patients/edit/:id" element={<PatientFormPage />} />
                     <Route path="/facilities" element={<FacilitiesPage />} />
                     <Route path="/campaigns" element={<CampaignsPage />} />
                     <Route path="/admin/users" element={<UsersPage />} />

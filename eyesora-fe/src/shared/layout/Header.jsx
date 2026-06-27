@@ -1,5 +1,5 @@
 import  { useState, useRef, useEffect } from 'react';
-import { Search, Bell, User, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
+import { Bell, User, LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from "../../features/auth/store/authStore.js";
 
@@ -21,14 +21,6 @@ const Header = ({ onMenuClick }) => {
         navigate('/login');
     };
 
-    // Xử lý tìm kiếm khi nhấn Enter
-    // const handleSearch = (e) => {
-    //     if (e.key === 'Enter' && searchQuery.trim() !== '') {
-    //         navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    //     }
-    // };
-
-    // Ổn định và đóng dropdown khi click chuột ra vùng ngoài menu
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -40,7 +32,7 @@ const Header = ({ onMenuClick }) => {
     }, []);
 
     return (
-        <header className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between z-30 gap-4">
+        <header className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center justify-between z-30 gap-4">
 
             {/* Khối Logo / Menu Button */}
             <div className="flex items-center gap-3">
@@ -55,22 +47,6 @@ const Header = ({ onMenuClick }) => {
                 </h1>
             </div>
 
-            {/* Thanh tìm kiếm */}
-            {/*<div className="relative w-full max-w-xs md:max-w-md hidden sm:block">*/}
-            {/*    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">*/}
-            {/*        <Search size={18} />*/}
-            {/*    </span>*/}
-            {/*    <input*/}
-            {/*        type="text"*/}
-            {/*        value={searchQuery}*/}
-            {/*        onChange={(e) => setSearchQuery(e.target.value)}*/}
-            {/*        onKeyDown={handleSearch}*/}
-            {/*        placeholder="Tìm kiếm học sinh, cơ sở..."*/}
-            {/*        className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-400"*/}
-            {/*    />*/}
-            {/*</div>*/}
-
-            {/* Khu vực thao tác của User */}
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
                 <button className="text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer relative">
                     <Bell size={20} />

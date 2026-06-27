@@ -56,19 +56,19 @@ const UsersPage = () => {
     useEffect(() => { fetchUsers(); }, []);
 
     return (
-        <div className="p-8 h-full bg-gray-50 overflow-y-auto">
+        <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
             {notification && (
                 <div className={`fixed top-5 right-5 z-[1000] px-6 py-4 rounded-xl shadow-2xl text-white font-bold ${notification.type === 'success' ? 'bg-green-700' : 'bg-red-700'}`}>
                     {notification.message}
                 </div>
             )}
 
-            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-8 flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-black text-gray-950 flex items-center gap-3">
+                <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                         <UserCog className="text-blue-900" size={28} /> User Management
                     </h2>
-                    <p className="text-sm text-gray-500 font-semibold mt-1">Total: {pageData.totalElements} users</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Total: {pageData.totalElements} users</p>
                 </div>
             </div>
 

@@ -59,11 +59,12 @@ const WardsPage = () => {
     };
 
     return (
-        <div className="p-8 h-full bg-gray-50 overflow-y-auto">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-8 flex justify-between items-center">
+        <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
+            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-950 flex items-center gap-2"><Building/> Wards</h2>
-                    <p className="text-gray-500 text-sm mt-1">Total: {pageData.totalElements} wards</p>
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <Building/> Wards</h2>
+                    <p className="text-xs text-gray-500 mt-0.5">Total: {pageData.totalElements} wards</p>
                 </div>
                 <AddressActions onAdd={() => openModal()} />
             </div>
