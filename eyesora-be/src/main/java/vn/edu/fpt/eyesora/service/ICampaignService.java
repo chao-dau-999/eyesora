@@ -20,4 +20,6 @@ public interface ICampaignService {
     //    Page<CampaignResponse> getDeletedCampaigns(Pageable pageable);
     
     CampaignResponse getCampaignDetail(String id);
+
+    CampaignResponse updateCampaign(String id, CampaignRequest req);
 }

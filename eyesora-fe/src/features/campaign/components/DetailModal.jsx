@@ -21,13 +21,13 @@ const DetailModal = ({ campaign, onClose }) => (
                 </div>
 
                 <div>
-                    <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Người quản lý:</span>
-                    <p className="font-bold text-gray-900">{campaign.managerName}</p>
+                    <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Thời gian:</span>
+                    <p className="font-bold text-gray-900">{campaign.startDate} đến {campaign.endDate}</p>
                 </div>
 
                 <div>
-                    <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Ngày bắt đầu:</span>
-                    <p className="font-bold text-gray-900">{campaign.startDate}</p>
+                    <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Người quản lý:</span>
+                    <p className="font-bold text-gray-900">{campaign.managerName}</p>
                 </div>
 
                 <div>
@@ -46,11 +46,6 @@ const DetailModal = ({ campaign, onClose }) => (
                         <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Trường học mục tiêu:</span>
                         <p className="font-bold text-gray-900">{campaign.targetFacilityName}</p>
                     </div>
-                </div>
-
-                <div className="bg-blue-50 p-4 rounded-xl mt-4">
-                    <p className="text-blue-900 font-bold text-xs uppercase">Tổng số học sinh:</p>
-                    <p className="text-blue-950 font-black text-2xl">{campaign.patientCount || 0}</p>
                 </div>
             </div>
 

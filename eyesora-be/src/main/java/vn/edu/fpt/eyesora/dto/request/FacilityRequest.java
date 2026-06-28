@@ -7,22 +7,25 @@ import jakarta.validation.constraints.Size;
 import vn.edu.fpt.eyesora.entity.Facility;
 
 public record FacilityRequest(
-        @NotBlank(message = "Facility name is required")
-        @Size(max = 255, message = "Facility name must not exceed 255 characters")
+        @NotBlank(message = "Tên cơ sở là bắt buộc")
+        @Size(max = 255, message = "Tên cơ sở không được vượt quá 255 ký tự")
         String facilityName,
 
-        @NotNull(message = "Facility type is required")
+        @NotNull(message = "Loại cơ sở là bắt buộc")
         Facility.FacilityType facilityType,
 
-        @Size(max = 500, message = "Address must not exceed 500 characters")
+        @Size(max = 255, message = "Địa chỉ không được vượt quá 255 ký tự")
         String address,
 
-        @Pattern(regexp = "^[0-9]{10,11}$", message = "Phone number must be between 10 and 11 digits")
+        @Pattern(
+                regexp = "^[0-9]{10,11}$",
+                message = "Số điện thoại phải có từ 10 đến 11 chữ số"
+        )
         String phone,
 
-        @NotBlank(message = "District ID is required")
+        @NotBlank(message = "Mã quận/huyện là bắt buộc")
         String districtId,
 
-        @NotBlank(message = "Ward ID is required")
+        @NotBlank(message = "Mã phường/xã là bắt buộc")
         String wardId
 ) {}

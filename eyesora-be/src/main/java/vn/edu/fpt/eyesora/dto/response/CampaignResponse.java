@@ -1,8 +1,6 @@
 package vn.edu.fpt.eyesora.dto.response;
 
-
 import lombok.Builder;
-
 import java.time.LocalDate;
 
 @Builder
@@ -11,6 +9,7 @@ public record CampaignResponse(
         String campaignTitle,
         String facilityYear,
         LocalDate startDate,
+        LocalDate endDate,
         String managerName,
         String status,
         String organizationName,

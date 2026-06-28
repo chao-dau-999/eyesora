@@ -19,10 +19,11 @@ const CampaignsPage = () => {
 
     const fetchCampaigns = async (page = 0) => {
         try {
+
             const res = await axiosClient.get(`/campaigns?page=${page}&size=10`);
             setCampaigns(res.data.content || []);
             setPageData({
-                page: res.data.number ?? 0, // Fix lỗi undefined
+                page: res.data.number ?? 0,
                 totalPages: res.data.totalPages ?? 0,
                 totalElements: res.data.totalElements ?? 0
             });
@@ -57,7 +58,6 @@ const CampaignsPage = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <CampaignTable
                     campaigns={campaigns}
-                    // Truyền thêm prop page để tính STT trong table nếu cần
                     page={pageData.page}
                     onOpenDetail={(c) => { setSelected(c); setModals({ ...modals, detail: true }); }}
                     onToggleStatus={(c) => {
@@ -65,6 +65,7 @@ const CampaignsPage = () => {
                         setModals({ ...modals, confirm: true });
                     }}
                     onDelete={(id) => { setPending({type:'delete', id}); setModals({ ...modals, confirm: true }); }}
+                    onEdit={(id) => navigate(`/campaigns/edit/${id}`)}
                 />
 
                 <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
@@ -76,7 +77,6 @@ const CampaignsPage = () => {
                     />
                 </div>
             </div>
-
             {modals.detail && <DetailModal campaign={selected} onClose={() => setModals({ ...modals, detail: false })} />}
             {modals.confirm && (
                 <ConfirmModal

@@ -11,37 +11,39 @@ import lombok.Setter;
 @Setter
 public class EyeExamRecordRequest {
 
-    @NotBlank(message = "The campaign ID cannot be left blank.")
+    @NotBlank(message = "Mã chiến dịch không được để trống")
     private String campaignId;
 
-    @NotBlank(message = "Patient ID cannot be left blank.")
+    @NotBlank(message = "Mã bệnh nhân không được để trống")
     private String patientId;
 
-    @NotBlank(message = "Class ID cannot be left blank.")
+    @NotBlank(message = "Mã lớp không được để trống")
     private String classId;
 
-    @NotBlank(message = "The examination ID cannot be left blank.")
+    @NotBlank(message = "Mã người khám không được để trống")
     private String examinerId;
 
-    @NotNull(message = "The uncorrected left eye vision field must not be left blank.")
-    @Min(value = 0, message = "Visual acuity must not be less than 0.")
+    @NotNull(message = "Thị lực mắt trái chưa đeo kính không được để trống")
+    @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
     private Float vaLeftWithoutGlasses;
 
     private Float vaLeftWithGlasses;
     private Float sphLeft;
     private Float cylLeft;
 
-    @Min(value = 0) @Max(value = 180)
+    @Min(value = 0, message = "Trục mắt trái phải lớn hơn hoặc bằng 0")
+    @Max(value = 180, message = "Trục mắt trái phải nhỏ hơn hoặc bằng 180")
     private Integer axisLeft;
 
-    @NotNull(message = "The uncorrected right eye vision field must not be left blank.")
-    @Min(value = 0, message = "Visual acuity must not be less than 0.")
+    @NotNull(message = "Thị lực mắt phải chưa đeo kính không được để trống")
+    @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
     private Float vaRightWithoutGlasses;
 
     private Float vaRightWithGlasses;
     private Float sphRight;
     private Float cylRight;
 
-    @Min(value = 0) @Max(value = 180)
+    @Min(value = 0, message = "Trục mắt phải phải lớn hơn hoặc bằng 0")
+    @Max(value = 180, message = "Trục mắt phải phải nhỏ hơn hoặc bằng 180")
     private Integer axisRight;
 }

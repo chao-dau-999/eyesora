@@ -34,6 +34,7 @@ function App() {
                     <Route path="/facilities/edit/:id" element={<FacilityFormPage />} />
                     <Route path="/campaigns" element={<CampaignsPage />} />
                     <Route path="/campaigns/create" element={<CampaignFormPage />} />
+                    <Route path="/campaigns/edit/:id" element={<CampaignFormPage />} />
                     <Route path="/admin/users" element={<UsersPage />} />
                     <Route path="/districts" element={<DistrictsPage />} />
                     <Route path="/districts/create" element={<DistrictFormPage />} />
