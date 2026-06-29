@@ -37,7 +37,7 @@ public class PatientServiceImpl implements IPatientService {
         Specification<Patient> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (wardId != null && !wardId.isEmpty()) {
-                predicates.add(cb.equal(root.get("facility").get("ward").get("id"), wardId));
+                predicates.add(cb.equal(root.get("ward").get("id"), wardId));
             }
 
             predicates.add(cb.equal(root.get("isDeleted"), false));
@@ -139,10 +139,8 @@ public class PatientServiceImpl implements IPatientService {
 
     private PatientResponse convertToDto(Patient p) {
 
-        String wardName =
-                (p.getFacility() != null && p.getFacility().getWard() != null)
-                        ? p.getFacility().getWard().getWardName()
-                        : "Chưa cập nhật";
+        String wardId = p.getWard() != null ? p.getWard().getId() : null;
+        String wardName = p.getWard() != null ? p.getWard().getWardName() : "Chưa cập nhật";
 
         return new PatientResponse(
                 p.getPatientId(),
@@ -152,9 +150,11 @@ public class PatientServiceImpl implements IPatientService {
                 p.getFacility() != null ? p.getFacility().getId() : null,
                 p.getFacility() != null ? p.getFacility().getFacilityName() : null,
                 p.getExamCampaign() != null ? p.getExamCampaign().getCampaignId() : null,
+                p.getExamCampaign() != null ? p.getExamCampaign().getCampaignTitle() : null,
                 p.getDob(),
                 p.getGender() != null ? p.getGender().name() : null,
                 p.getParentPhone(),
+                wardId,
                 wardName
         );
     }

@@ -109,10 +109,12 @@ public class ClassesServiceImpl implements IClassesService {
                         p.getFacility() != null ? p.getFacility().getId() : null,
                         p.getFacility() != null ? p.getFacility().getFacilityName() : null,
                         p.getExamCampaign() != null ? p.getExamCampaign().getCampaignId() : null,
+                        p.getExamCampaign() != null ? p.getExamCampaign().getCampaignTitle() : null,
                         p.getDob(),
                         p.getGender() != null ? p.getGender().name() : "Chưa cập nhật",
                         p.getParentPhone(),
-                        (p.getWard() != null) ? p.getWard().getWardName() : "Chưa cập nhật"
+                        p.getWard() != null ? p.getWard().getId() : null,
+                        p.getWard() != null ? p.getWard().getWardName() : "Chưa cập nhật"
                 ))
                 .toList();
 

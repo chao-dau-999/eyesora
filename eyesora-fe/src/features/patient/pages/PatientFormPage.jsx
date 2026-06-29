@@ -5,7 +5,7 @@ import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const PatientFormPage = () => {
     const navigate = useNavigate();
-    const {id} = useParams(); // Nếu có id trên URL -> Chế độ Chỉnh sửa, ngược lại là Thêm mới
+    const {id} = useParams();
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
@@ -17,7 +17,6 @@ const PatientFormPage = () => {
     const [errors, setErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
-    // 1. Fetch toàn bộ danh mục dữ liệu (Master Data) bao gồm cả Ward (Phường/Xã)
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
@@ -58,7 +57,7 @@ const PatientFormPage = () => {
                             campaignId: String(patient.campaignId || ''),
                             facilityId: String(patient.facilityId || ''),
                             classId: String(patient.classId || ''),
-                            wardId: String(patient.wardId || ''), // Map dữ liệu Phường/Xã cũ nếu có
+                            wardId: String(patient.wardId || ''),
                             patientId: patient.patientId || null
                         });
                     }

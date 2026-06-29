@@ -14,9 +14,11 @@ public record PatientResponse(
         String facilityName,
 
         String campaignId,
+        String campaignTitle,
 
         LocalDate dob,
         String gender,
         String parentPhone,
+        String wardId,
         String wardName
 ) {}

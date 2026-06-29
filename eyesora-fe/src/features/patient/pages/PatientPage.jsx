@@ -8,6 +8,7 @@ import PatientDetailModal from "../components/PatientDetailModal.jsx";
 const PatientPage = () => {
     const navigate = useNavigate(); // 2. Khởi tạo hook điều hướng
 
+
     const [patients, setPatients] = useState([]);
     const [pageInfo, setPageInfo] = useState({ pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 1 });
     const [loading, setLoading] = useState(true);
