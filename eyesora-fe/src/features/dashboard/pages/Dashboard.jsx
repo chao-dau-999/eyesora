@@ -128,8 +128,7 @@ const Dashboard = () => {
         return `${value}°`;
     };
 
-    // Tính toán tọa độ bản đồ SVG động cho biểu đồ đường tuyến tính xu hướng năm
-    const generateSvgPathAndCircles = () => {
+     const generateSvgPathAndCircles = () => {
         if (!timelineStats || timelineStats.length === 0) return { path: "", circles: [] };
 
         const width = 400;

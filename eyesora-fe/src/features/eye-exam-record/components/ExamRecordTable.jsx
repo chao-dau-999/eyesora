@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, SquarePen, Trash, ChevronLeft, ChevronRight } from "lucide-react";
+import { View, SquarePen, Trash } from "lucide-react";
+// Import file Pagination của bạn (Sửa lại đường dẫn nếu cần)
+import Pagination from "../../../shared/components/Pagination.jsx";
 
 const ExamRecordTable = ({
                              records,
@@ -54,20 +56,18 @@ const ExamRecordTable = ({
                 </table>
             </div>
 
-            {/* Phân trang */}
+            {/* Khối Footer Phân trang được làm gọn hoàn toàn bằng component Pagination */}
             <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
-                <div className="text-sm font-semibold text-gray-500">Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}</div>
-                <div className="flex items-center gap-1.5">
-                    <button disabled={pageData.page === 0} onClick={() => fetchData(pageData.page - 1)} className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"><ChevronLeft size={18} className="text-gray-700"/></button>
-                    {[...Array(pageData.totalPages)].map((_, i) => {
-                        if (i === 0 || i === pageData.totalPages - 1 || (i >= pageData.page - 1 && i <= pageData.page + 1)) return (
-                            <button key={i} onClick={() => fetchData(i)} className={`w-9 h-9 rounded-lg font-bold text-xs transition-all cursor-pointer ${pageData.page === i ? 'bg-blue-900 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{i + 1}</button>
-                        );
-                        if (i === pageData.page - 2 || i === pageData.page + 2) return <span key={i} className="px-2 text-gray-400 font-bold tracking-widest">...</span>;
-                        return null;
-                    })}
-                    <button disabled={pageData.page >= pageData.totalPages - 1} onClick={() => fetchData(pageData.page + 1)} className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"><ChevronRight size={18} className="text-gray-700"/></button>
+                <div className="text-sm font-semibold text-gray-500">
+                    Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}
                 </div>
+
+                {/* Gọi Component phân trang dùng chung của bạn */}
+                <Pagination
+                    currentPage={pageData.page}
+                    totalPages={pageData.totalPages || 1}
+                    onPageChange={fetchData}
+                />
             </div>
         </div>
     );

@@ -1,5 +1,6 @@
 import React from 'react';
-import { SlidersHorizontal, Download, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SlidersHorizontal, Download, Eye } from 'lucide-react';
+import Pagination from "../../../shared/components/Pagination.jsx";
 
 const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDiopter }) => {
     const totalPages = pageData.totalPages || 1;
@@ -68,42 +69,18 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                 </table>
             </div>
 
-            {/* Thanh phân trang thuật toán logic dấu ba chấm tương tự ExamRecordsPage */}
+            {/* Khối phân trang được dọn dẹp sạch bằng component Pagination */}
             <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
                 <div className="text-sm font-semibold text-gray-500">
                     Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {totalPages}
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <button
-                        disabled={pageData.page === 0}
-                        onClick={() => fetchData(pageData.page - 1)}
-                        className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"
-                    >
-                        <ChevronLeft size={18} className="text-gray-700"/>
-                    </button>
 
-                    {[...Array(totalPages)].map((_, i) => {
-                        if (i === 0 || i === totalPages - 1 || (i >= pageData.page - 1 && i <= pageData.page + 1)) return (
-                            <button
-                                key={i}
-                                onClick={() => fetchData(i)}
-                                className={`w-9 h-9 rounded-lg font-bold text-xs transition-all cursor-pointer ${pageData.page === i ? 'bg-blue-900 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                            >
-                                {i + 1}
-                            </button>
-                        );
-                        if (i === pageData.page - 2 || i === pageData.page + 2) return <span key={i} className="px-2 text-gray-400 font-bold tracking-widest">...</span>;
-                        return null;
-                    })}
-
-                    <button
-                        disabled={pageData.page >= totalPages - 1}
-                        onClick={() => fetchData(pageData.page + 1)}
-                        className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"
-                    >
-                        <ChevronRight size={18} className="text-gray-700"/>
-                    </button>
-                </div>
+                {/* Component phân trang tái sử dụng */}
+                <Pagination
+                    currentPage={pageData.page}
+                    totalPages={totalPages}
+                    onPageChange={fetchData}
+                />
             </div>
         </div>
     );
