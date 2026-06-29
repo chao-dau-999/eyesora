@@ -47,7 +47,13 @@ const DetailModal = ({ campaign, onClose }) => (
                         <p className="font-bold text-gray-900">{campaign.targetFacilityName}</p>
                     </div>
                 </div>
+
+                <div className="border-t pt-4 mt-2">
+                    <span className="block font-bold text-gray-400 uppercase text-[10px] mb-1">Số lượng học sinh đã khám:</span>
+                    <p className="font-bold text-blue-900 text-lg">{campaign.patientCount || 0} học sinh</p>
+                </div>
             </div>
+
 
             <button
                 onClick={onClose}
