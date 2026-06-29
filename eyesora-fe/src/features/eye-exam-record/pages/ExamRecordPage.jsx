@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AlertTriangle } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 import axiosClient from "../../../shared/axios/axiosClient.js";
 
 import SearchExamRecords from "../../../shared/components/SearchExamRecords.jsx";
@@ -7,9 +7,10 @@ import ExamRecordAction from "../components/ExamRecordAction.jsx";
 
 import ExamRecordTable from '../components/ExamRecordTable.jsx';
 import ExamRecordDetailModal from '../components/ExamRecordDetailModal.jsx';
-import ExamRecordModal from '../components/ExamRecordModal.jsx';
+import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
 
 const ExamRecordPage = () => {
+    const navigate = useNavigate();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -21,13 +22,6 @@ const ExamRecordPage = () => {
 
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState(null);
-
-    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [updateForm, setUpdateForm] = useState({
-        examId: '', patientName: '', className: '', campaignTitle: '',
-        vaLeftWithoutGlasses: '', vaLeftWithGlasses: '', sphLeft: '', cylLeft: '', axisLeft: '',
-        vaRightWithoutGlasses: '', vaRightWithGlasses: '', sphRight: '', cylRight: '', axisRight: ''
-    });
 
     const [pageData, setPageData] = useState({ page: 0, totalPages: 0, totalElements: 0 });
 
@@ -80,61 +74,8 @@ const ExamRecordPage = () => {
         }
     };
 
-    const openUpdateModal = async (record) => {
-        try {
-            const res = await axiosClient.get(`/eye-exam-records/${record.examId}`);
-            const data = res.data;
-
-            setUpdateForm({
-                examId: data.examId || '',
-                patientName: data.patientName || '',
-                className: data.className || '',
-                campaignTitle: data.campaignTitle || '',
-                vaLeftWithoutGlasses: data.vaLeftWithoutGlasses ?? '',
-                vaLeftWithGlasses: data.vaLeftWithGlasses ?? '',
-                sphLeft: data.sphLeft ?? '',
-                cylLeft: data.cylLeft ?? '',
-                axisLeft: data.axisLeft ?? '',
-                vaRightWithoutGlasses: data.vaRightWithoutGlasses ?? '',
-                vaRightWithGlasses: data.vaRightWithGlasses ?? '',
-                sphRight: data.sphRight ?? '',
-                cylRight: data.cylRight ?? '',
-                axisRight: data.axisRight ?? ''
-            });
-            setIsUpdateOpen(true);
-        } catch (error) {
-            alert("Không thể tải thông tin hồ sơ để chỉnh sửa.");
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setUpdateForm(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleConfirmUpdate = async (e) => {
-        e.preventDefault();
-        try {
-            const cleanedForm = { ...updateForm };
-            const numericFields = [
-                'vaLeftWithoutGlasses', 'vaLeftWithGlasses', 'sphLeft', 'cylLeft', 'axisLeft',
-                'vaRightWithoutGlasses', 'vaRightWithGlasses', 'sphRight', 'cylRight', 'axisRight'
-            ];
-
-            numericFields.forEach(field => {
-                if (cleanedForm[field] === '') {
-                    cleanedForm[field] = null;
-                } else if (cleanedForm[field] !== null && cleanedForm[field] !== undefined) {
-                    cleanedForm[field] = parseFloat(cleanedForm[field]);
-                }
-            });
-
-            await axiosClient.put(`/eye-exam-records/${cleanedForm.examId}`, cleanedForm);
-            setIsUpdateOpen(false);
-            fetchData(pageData.page);
-        } catch (error) {
-            alert(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật hồ sơ.");
-        }
+    const openUpdatePage = (record) => {
+        navigate(`/eye-exam-records/edit/${record.examId}`);
     };
 
     const triggerDeleteModal = (record) => {
@@ -155,6 +96,11 @@ const ExamRecordPage = () => {
         } catch (error) {
             alert(error.response?.data?.message || "Có lỗi xảy ra khi xóa hồ sơ.");
         }
+    };
+
+    const handleCloseDeleteModal = () => {
+        setIsDeleteOpen(false);
+        setRecordToDelete(null);
     };
 
     const formatDate = (dateStr) => {
@@ -202,7 +148,7 @@ const ExamRecordPage = () => {
                 pageData={pageData}
                 fetchData={fetchData}
                 openDetail={openDetail}
-                openUpdateModal={openUpdateModal}
+                openUpdateModal={openUpdatePage}
                 triggerDeleteModal={triggerDeleteModal}
                 formatDate={formatDate}
             />
@@ -217,31 +163,21 @@ const ExamRecordPage = () => {
                 formatAxis={formatAxis}
             />
 
-            <ExamRecordModal
-                isOpen={isUpdateOpen}
-                onClose={() => setIsUpdateOpen(false)}
-                updateForm={updateForm}
-                handleInputChange={handleInputChange}
-                handleConfirmUpdate={handleConfirmUpdate}
+            <ConfirmModal
+                isOpen={isDeleteOpen}
+                onClose={handleCloseDeleteModal}
+                onConfirm={handleConfirmDelete}
+                title="Xác nhận xóa hồ sơ"
+                message={
+                    <>
+                        Bạn có chắc chắn muốn xóa hồ sơ khám mắt của{" "}
+                        <strong className="font-bold text-gray-900">
+                            {recordToDelete?.patientName || "N/A"}
+                        </strong>
+                        ?
+                    </>
+                }
             />
-
-            {isDeleteOpen && recordToDelete && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl text-center border border-gray-100">
-                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100 text-red-600">
-                            <AlertTriangle size={28} className="animate-bounce" />
-                        </div>
-                        <h3 className="text-xl font-black text-gray-950 mb-2">Xác nhận xóa hồ sơ</h3>
-                        <p className="text-sm font-medium text-gray-500 leading-relaxed px-2">
-                            Bạn có chắc chắn muốn xóa hồ sơ khám mắt của học sinh <span className="font-bold text-gray-950">"{recordToDelete.patientName || 'N/A'}"</span>?
-                        </p>
-                        <div className="grid grid-cols-2 gap-3 mt-6">
-                            <button type="button" onClick={() => { setIsDeleteOpen(false); setRecordToDelete(null); }} className="py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all cursor-pointer">Hủy bỏ</button>
-                            <button type="button" onClick={handleConfirmDelete} className="py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-all cursor-pointer">Xác nhận xóa</button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

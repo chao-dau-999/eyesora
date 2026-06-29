@@ -45,7 +45,7 @@ public class EyeExamRecordController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{examId}")
+    @PutMapping("/edit/{examId}")
     public ResponseEntity<EyeExamRecordResponse> updateExamRecord(
             @PathVariable String examId,
             @Valid @RequestBody EyeExamRecordRequest request) {

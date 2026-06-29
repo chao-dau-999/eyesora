@@ -56,13 +56,11 @@ const ExamRecordTable = ({
                 </table>
             </div>
 
-            {/* Khối Footer Phân trang được làm gọn hoàn toàn bằng component Pagination */}
             <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
                 <div className="text-sm font-semibold text-gray-500">
                     Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}
                 </div>
 
-                {/* Gọi Component phân trang dùng chung của bạn */}
                 <Pagination
                     currentPage={pageData.page}
                     totalPages={pageData.totalPages || 1}
