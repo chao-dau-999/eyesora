@@ -49,4 +49,10 @@ public class EyeExamRecordController {
         EyeExamRecordResponse updatedRecord = eyeExamRecordService.updateExamRecord(examId, request);
         return ResponseEntity.ok(updatedRecord);
     }
+
+    @DeleteMapping("/{examId}")
+    public ResponseEntity<Void> deleteExamRecord(@PathVariable String examId) {
+        eyeExamRecordService.deleteExamRecord(examId);
+        return ResponseEntity.noContent().build();
+    }
 }

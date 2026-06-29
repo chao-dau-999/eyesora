@@ -9,6 +9,8 @@ public record EyeExamRecordResponse(
         String campaignTitle,
         String patientName,
         String className,
+        Integer grade,
+        String schoolYear,
         String examinerName,
         Instant examDate,
 
@@ -24,4 +26,3 @@ public record EyeExamRecordResponse(
         Float cylRight,
         Integer axisRight
 ){}
-

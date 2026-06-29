@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import SearchExamRecords from "../../../shared/components/SearchExamRecords.jsx";
 import ExamRecordAction from "../components/ExamRecordAction.jsx";
-import { View, Trash, SquarePen, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { View, Trash, SquarePen, ChevronLeft, ChevronRight, X, AlertTriangle, Save } from "lucide-react";
 import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const ExamRecordsPage = () => {
@@ -11,6 +11,16 @@ const ExamRecordsPage = () => {
 
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
+
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [recordToDelete, setRecordToDelete] = useState(null);
+
+    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+    const [updateForm, setUpdateForm] = useState({
+        examId: '', patientName: '', className: '', campaignTitle: '',
+        vaLeftWithoutGlasses: '', vaLeftWithGlasses: '', sphLeft: '', cylLeft: '', axisLeft: '',
+        vaRightWithoutGlasses: '', vaRightWithGlasses: '', sphRight: '', cylRight: '', axisRight: ''
+    });
 
     const [pageData, setPageData] = useState({ page: 0, totalPages: 0, totalElements: 0 });
 
@@ -48,6 +58,74 @@ const ExamRecordsPage = () => {
         }
     };
 
+    const openUpdateModal = async (record) => {
+        try {
+            const res = await axiosClient.get(`/eye-exam-records/${record.examId}`);
+            const data = res.data;
+
+            setUpdateForm({
+                examId: data.examId || '',
+                patientName: data.patientName || '',
+                className: data.className || '',
+                campaignTitle: data.campaignTitle || '',
+                vaLeftWithoutGlasses: data.vaLeftWithoutGlasses ?? '',
+                vaLeftWithGlasses: data.vaLeftWithGlasses ?? '',
+                sphLeft: data.sphLeft ?? '',
+                cylLeft: data.cylLeft ?? '',
+                axisLeft: data.axisLeft ?? '',
+                vaRightWithoutGlasses: data.vaRightWithoutGlasses ?? '',
+                vaRightWithGlasses: data.vaRightWithGlasses ?? '',
+                sphRight: data.sphRight ?? '',
+                cylRight: data.cylRight ?? '',
+                axisRight: data.axisRight ?? ''
+            });
+            setIsUpdateOpen(true);
+        } catch (error) {
+            alert("Không thể tải thông tin hồ sơ để chỉnh sửa.");
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setUpdateForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleConfirmUpdate = async (e) => {
+        e.preventDefault(); // Chặn hành vi submit reload trang của thẻ <form>
+        try {
+            await axiosClient.put(`/eye-exam-records/${updateForm.examId}`, updateForm);
+            setIsUpdateOpen(false);
+            fetchData(pageData.page);
+        } catch (error) {
+            alert(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật hồ sơ.");
+        }
+    };
+
+    const triggerDeleteModal = (record) => {
+        setRecordToDelete(record);
+        setIsDeleteOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!recordToDelete) return;
+        try {
+            await axiosClient.delete(`/eye-exam-records/${recordToDelete.examId}`);
+            alert("Xóa hồ sơ khám mắt thành công!");
+            setIsDeleteOpen(false);
+            setRecordToDelete(null);
+
+            const isLastItemOnPage = filteredRecords.length === 1 && pageData.page > 0;
+            const targetPage = isLastItemOnPage ? pageData.page - 1 : pageData.page;
+            fetchData(targetPage);
+        } catch (error) {
+            console.error("Error deleting eye exam record:", error);
+            alert(error.response?.data?.message || "Có lỗi xảy ra khi xóa hồ sơ.");
+        }
+    };
+
     const filteredRecords = records.filter(r =>
         (r.className?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
         (r.campaignTitle?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
@@ -62,9 +140,7 @@ const ExamRecordsPage = () => {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
-        } catch (e) {
-            return '---';
-        }
+        } catch (e) { return '---'; }
     };
 
     const formatVA = (value) => {
@@ -91,15 +167,8 @@ const ExamRecordsPage = () => {
     return (
         <div className="p-8 h-full overflow-y-auto bg-gray-50 text-gray-950 scrollbar-thin">
             <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-8 flex flex-wrap items-center justify-between gap-4">
-                <SearchExamRecords
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    onAddClick={() => alert('Single record creation feature is under development')}
-                />
-
-                <ExamRecordAction
-                    onAddClick={() => alert('Single record creation feature is under development')}
-                />
+                <SearchExamRecords searchQuery={searchQuery} setSearchQuery={setSearchQuery} onAddClick={() => alert('Single record creation feature is under development')} />
+                <ExamRecordAction onAddClick={() => alert('Single record creation feature is under development')} />
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -121,13 +190,9 @@ const ExamRecordsPage = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                            <tr>
-                                <td colSpan="5" className="text-center py-8 font-semibold text-gray-500">Loading data...</td>
-                            </tr>
+                            <tr><td colSpan="5" className="text-center py-8 font-semibold text-gray-500">Loading data...</td></tr>
                         ) : filteredRecords.length === 0 ? (
-                            <tr>
-                                <td colSpan="5" className="text-center py-8 text-gray-500 italic font-medium">No matching records found</td>
-                            </tr>
+                            <tr><td colSpan="5" className="text-center py-8 text-gray-500 italic font-medium">No matching records found</td></tr>
                         ) : (
                             filteredRecords.map((record) => (
                                 <tr key={record.examId} className="hover:bg-blue-50/50 transition-all text-sm font-medium text-gray-900">
@@ -137,9 +202,12 @@ const ExamRecordsPage = () => {
                                     <td className="px-6 py-5 text-gray-600 text-sm">{formatDate(record.examDate)}</td>
 
                                     <td className="px-6 py-5 text-right flex justify-end gap-3">
-                                        <button type="button" onClick={() => openDetail(record)} className="text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"><View size={20} /></button>
-                                        <button type="button" className="text-gray-400 hover:text-blue-900 transition-colors cursor-pointer"><SquarePen size={20}/></button>
-                                        <button type="button" className="text-gray-400 hover:text-red-600 transition-colors cursor-pointer"><Trash size={20}/></button>
+                                        <button type="button" onClick={() => openDetail(record)} className="text-gray-500 hover:text-gray-900 transition-colors cursor-pointer" title="Xem chi tiết"><View size={20} /></button>
+
+                                        {/* 👉 NÚT UPDATE: Gọi hàm openUpdateModal khi nhấn */}
+                                        <button type="button" onClick={() => openUpdateModal(record)} className="text-gray-400 hover:text-blue-900 transition-colors cursor-pointer" title="Chỉnh sửa"><SquarePen size={20}/></button>
+
+                                        <button type="button" onClick={() => triggerDeleteModal(record)} className="text-gray-400 hover:text-red-600 transition-colors cursor-pointer" title="Xóa hồ sơ"><Trash size={20}/></button>
                                     </td>
                                 </tr>
                             ))
@@ -149,43 +217,17 @@ const ExamRecordsPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
-                    <div className="text-sm font-semibold text-gray-500">
-                        Page <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}
-                    </div>
+                    <div className="text-sm font-semibold text-gray-500">Page <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}</div>
                     <div className="flex items-center gap-1.5">
-                        <button
-                            disabled={pageData.page === 0}
-                            onClick={() => fetchData(pageData.page - 1)}
-                            className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"
-                        >
-                            <ChevronLeft size={18} className="text-gray-700"/>
-                        </button>
-
+                        <button disabled={pageData.page === 0} onClick={() => fetchData(pageData.page - 1)} className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"><ChevronLeft size={18} className="text-gray-700"/></button>
                         {[...Array(pageData.totalPages)].map((_, i) => {
                             if (i === 0 || i === pageData.totalPages - 1 || (i >= pageData.page - 1 && i <= pageData.page + 1)) return (
-                                <button
-                                    key={i}
-                                    onClick={() => fetchData(i)}
-                                    className={`w-9 h-9 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-                                        pageData.page === i
-                                            ? 'bg-blue-900 text-white shadow-lg shadow-blue-200'
-                                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {i + 1}
-                                </button>
+                                <button key={i} onClick={() => fetchData(i)} className={`w-9 h-9 rounded-lg font-bold text-xs transition-all cursor-pointer ${pageData.page === i ? 'bg-blue-900 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{i + 1}</button>
                             );
                             if (i === pageData.page - 2 || i === pageData.page + 2) return <span key={i} className="px-2 text-gray-400 font-bold tracking-widest">...</span>;
                             return null;
                         })}
-
-                        <button
-                            disabled={pageData.page >= pageData.totalPages - 1}
-                            onClick={() => fetchData(pageData.page + 1)}
-                            className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"
-                        >
-                            <ChevronRight size={18} className="text-gray-700"/>
-                        </button>
+                        <button disabled={pageData.page >= pageData.totalPages - 1} onClick={() => fetchData(pageData.page + 1)} className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"><ChevronRight size={18} className="text-gray-700"/></button>
                     </div>
                 </div>
             </div>
@@ -193,92 +235,137 @@ const ExamRecordsPage = () => {
             {isDetailOpen && selectedRecord && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
                     <div className="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
-
-                        {/* Header của Modal */}
                         <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
                             <div>
                                 <h2 className="text-2xl font-black text-gray-950">Eye Exam Record Details</h2>
                                 <p className="text-sm font-semibold text-blue-900 mt-1">Patient: {selectedRecord.patientName}</p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsDetailOpen(false)}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                            >
-                                <X size={22} className="text-gray-400"/>
-                            </button>
+                            <button type="button" onClick={() => setIsDetailOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"><X size={22} className="text-gray-400"/></button>
                         </div>
-
                         <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl mb-6 text-sm">
                             <div><span className="text-gray-500 font-medium">Class:</span> <span className="font-bold text-gray-950">{selectedRecord.className || "-"}</span></div>
                             <div><span className="text-gray-500 font-medium">Exam Date:</span> <span className="font-bold text-gray-950">{formatDate(selectedRecord.examDate)}</span></div>
                             <div className="col-span-2"><span className="text-gray-500 font-medium">Campaign:</span> <span className="font-bold text-gray-950">{selectedRecord.campaignTitle || "-"}</span></div>
                             <div className="col-span-2"><span className="text-gray-500 font-medium">Examiner:</span> <span className="font-bold text-gray-950">{selectedRecord.examinerName || "-"}</span></div>
                         </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                             <div className="border border-blue-100 rounded-2xl p-5 bg-blue-50/10">
                                 <h4 className="text-sm font-black text-blue-900 uppercase tracking-wider mb-4 border-b border-blue-100 pb-2">Left Eye (L)</h4>
                                 <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span>
-                                        <span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithoutGlasses)}</span>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithoutGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphLeft)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylLeft)}</span></div>
+                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis L</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisLeft)}</span></div>
+                                </div>
+                            </div>
+                            <div className="border border-green-100 rounded-2xl p-5 bg-green-50/10">
+                                <h4 className="text-sm font-black text-green-900 uppercase tracking-wider mb-4 border-b border-green-100 pb-2">Right Eye (R)</h4>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithoutGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphRight)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylRight)}</span></div>
+                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis R</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisRight)}</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onClick={() => setIsDetailOpen(false)} className="w-full mt-8 py-4 bg-gray-950 text-white rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer">Close Details</button>
+                    </div>
+                </div>
+            )}
+
+            {isDeleteOpen && recordToDelete && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl text-center border border-gray-100">
+                        <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100 text-red-600"><AlertTriangle size={28} className="animate-bounce" /></div>
+                        <h3 className="text-xl font-black text-gray-950 mb-2">Xác nhận xóa hồ sơ</h3>
+                        <p className="text-sm font-medium text-gray-500 leading-relaxed px-2">Bạn có chắc chắn muốn xóa hồ sơ khám mắt của học sinh <span className="font-bold text-gray-950">"{recordToDelete.patientName || 'N/A'}"</span>?</p>
+                        <div className="grid grid-cols-2 gap-3 mt-6">
+                            <button type="button" onClick={() => { setIsDeleteOpen(false); setRecordToDelete(null); }} className="py-3 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all cursor-pointer">Hủy bỏ</button>
+                            <button type="button" onClick={handleConfirmDelete} className="py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-all cursor-pointer">Xác nhận xóa</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isUpdateOpen && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
+
+                        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                            <div>
+                                <h2 className="text-2xl font-black text-gray-950">Chỉnh sửa hồ sơ khám</h2>
+                                <p className="text-sm font-semibold text-blue-900 mt-1">Học sinh: {updateForm.patientName} ({updateForm.className})</p>
+                            </div>
+                            <button type="button" onClick={() => setIsUpdateOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
+                                <X size={22} className="text-gray-400"/>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleConfirmUpdate} className="space-y-6">
+
+                            <div className="border border-blue-100 rounded-2xl p-5 bg-blue-50/10">
+                                <h4 className="text-sm font-black text-blue-900 uppercase tracking-wider mb-4 border-b border-blue-100 pb-2">Mắt Trái (L)</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Thị lực không kính</label>
+                                        <input type="number" step="0.1" name="vaLeftWithoutGlasses" value={updateForm.vaLeftWithoutGlasses} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-blue-900" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span>
-                                        <span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithGlasses)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Thị lực có kính</label>
+                                        <input type="number" step="0.1" name="vaLeftWithGlasses" value={updateForm.vaLeftWithGlasses} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-blue-900" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph L)</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphLeft)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Độ cầu (Sph L)</label>
+                                        <input type="number" step="0.25" name="sphLeft" value={updateForm.sphLeft} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-blue-900" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl L)</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylLeft)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Độ trụ (Cyl L)</label>
+                                        <input type="number" step="0.25" name="cylLeft" value={updateForm.cylLeft} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-blue-900" />
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis L</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisLeft)}</span>
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Trục (Axis L)</label>
+                                        <input type="number" min="0" max="180" name="axisLeft" value={updateForm.axisLeft} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-blue-900" placeholder="0° - 180°" />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="border border-green-100 rounded-2xl p-5 bg-green-50/10">
-                                <h4 className="text-sm font-black text-green-900 uppercase tracking-wider mb-4 border-b border-green-100 pb-2">Right Eye (R)</h4>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span>
-                                        <span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithoutGlasses)}</span>
+                                <h4 className="text-sm font-black text-green-900 uppercase tracking-wider mb-4 border-b border-green-100 pb-2">Mắt Phải (R)</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Thị lực không kính</label>
+                                        <input type="number" step="0.1" name="vaRightWithoutGlasses" value={updateForm.vaRightWithoutGlasses} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-green-700" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span>
-                                        <span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithGlasses)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Thị lực có kính</label>
+                                        <input type="number" step="0.1" name="vaRightWithGlasses" value={updateForm.vaRightWithGlasses} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-green-700" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph R)</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphRight)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Độ cầu (Sph R)</label>
+                                        <input type="number" step="0.25" name="sphRight" value={updateForm.sphRight} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-green-700" />
                                     </div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl R)</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylRight)}</span>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Độ trụ (Cyl R)</label>
+                                        <input type="number" step="0.25" name="cylRight" value={updateForm.cylRight} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-green-700" />
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis R</span>
-                                        <span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisRight)}</span>
+                                    <div className="col-span-2">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Trục (Axis R)</label>
+                                        <input type="number" min="0" max="180" name="axisRight" value={updateForm.axisRight} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-200 rounded-xl font-semibold text-sm focus:outline-green-700" placeholder="0° - 180°" />
                                     </div>
                                 </div>
                             </div>
 
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={() => setIsDetailOpen(false)}
-                            className="w-full mt-8 py-4 bg-gray-950 text-white rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer"
-                        >
-                            Close Details
-                        </button>
+                            <div className="flex gap-3 pt-4 border-t border-gray-100">
+                                <button type="button" onClick={() => setIsUpdateOpen(false)} className="w-1/2 py-3.5 bg-gray-100 text-gray-700 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-all cursor-pointer">
+                                    Hủy bỏ
+                                </button>
+                                <button type="submit" className="w-1/2 py-3.5 bg-blue-900 text-white rounded-2xl font-black text-sm hover:bg-blue-950 transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 cursor-pointer">
+                                    <Save size={18}/> Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

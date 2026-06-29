@@ -138,6 +138,17 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         return mapToResponse(eyeExamRecord);
     }
 
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void deleteExamRecord(String examId) {
+        EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
+                .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
+                .orElseThrow(() -> new ResourceNotFoundException("Eye exam record not found or already deleted with ID: " + examId));
+
+        entity.setIsDeleted(true);
+        eyeExamRecordRepository.save(entity);
+    }
+
     private EyeExamRecordResponse mapToResponse(EyeExamRecord entity) {
         return EyeExamRecordResponse.builder()
                 .examId(entity.getExamId())

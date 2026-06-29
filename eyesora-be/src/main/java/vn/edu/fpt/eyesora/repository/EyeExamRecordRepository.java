@@ -11,4 +11,5 @@ import java.util.List;
 @Repository
 public interface EyeExamRecordRepository extends JpaRepository<EyeExamRecord, String> {
     List<EyeExamRecord> findAll(Specification<EyeExamRecord> spec, Sort sort);
+    List<EyeExamRecord> findByIsDeletedFalse();
 }
