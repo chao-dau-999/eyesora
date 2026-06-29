@@ -16,6 +16,7 @@ import PatientFormPage from "./features/patient/pages/PatientFormPage.jsx";
 import ClassesPage from "./features/class/pages/ClassesPage";
 import ClassFormPage from "./features/class/pages/ClassFormPage";
 import ExamRecordPage from "./features/eye-exam-record/pages/ExamRecordPage.jsx";
+import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormPage.jsx";
 function App() {
     return (
         <BrowserRouter>
@@ -43,6 +44,7 @@ function App() {
                     <Route path="/wards/create" element={<WardsFormPage />} />
                     <Route path="/wards/edit/:id" element={<WardsFormPage />} />
                     <Route path="/eye-exam-records" element={<ExamRecordPage />} />
+                    <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>
