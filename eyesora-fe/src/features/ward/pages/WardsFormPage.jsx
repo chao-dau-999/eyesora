@@ -42,7 +42,17 @@ const WardsFormPage = () => {
             if (isEditMode) await axiosClient.put(`/master-data/wards/${id}`, formData);
             else await axiosClient.post("/master-data/wards", formData);
             navigate('/wards');
-        } catch (err) { setError("Có lỗi xảy ra khi lưu dữ liệu"); }
+        } catch (err) {
+            let message = "Có lỗi xảy ra khi lưu dữ liệu";
+            if (err.response?.data) {
+                if (typeof err.response.data === 'object' && err.response.data.message) {
+                    message = err.response.data.message;
+                } else if (typeof err.response.data === 'string') {
+                    message = err.response.data;
+                }
+            }
+            setError(message);
+        }
     };
 
     return (

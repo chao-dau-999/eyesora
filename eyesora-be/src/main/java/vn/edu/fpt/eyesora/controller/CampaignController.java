@@ -67,7 +67,6 @@ public class CampaignController {
                     "endDate", "Ngày kết thúc phải sau ngày bắt đầu"));
         }
 
-        // 2. Gọi service nếu hợp lệ
         return ResponseEntity.ok(campaignService.updateCampaign(id, req));
     }
 
