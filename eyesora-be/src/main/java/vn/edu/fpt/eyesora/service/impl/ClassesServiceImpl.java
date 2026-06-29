@@ -39,7 +39,7 @@ public class ClassesServiceImpl implements IClassesService {
     public ClassesResponse getClassById(String id) {
         return classesRepository.findById(id)
                 .map(this::mapToResponse)
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + id));
     }
 
 
@@ -47,7 +47,7 @@ public class ClassesServiceImpl implements IClassesService {
     @Override
     public ClassesResponse createClass(ClassesRequest req) {
         Facility facility = facilityRepository.findById(req.facilityId())
-                .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + req.facilityId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + req.facilityId()));
 
         Classes newClass = new Classes();
         newClass.setFacility(facility);
@@ -62,11 +62,11 @@ public class ClassesServiceImpl implements IClassesService {
     @Override
     public ClassesResponse updateClass(String id, ClassesRequest req) {
         Classes existing = classesRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + id));
 
         if (req.facilityId() != null && !req.facilityId().equals(existing.getFacility().getId())) {
             Facility newFacility = facilityRepository.findById(req.facilityId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + req.facilityId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + req.facilityId()));
             existing.setFacility(newFacility);
         }
 
@@ -80,7 +80,7 @@ public class ClassesServiceImpl implements IClassesService {
     private ClassesResponse mapToResponse(Classes c) {
         return new ClassesResponse(
                 c.getId(),
-                c.getFacility() != null ? c.getFacility().getFacilityName() : "N/A",
+                c.getFacility() != null ? c.getFacility().getFacilityName() : "Chưa cập nhật",
                 c.getClassName(),
                 c.getGrade(),
                 c.getSchoolYear()
@@ -91,7 +91,7 @@ public class ClassesServiceImpl implements IClassesService {
     @Transactional(readOnly = true)
     public ClassDetailResponse getClassDetail(String classId, Pageable pageable) {
         Classes cls = classesRepository.findWithPatientsById(classId)
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + classId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + classId));
 
         List<Patient> allPatients = cls.getPatients() != null ? cls.getPatients() : List.of();
 
@@ -110,7 +110,7 @@ public class ClassesServiceImpl implements IClassesService {
                         p.getFacility() != null ? p.getFacility().getFacilityName() : null,
                         p.getExamCampaign() != null ? p.getExamCampaign().getCampaignId() : null,
                         p.getDob(),
-                        p.getGender() != null ? p.getGender().name() : "N/A",
+                        p.getGender() != null ? p.getGender().name() : "Chưa cập nhật",
                         p.getParentPhone(),
                         (p.getWard() != null) ? p.getWard().getWardName() : "Chưa cập nhật"
                 ))

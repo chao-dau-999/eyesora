@@ -29,9 +29,16 @@ public class UserController {
 
     // Body: { "status": "LOCKED" } hoặc { "status": "ACTIVE" }
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestBody UserStatusRequest req) {
-        userService.updateUserStatus(id, req.status());
-        return ResponseEntity.ok("Account status updated to " + req.status());
+    public ResponseEntity<?> updateStatus(
+            @PathVariable String id,
+            @RequestBody UserStatusRequest req) {
+        userService.updateUserStatus(
+                id,
+                req.status()
+        );
+        return ResponseEntity.ok(
+                "Đã cập nhật trạng thái tài khoản thành "
+                        + req.status());
     }
 
     @GetMapping("/{id}")

@@ -46,7 +46,8 @@ public class PatientController {
     @PostMapping
     public ResponseEntity<String> createPatient(@Valid @RequestBody PatientRequest req) {
         patientService.createPatient(req);
-        return ResponseEntity.ok("Patient created successfully!");
+        return ResponseEntity.ok(
+                "Tạo bệnh nhân thành công!");
     }
 
     @PutMapping("/{id}")

@@ -22,7 +22,6 @@ import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IUserService;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,22 +43,22 @@ public class UserServiceImpl implements IUserService {
     @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new BadRequestException("Username already exists");
+            throw new BadRequestException("Tên đăng nhập đã tồn tại");
         }
         if (userRepository.existsByEmail(request.email())) {
-            throw new BadRequestException("Email already in use");
+            throw new BadRequestException("Email đã được sử dụng");
         }
 
         if (!request.password().equals(request.confirmPassword())) {
-            throw new BadRequestException("Passwords do not match");
+            throw new BadRequestException("Mật khẩu không khớp");
         }
 
         if (!isValidPassword(request.password())) {
-            throw new BadRequestException("Password must be 8-50 characters, including uppercase, lowercase, numbers, and special characters");
+            throw new BadRequestException("Mật khẩu phải từ 8-50 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
         }
 
         Role defaultRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new ResourceNotFoundException("ROLE_USER configuration missing"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cấu hình ROLE_USER bị thiếu"));
 
         User user = new User();
         user.setUsername(request.username());
@@ -82,17 +81,17 @@ public class UserServiceImpl implements IUserService {
 
         sendVerificationEmail(user.getEmail(), tokenString);
 
-        log.info("Registered user, verification email sent: {}", user.getEmail());
+        log.info("Đã đăng ký người dùng, email xác thực đã được gửi: {}", user.getEmail());
     }
 
     @Override
     @Transactional
     public void verifyEmail(String token) {
         VerificationToken verificationToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new BadRequestException("Invalid verification token"));
+                .orElseThrow(() -> new BadRequestException("Mã xác thực không hợp lệ"));
 
         if (verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Verification token has expired");
+            throw new BadRequestException("Mã xác thực đã hết hạn");
         }
 
         User user = verificationToken.getUser();
@@ -101,16 +100,16 @@ public class UserServiceImpl implements IUserService {
 
         tokenRepository.delete(verificationToken);
 
-        log.info("Account activated successfully: {}", user.getEmail());
+        log.info("Tài khoản đã được kích hoạt thành công: {}", user.getEmail());
     }
 
     @Transactional
     public void resendVerificationEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
 
         if (user.getStatus() == User.AccountStatus.ACTIVE) {
-            throw new BadRequestException("Account already verified.");
+            throw new BadRequestException("Tài khoản đã được xác thực.");
         }
 
         tokenRepository.deleteByUser(user);
@@ -125,13 +124,11 @@ public class UserServiceImpl implements IUserService {
         sendVerificationEmail(user.getEmail(), newToken);
     }
 
-
-
     @Override
     @Transactional
     public void processForgotPassword(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with this email"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với email này"));
 
         passwordResetTokenRepository.deleteByUser(user);
 
@@ -144,26 +141,26 @@ public class UserServiceImpl implements IUserService {
         passwordResetTokenRepository.save(resetToken);
 
         sendPasswordResetEmail(user.getEmail(), tokenString);
-        log.info("Password reset email sent to: {}", user.getEmail());
+        log.info("Email đặt lại mật khẩu đã được gửi đến: {}", user.getEmail());
     }
 
     @Override
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         if (!request.newPassword().equals(request.confirmPassword())) {
-            throw new BadRequestException("Passwords do not match");
+            throw new BadRequestException("Mật khẩu không khớp");
         }
 
         if (!isValidPassword(request.newPassword())) {
-            throw new BadRequestException("Password must be 8-50 characters, including uppercase, lowercase, numbers, and special characters");
+            throw new BadRequestException("Mật khẩu phải từ 8-50 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
         }
 
         PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
-                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+                .orElseThrow(() -> new BadRequestException("Mã đặt lại mật khẩu không hợp lệ"));
 
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             passwordResetTokenRepository.delete(resetToken);
-            throw new BadRequestException("Reset token has expired");
+            throw new BadRequestException("Mã đặt lại mật khẩu đã hết hạn");
         }
 
         User user = resetToken.getUser();
@@ -172,9 +169,8 @@ public class UserServiceImpl implements IUserService {
 
         passwordResetTokenRepository.delete(resetToken);
 
-        log.info("Password successfully reset for user: {}", user.getEmail());
+        log.info("Mật khẩu đã được đặt lại thành công cho người dùng: {}", user.getEmail());
     }
-
 
     private boolean isValidPassword(String password) {
         String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,50}$";
@@ -183,61 +179,56 @@ public class UserServiceImpl implements IUserService {
 
     private void sendVerificationEmail(String email, String token) {
         try {
-            log.info("Attempting to send verification email to: {}", email);
+            log.info("Đang gửi email xác thực đến: {}", email);
 
             String link = "http://localhost:8080/api/auth/verify?token=" + token;
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(email);
-            msg.setSubject("[Eyesora] Account Verification");
-            msg.setText("Hello,\n\n" +
-                    "Thank you for registering with Eyesora!\n\n" +
-                    "Click the link below to verify your email (expires in 15 minutes):\n" +
+            msg.setSubject("[Eyesora] Xác thực tài khoản");
+            msg.setText("Xin chào,\n\n" +
+                    "Cảm ơn bạn đã đăng ký tài khoản tại Eyesora!\n\n" +
+                    "Nhấp vào liên kết bên dưới để xác thực email của bạn (có hiệu lực trong 15 phút):\n" +
                     link + "\n\n" +
-                    "If you did not initiate this registration, please ignore this email.\n\n" +
-                    "Eyesora Team");
+                    "Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.\n\n" +
+                    "Đội ngũ Eyesora");
 
             mailSender.send(msg);
-            log.info("Verification email successfully sent to: {}", email);
+            log.info("Đã gửi email xác thực thành công đến: {}", email);
 
         } catch (Exception e) {
-            log.error("Failed to send verification email to {}. Error: {}", email, e.getMessage());
-            e.printStackTrace();
+            log.error("Gửi email xác thực thất bại đến {}. Lỗi: {}", email, e.getMessage());
         }
     }
 
     private void sendPasswordResetEmail(String email, String token) {
         try {
-            log.info("Attempting to send password reset email to: {}", email);
+            log.info("Đang gửi email đặt lại mật khẩu đến: {}", email);
 
             String link = "http://localhost:8080/api/auth/reset-password?token=" + token;
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(email);
-            msg.setSubject("[Eyesora] Password Reset Request");
-            msg.setText("Hello,\n\n" +
-                    "You have requested to reset your password.\n\n" +
-                    "Click the link below to set a new password (expires in 15 minutes):\n" +
+            msg.setSubject("[Eyesora] Yêu cầu đặt lại mật khẩu");
+            msg.setText("Xin chào,\n\n" +
+                    "Bạn đã gửi yêu cầu đặt lại mật khẩu.\n\n" +
+                    "Nhấp vào liên kết bên dưới để tạo mật khẩu mới (có hiệu lực trong 15 phút):\n" +
                     link + "\n\n" +
-                    "If you did not request a password reset, please ignore this email.\n\n" +
-                    "Eyesora Team");
+                    "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
+                    "Đội ngũ Eyesora");
 
             mailSender.send(msg);
-            log.info("Password reset email successfully sent to: {}", email);
+            log.info("Đã gửi email đặt lại mật khẩu thành công đến: {}", email);
 
         } catch (Exception e) {
-            log.error("Failed to send password reset email to {}. Error: {}", email, e.getMessage());
-            e.printStackTrace();
+            log.error("Gửi email đặt lại mật khẩu thất bại đến {}. Lỗi: {}", email, e.getMessage());
         }
     }
-
-
-
 
     private UserResponse mapToUserResponse(User user) {
         String facilityName = "N/A";
         if (user.getFacility_id() != null) {
             facilityName = facilityRepository.findById(user.getFacility_id())
                     .map(facility -> facility.getFacilityName())
-                    .orElse("Unknown Facility");
+                    .orElse("Không xác định");
         }
 
         return new UserResponse(
@@ -260,14 +251,14 @@ public class UserServiceImpl implements IUserService {
     @Transactional(readOnly = true)
     public UserResponse getUserDetail(String id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng với ID: " + id));
         return mapToUserResponse(user);
     }
 
     @Override
     public void updateUserStatus(String userId, User.AccountStatus status) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
         user.setStatus(status);
         userRepository.save(user);
     }

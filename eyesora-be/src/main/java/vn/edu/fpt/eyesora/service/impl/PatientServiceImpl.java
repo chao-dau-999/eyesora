@@ -41,13 +41,23 @@ public class PatientServiceImpl implements IPatientService {
             }
 
             predicates.add(cb.equal(root.get("isDeleted"), false));
-            if (name != null && !name.isEmpty()) predicates.add(cb.like(root.get("patientName"), "%" + name + "%"));
+
+            if (name != null && !name.isEmpty())
+                predicates.add(cb.like(root.get("patientName"), "%" + name + "%"));
+
             if (birthYear != null) {
-                predicates.add(cb.between(root.get("dob"), LocalDate.of(birthYear, 1, 1), LocalDate.of(birthYear, 12, 31)));
+                predicates.add(cb.between(
+                        root.get("dob"),
+                        LocalDate.of(birthYear, 1, 1),
+                        LocalDate.of(birthYear, 12, 31)
+                ));
             }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        return patientRepository.findAll(spec, pageable).map(this::convertToDto);
+
+        return patientRepository.findAll(spec, pageable)
+                .map(this::convertToDto);
     }
 
     @Override
@@ -55,27 +65,29 @@ public class PatientServiceImpl implements IPatientService {
     public PatientResponse getPatientById(String id) {
         return patientRepository.findByPatientId(id)
                 .map(this::convertToDto)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân với ID: " + id));
     }
 
     @Override
     public void createPatient(PatientRequest req) {
+
         ExamCampaign campaign = campaignRepository.findById(req.campaignId())
-                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found: " + req.campaignId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chiến dịch: " + req.campaignId()));
 
         if (campaign.getStatus() == ExamCampaign.CampaignStatus.LOCKED)
-            throw new BusinessException("Campaign is locked!");
+            throw new BusinessException("Chiến dịch đã bị khóa!");
 
         Facility facility = facilityRepository.findById(req.facilityId())
-                .orElseThrow(() -> new ResourceNotFoundException("Facility not found: " + req.facilityId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở: " + req.facilityId()));
 
         Classes patientClass = classesRepository.findById(req.classId())
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found: " + req.classId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp: " + req.classId()));
 
         Ward patientWard = wardRepository.findById(req.wardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ward not found" + req.wardId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã: " + req.wardId()));
 
         Patient patient = new Patient();
+
         patient.setPatientName(req.patientName());
         patient.setDob(req.dob());
         patient.setGender(Patient.Gender.valueOf(req.gender().toUpperCase()));
@@ -94,11 +106,11 @@ public class PatientServiceImpl implements IPatientService {
 //    @Override
 //    public void updatePatient(String id, PatientRequest req) {
 //        Patient existing = patientRepository.findByPatientId(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
+//                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân với ID: " + id));
 //
 //        if (existing.getExamCampaign() != null &&
 //                existing.getExamCampaign().getStatus() == ExamCampaign.CampaignStatus.LOCKED) {
-//            throw new BusinessException("Cannot edit patient! This campaign is locked.");
+//            throw new BusinessException("Không thể chỉnh sửa bệnh nhân! Chiến dịch này đã bị khóa.");
 //        }
 //
 //        existing.setPatientName(req.patientName());
@@ -108,27 +120,29 @@ public class PatientServiceImpl implements IPatientService {
 //
 //        if (existing.getExamCampaign() == null || !existing.getExamCampaign().getCampaignId().equals(req.campaignId())) {
 //            existing.setExamCampaign(campaignRepository.findById(req.campaignId())
-//                    .orElseThrow(() -> new ResourceNotFoundException("Campaign not found")));
+//                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chiến dịch")));
 //        }
 //
 //        if (existing.getFacility() == null || !existing.getFacility().getId().equals(req.facilityId())) {
 //            Facility facility = facilityRepository.findById(req.facilityId())
-//                    .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
+//                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở"));
 //            existing.setFacility(facility);
 //        }
 //
 //        if (existing.getClasses() == null || !existing.getClasses().getId().equals(req.classId())) {
 //            existing.setClasses(classesRepository.findById(req.classId())
-//                    .orElseThrow(() -> new ResourceNotFoundException("Class not found")));
+//                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp")));
 //        }
 //
 //        patientRepository.save(existing);
 //    }
 
     private PatientResponse convertToDto(Patient p) {
-        String wardName = (p.getFacility() != null && p.getFacility().getWard() != null)
-                ? p.getFacility().getWard().getWardName()
-                : "N/A";
+
+        String wardName =
+                (p.getFacility() != null && p.getFacility().getWard() != null)
+                        ? p.getFacility().getWard().getWardName()
+                        : "Chưa cập nhật";
 
         return new PatientResponse(
                 p.getPatientId(),
@@ -153,27 +167,29 @@ public class PatientServiceImpl implements IPatientService {
     @Override
     @Transactional
     public PatientResponse updatePatient(String id, PatientRequest req) {
+
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân với ID: " + id));
 
-        System.out.println("Updating patient with ID: " + id);
+        System.out.println("Đang cập nhật bệnh nhân với ID: " + id);
+
         ExamCampaign campaign = campaignRepository.findById(req.campaignId())
-                .orElseThrow(() -> new ResourceNotFoundException("Campaign not found with ID: " + req.campaignId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chiến dịch với ID: " + req.campaignId()));
 
-        System.out.println("Updating campaign with ID: " + req.campaignId());
+        System.out.println("Đang cập nhật chiến dịch với ID: " + req.campaignId());
 
         if (campaign.getStatus() == ExamCampaign.CampaignStatus.LOCKED) {
-            throw new BusinessException("Cannot update patient! This campaign is already locked.");
+            throw new BusinessException("Không thể cập nhật bệnh nhân! Chiến dịch này đã bị khóa.");
         }
 
         Facility facility = facilityRepository.findById(req.facilityId())
-                .orElseThrow(() -> new ResourceNotFoundException("School not found with ID: " + req.facilityId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy trường học với ID: " + req.facilityId()));
 
         Classes patientClass = classesRepository.findById(req.classId())
-                .orElseThrow(() -> new ResourceNotFoundException("Class not found with ID: " + req.classId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + req.classId()));
 
         Ward patientWard = wardRepository.findById(req.wardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã"));
 
         patient.setPatientName(req.patientName());
         patient.setDob(req.dob());
@@ -185,9 +201,10 @@ public class PatientServiceImpl implements IPatientService {
         patient.setClasses(patientClass);
         patient.setWard(patientWard);
 
-        System.out.println("Patient updated with new details: " + patient);
+        System.out.println("Đã cập nhật thông tin mới của bệnh nhân: " + patient);
 
         Patient updatedPatient = patientRepository.save(patient);
+
         return convertToDto(updatedPatient);
     }
 }

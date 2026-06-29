@@ -31,7 +31,7 @@ public class FacilityServiceImpl implements IFacilityService {
     @Override
     public FacilityResponse createFacility(FacilityRequest req) {
         Ward ward = wardRepository.findById(req.wardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Ward not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã"));
 
         Facility f = new Facility();
         f.setFacilityName(req.facilityName());
@@ -47,7 +47,7 @@ public class FacilityServiceImpl implements IFacilityService {
     @Override
     public FacilityResponse updateFacility(String id, FacilityRequest req) {
         Facility existing = facilityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Facility not found with ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + id));
 
         existing.setFacilityName(req.facilityName());
         existing.setFacilityType(req.facilityType());
@@ -56,7 +56,7 @@ public class FacilityServiceImpl implements IFacilityService {
 
         if (req.wardId() != null && !req.wardId().equals(existing.getWard().getId())) {
             Ward newWard = wardRepository.findById(req.wardId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Ward not found with ID: " + req.wardId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã với ID: " + req.wardId()));
             existing.setWard(newWard);
         }
 
@@ -80,7 +80,7 @@ public class FacilityServiceImpl implements IFacilityService {
     @Transactional(readOnly = true)
     public FacilityResponse getFacilityDetail(String facilityId) {
         Facility facility = facilityRepository.findWithDetailById(facilityId)
-                .orElseThrow(() -> new ResourceNotFoundException("Facility not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở"));
 
         return mapToResponse(facility);
     }
