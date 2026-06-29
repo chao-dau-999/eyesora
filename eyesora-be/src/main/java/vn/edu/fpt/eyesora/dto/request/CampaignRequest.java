@@ -5,16 +5,24 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 public record CampaignRequest (
-        @NotBlank(message = "Title is required")
+        @NotBlank(message = "Tiêu đề là bắt buộc")
         String title,
 
-        @NotBlank(message = "Year is required")
+        @NotBlank(message = "Năm là bắt buộc")
         String year,
 
-        @NotNull(message = "Start date is required")
+        @NotNull(message = "Ngày bắt đầu là bắt buộc")
         LocalDate startDate,
 
+        @NotNull(message = "Ngày kết thúc là bắt buộc")
+        LocalDate endDate,
+
+        @NotBlank(message = "Người quản lý là bắt buộc")
         String managerName,
+
+        @NotBlank(message = "Tổ chức là bắt buộc")
         String orgId,
+
+        @NotBlank(message = "Trường mục tiêu là bắt buộc")
         String targetId
 ){}

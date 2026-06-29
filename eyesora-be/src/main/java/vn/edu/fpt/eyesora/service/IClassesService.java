@@ -11,4 +11,5 @@ public interface IClassesService {
     ClassesResponse createClass(ClassesRequest req);
     ClassesResponse updateClass(String id, ClassesRequest req);
     ClassDetailResponse getClassDetail(String classId, Pageable pageable);
+    ClassesResponse getClassById(String id);
 }

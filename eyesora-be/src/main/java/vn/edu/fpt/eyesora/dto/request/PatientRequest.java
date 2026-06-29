@@ -5,23 +5,32 @@ import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public record PatientRequest(
-        @NotBlank(message = "Patient name is required")
-        @Size(max = 255)
+        @NotBlank(message = "Tên bệnh nhân là bắt buộc")
+        @Size(max = 255, message = "Tên bệnh nhân không được vượt quá 255 ký tự")
         String patientName,
 
-        @NotNull(message = "Date of birth is required")
-        @Past(message = "Date of birth must be in the past")
+        @NotBlank(message = "Mã lớp là bắt buộc")
+        String classId,
+
+        @NotNull(message = "Ngày sinh là bắt buộc")
+        @Past(message = "Ngày sinh phải là ngày trong quá khứ")
         LocalDate dob,
 
-        @NotBlank(message = "Gender is required")
+        @NotBlank(message = "Giới tính là bắt buộc")
         String gender,
 
-        @Pattern(regexp = "^[0-9]{10,11}$", message = "Phone number must be 10-11 digits")
+        @Pattern(
+                regexp = "^[0-9]{10,11}$",
+                message = "Số điện thoại phải có từ 10 đến 11 chữ số"
+        )
         String parentPhone,
 
-        @NotBlank(message = "Campaign ID is required")
+        @NotBlank(message = "Mã chiến dịch là bắt buộc")
         String campaignId,
 
-        @NotBlank(message = "Facility ID is required")
-        String facilityId
+        @NotBlank(message = "Mã cơ sở là bắt buộc")
+        String facilityId,
+
+        @NotBlank(message = "Mã phường/xã là bắt buộc")
+        String wardId
 ) {}

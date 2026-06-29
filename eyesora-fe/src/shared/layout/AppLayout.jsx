@@ -25,7 +25,7 @@ const AppLayout = () => {
                 {/* Truyền hàm mở sidebar vào Header phục vụ nút bấm Mobile */}
                 <Header onMenuClick={() => setSidebarOpen(true)} />
 
-                <main className="flex-1 p-4 md:p-6 lg:p-8">
+                <main className="flex-1 pt-3 pb-6 px-4 md:px-6 lg:px-8">
                     <Outlet />
                 </main>
             </div>

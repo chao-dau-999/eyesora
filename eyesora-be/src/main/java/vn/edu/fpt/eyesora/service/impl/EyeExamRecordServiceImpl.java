@@ -62,12 +62,12 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     public EyeExamRecordResponse updateExamRecord(String examId, EyeExamRecordRequest request) {
         EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
                 .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
-                .orElseThrow(() -> new RuntimeException("Eye test slip not found or slip is hidden, ID: " + examId));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu kiểm tra thị lực, ID: " + examId));
 
         if (request.getClassId() != null && !request.getClassId().isBlank()) {
             if (entity.getClassesField() == null || !entity.getClassesField().getId().equals(request.getClassId())) {
                 Classes newClasses = classesRepository.findById(request.getClassId())
-                        .orElseThrow(() -> new RuntimeException("No new classes found with ID: " + request.getClassId()));
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học mới nào có ID: " + request.getClassId()));
                 entity.setClassesField(newClasses);
             }
         }
@@ -133,7 +133,7 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public EyeExamRecordResponse getExamRecordDetail(String examId) {
         EyeExamRecord eyeExamRecord = eyeExamRecordRepository.findById(examId)
-                .orElseThrow(() -> new ResourceNotFoundException("Exam record not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ khám mắt"));
 
         return mapToResponse(eyeExamRecord);
     }
@@ -143,7 +143,7 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     public void deleteExamRecord(String examId) {
         EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
                 .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
-                .orElseThrow(() -> new ResourceNotFoundException("Eye exam record not found or already deleted with ID: " + examId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hoặc đã bị xóa hồ sơ khám mắt với ID: " + examId));
 
         entity.setIsDeleted(true);
         eyeExamRecordRepository.save(entity);

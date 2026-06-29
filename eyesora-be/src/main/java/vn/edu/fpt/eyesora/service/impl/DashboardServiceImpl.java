@@ -130,7 +130,6 @@ public class DashboardServiceImpl implements IDashboardService {
         });
         timelineStats.sort(Comparator.comparing(MyopiaTimelineResponse::schoolYear));
 
-        // Tự động bổ sung mốc dự báo tương lai kế tiếp nếu có tối thiểu 2 điểm dữ liệu lịch sử
         if (timelineStats.size() >= 2) {
             MyopiaTimelineResponse latest = timelineStats.get(timelineStats.size() - 1);
             MyopiaTimelineResponse previous = timelineStats.get(timelineStats.size() - 2);

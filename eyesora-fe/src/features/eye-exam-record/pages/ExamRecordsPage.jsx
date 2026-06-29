@@ -38,7 +38,7 @@ const ExamRecordsPage = () => {
                 totalElements: data.totalElements || dataArray.length
             });
         } catch (error) {
-            console.error("Error fetching eye exam records:", error);
+            console.error("Lỗi khi truy xuất hồ sơ khám mắt:", error);
         } finally {
             setLoading(false);
         }
@@ -54,7 +54,7 @@ const ExamRecordsPage = () => {
             setSelectedRecord(res.data);
             setIsDetailOpen(true);
         } catch (error) {
-            alert("Error loading exam record details");
+            alert("Lỗi khi tải chi tiết hồ sơ khám mắt");
         }
     };
 
@@ -94,9 +94,23 @@ const ExamRecordsPage = () => {
     };
 
     const handleConfirmUpdate = async (e) => {
-        e.preventDefault(); // Chặn hành vi submit reload trang của thẻ <form>
+        e.preventDefault();
         try {
-            await axiosClient.put(`/eye-exam-records/${updateForm.examId}`, updateForm);
+            const cleanedForm = { ...updateForm };
+            const numericFields = [
+                'vaLeftWithoutGlasses', 'vaLeftWithGlasses', 'sphLeft', 'cylLeft', 'axisLeft',
+                'vaRightWithoutGlasses', 'vaRightWithGlasses', 'sphRight', 'cylRight', 'axisRight'
+            ];
+
+            numericFields.forEach(field => {
+                if (cleanedForm[field] === '') {
+                    cleanedForm[field] = null;
+                } else if (cleanedForm[field] !== null && cleanedForm[field] !== undefined) {
+                    cleanedForm[field] = parseFloat(cleanedForm[field]);
+                }
+            });
+
+            await axiosClient.put(`/eye-exam-records/${cleanedForm.examId}`, cleanedForm);
             setIsUpdateOpen(false);
             fetchData(pageData.page);
         } catch (error) {
@@ -113,7 +127,6 @@ const ExamRecordsPage = () => {
         if (!recordToDelete) return;
         try {
             await axiosClient.delete(`/eye-exam-records/${recordToDelete.examId}`);
-            alert("Xóa hồ sơ khám mắt thành công!");
             setIsDeleteOpen(false);
             setRecordToDelete(null);
 
@@ -121,7 +134,6 @@ const ExamRecordsPage = () => {
             const targetPage = isLastItemOnPage ? pageData.page - 1 : pageData.page;
             fetchData(targetPage);
         } catch (error) {
-            console.error("Error deleting eye exam record:", error);
             alert(error.response?.data?.message || "Có lỗi xảy ra khi xóa hồ sơ.");
         }
     };
@@ -167,32 +179,32 @@ const ExamRecordsPage = () => {
     return (
         <div className="p-8 h-full overflow-y-auto bg-gray-50 text-gray-950 scrollbar-thin">
             <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-8 flex flex-wrap items-center justify-between gap-4">
-                <SearchExamRecords searchQuery={searchQuery} setSearchQuery={setSearchQuery} onAddClick={() => alert('Single record creation feature is under development')} />
-                <ExamRecordAction onAddClick={() => alert('Single record creation feature is under development')} />
+                <SearchExamRecords searchQuery={searchQuery} setSearchQuery={setSearchQuery} onAddClick={() => alert('Tính năng thêm hồ sơ lẻ đang được phát triển')} />
+                <ExamRecordAction onAddClick={() => alert('Đang phát triển')} />
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50/50 px-8 py-5 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="text-lg font-black text-gray-950">Eye Exam Records</h3>
-                    <p className="text-gray-500 font-semibold text-sm">Total: {pageData.totalElements} records</p>
+                    <h3 className="text-lg font-black text-gray-950">Hồ sơ khám mắt</h3>
+                    <p className="text-gray-500 font-semibold text-sm">Tổng số: {pageData.totalElements} bản ghi</p>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                         <tr className="text-gray-600 text-xs font-bold uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-                            <th className="px-6 py-4">Patient Name</th>
-                            <th className="px-6 py-4">Class</th>
-                            <th className="px-6 py-4">Campaign</th>
-                            <th className="px-6 py-4">Exam Date</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
+                            <th className="px-6 py-4">Họ và Tên</th>
+                            <th className="px-6 py-4">Lớp</th>
+                            <th className="px-6 py-4">Chiến dịch khám</th>
+                            <th className="px-6 py-4">Ngày khám</th>
+                            <th className="px-6 py-4 text-right">Hành động</th>
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                         {loading ? (
-                            <tr><td colSpan="5" className="text-center py-8 font-semibold text-gray-500">Loading data...</td></tr>
+                            <tr><td colSpan="5" className="text-center py-8 font-semibold text-gray-500">Đang tải dữ liệu...</td></tr>
                         ) : filteredRecords.length === 0 ? (
-                            <tr><td colSpan="5" className="text-center py-8 text-gray-500 italic font-medium">No matching records found</td></tr>
+                            <tr><td colSpan="5" className="text-center py-8 text-gray-500 italic font-medium">Không tìm thấy hồ sơ phù hợp</td></tr>
                         ) : (
                             filteredRecords.map((record) => (
                                 <tr key={record.examId} className="hover:bg-blue-50/50 transition-all text-sm font-medium text-gray-900">
@@ -203,10 +215,7 @@ const ExamRecordsPage = () => {
 
                                     <td className="px-6 py-5 text-right flex justify-end gap-3">
                                         <button type="button" onClick={() => openDetail(record)} className="text-gray-500 hover:text-gray-900 transition-colors cursor-pointer" title="Xem chi tiết"><View size={20} /></button>
-
-                                        {/* 👉 NÚT UPDATE: Gọi hàm openUpdateModal khi nhấn */}
                                         <button type="button" onClick={() => openUpdateModal(record)} className="text-gray-400 hover:text-blue-900 transition-colors cursor-pointer" title="Chỉnh sửa"><SquarePen size={20}/></button>
-
                                         <button type="button" onClick={() => triggerDeleteModal(record)} className="text-gray-400 hover:text-red-600 transition-colors cursor-pointer" title="Xóa hồ sơ"><Trash size={20}/></button>
                                     </td>
                                 </tr>
@@ -217,7 +226,7 @@ const ExamRecordsPage = () => {
                 </div>
 
                 <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
-                    <div className="text-sm font-semibold text-gray-500">Page <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}</div>
+                    <div className="text-sm font-semibold text-gray-500">Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {pageData.totalPages || 1}</div>
                     <div className="flex items-center gap-1.5">
                         <button disabled={pageData.page === 0} onClick={() => fetchData(pageData.page - 1)} className="flex items-center justify-center w-9 h-9 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-30 transition-all cursor-pointer"><ChevronLeft size={18} className="text-gray-700"/></button>
                         {[...Array(pageData.totalPages)].map((_, i) => {
@@ -237,40 +246,40 @@ const ExamRecordsPage = () => {
                     <div className="bg-white p-8 rounded-3xl w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[90vh]">
                         <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
                             <div>
-                                <h2 className="text-2xl font-black text-gray-950">Eye Exam Record Details</h2>
-                                <p className="text-sm font-semibold text-blue-900 mt-1">Patient: {selectedRecord.patientName}</p>
+                                <h2 className="text-2xl font-black text-gray-950">Chi tiết hồ sơ khám mắt</h2>
+                                <p className="text-sm font-semibold text-blue-900 mt-1">Học sinh: {selectedRecord.patientName}</p>
                             </div>
                             <button type="button" onClick={() => setIsDetailOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"><X size={22} className="text-gray-400"/></button>
                         </div>
                         <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl mb-6 text-sm">
-                            <div><span className="text-gray-500 font-medium">Class:</span> <span className="font-bold text-gray-950">{selectedRecord.className || "-"}</span></div>
-                            <div><span className="text-gray-500 font-medium">Exam Date:</span> <span className="font-bold text-gray-950">{formatDate(selectedRecord.examDate)}</span></div>
-                            <div className="col-span-2"><span className="text-gray-500 font-medium">Campaign:</span> <span className="font-bold text-gray-950">{selectedRecord.campaignTitle || "-"}</span></div>
-                            <div className="col-span-2"><span className="text-gray-500 font-medium">Examiner:</span> <span className="font-bold text-gray-950">{selectedRecord.examinerName || "-"}</span></div>
+                            <div><span className="text-gray-500 font-medium">Lớp:</span> <span className="font-bold text-gray-950">{selectedRecord.className || "-"}</span></div>
+                            <div><span className="text-gray-500 font-medium">Ngày khám:</span> <span className="font-bold text-gray-950">{formatDate(selectedRecord.examDate)}</span></div>
+                            <div className="col-span-2"><span className="text-gray-500 font-medium">Chiến dịch:</span> <span className="font-bold text-gray-950">{selectedRecord.campaignTitle || "-"}</span></div>
+                            <div className="col-span-2"><span className="text-gray-500 font-medium">Người khám:</span> <span className="font-bold text-gray-950">{selectedRecord.examinerName || "-"}</span></div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="border border-blue-100 rounded-2xl p-5 bg-blue-50/10">
-                                <h4 className="text-sm font-black text-blue-900 uppercase tracking-wider mb-4 border-b border-blue-100 pb-2">Left Eye (L)</h4>
+                                <h4 className="text-sm font-black text-blue-900 uppercase tracking-wider mb-4 border-b border-blue-100 pb-2">Mắt Trái (L)</h4>
                                 <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithoutGlasses)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithGlasses)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphLeft)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylLeft)}</span></div>
-                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis L</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisLeft)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Thị lực (Không kính)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithoutGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Thị lực (Có kính)</span><span className="text-sm font-black text-blue-900">{formatVA(selectedRecord.vaLeftWithGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Độ cầu (Sph L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphLeft)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Độ trụ (Cyl L)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylLeft)}</span></div>
+                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Trục (Axis L)</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisLeft)}</span></div>
                                 </div>
                             </div>
                             <div className="border border-green-100 rounded-2xl p-5 bg-green-50/10">
-                                <h4 className="text-sm font-black text-green-900 uppercase tracking-wider mb-4 border-b border-green-100 pb-2">Right Eye (R)</h4>
+                                <h4 className="text-sm font-black text-green-900 uppercase tracking-wider mb-4 border-b border-green-100 pb-2">Mắt Phải (R)</h4>
                                 <div className="space-y-3">
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (No Glasses)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithoutGlasses)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">VA (With Glasses)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithGlasses)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sphere (Sph R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphRight)}</span></div>
-                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cylinder (Cyl R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylRight)}</span></div>
-                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Axis R</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisRight)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Thị lực (Không kính)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithoutGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Thị lực (Có kính)</span><span className="text-sm font-black text-green-900">{formatVA(selectedRecord.vaRightWithGlasses)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Độ cầu (Sph R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.sphRight)}</span></div>
+                                    <div className="flex justify-between border-b border-gray-100 pb-2"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Độ trụ (Cyl R)</span><span className="text-sm font-bold text-gray-800">{formatDiopter(selectedRecord.cylRight)}</span></div>
+                                    <div className="flex justify-between"><span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Trục (Axis R)</span><span className="text-sm font-bold text-gray-800">{formatAxis(selectedRecord.axisRight)}</span></div>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" onClick={() => setIsDetailOpen(false)} className="w-full mt-8 py-4 bg-gray-950 text-white rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer">Close Details</button>
+                        <button type="button" onClick={() => setIsDetailOpen(false)} className="w-full mt-8 py-4 bg-gray-950 text-white rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 cursor-pointer">Đóng chi tiết</button>
                     </div>
                 </div>
             )}

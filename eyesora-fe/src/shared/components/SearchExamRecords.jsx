@@ -3,7 +3,7 @@ import {Search} from "lucide-react";
 const SearchExamRecords = ({
                        searchQuery,
                        setSearchQuery,
-                       placeholder = "Search by class or campaign..."
+                       placeholder = "Tìm kiếm"
                    }) => {
     return (<>
             <div className="flex flex-wrap items-center gap-4 flex-grow">

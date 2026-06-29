@@ -57,7 +57,17 @@ public class CampaignController {
             @PathVariable String id,
             @PathVariable String status) {
         campaignService.setCampaignStatus(id, status);
-        return ResponseEntity.ok("Status updated to " + status);
+        return ResponseEntity.ok("Trạng thái đã được cập nhật thành: " + status);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateCampaign(@PathVariable String id, @Valid @RequestBody CampaignRequest req) {
+        if (req.startDate() != null && req.endDate() != null && req.startDate().isAfter(req.endDate())) {
+            return ResponseEntity.badRequest().body(Map.of("startDate", "Ngày bắt đầu phải trước ngày kết thúc",
+                    "endDate", "Ngày kết thúc phải sau ngày bắt đầu"));
+        }
+
+        return ResponseEntity.ok(campaignService.updateCampaign(id, req));
     }
 
 //    @GetMapping("/deleted")

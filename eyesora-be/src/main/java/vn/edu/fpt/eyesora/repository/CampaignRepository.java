@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import vn.edu.fpt.eyesora.entity.ExamCampaign;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,10 @@ public interface CampaignRepository extends JpaRepository<ExamCampaign, String> 
 
     @Query("SELECT COUNT(p) FROM Patient p WHERE p.examCampaign.campaignId = :campaignId")
     Long countPatientsByCampaignId(@Param("campaignId") String campaignId);
+
+    boolean existsByTargetfacility_IdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            String facilityId, LocalDate endDate, LocalDate startDate);
+
+    boolean existsByTargetfacility_IdAndStartDateLessThanEqualAndEndDateGreaterThanEqualAndCampaignIdNot(
+            String facilityId, LocalDate endDate, LocalDate startDate, String campaignId);
 }

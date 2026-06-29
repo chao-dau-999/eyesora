@@ -12,4 +12,6 @@ public interface ClassesRepository extends JpaRepository<Classes,String> {
 
     @EntityGraph(attributePaths = {"patients", "patients.ward"})
     Optional<Classes> findWithPatientsById(String id);
+
+    
 }

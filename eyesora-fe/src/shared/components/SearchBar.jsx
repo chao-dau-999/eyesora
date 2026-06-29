@@ -1,5 +1,4 @@
 import {Search} from "lucide-react";
-import PatientAction from "../../features/patient/components/PatientAction.jsx";
 
 const SearchBar = ({
                        searchQuery,

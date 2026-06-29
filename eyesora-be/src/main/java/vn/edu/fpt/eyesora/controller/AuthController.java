@@ -41,82 +41,126 @@ public class AuthController {
     @PostMapping("/login")
     @Transactional
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password()));
+
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.username(),
+                        loginRequest.password()
+                )
+        );
 
         User user = (User) authentication.getPrincipal();
         String id = user.getId();
-//        String img = user.getImg();
         String source = "user";
-        Set<String> roles = user.getAuthorities().stream()
+        Set<String> roles = user.getAuthorities()
+                .stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toSet());
-
         String accessToken = jwtUtil.generateToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername(), source);
-
-        return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken.getToken(), id, user.getUsername(), null, roles));
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(
+                        user.getUsername(),
+                        source
+                );
+        return ResponseEntity.ok(
+                new TokenResponse(
+                        accessToken,
+                        refreshToken.getToken(),
+                        id,
+                        user.getUsername(),
+                        null,
+                        roles
+                )
+        );
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(
+            @RequestBody RegisterRequest request) {
+
         try {
             userService.register(request);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("Registration successful. Please check your email to verify.");
+                    .body("Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.");
         } catch (BadRequestException | ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
+            return ResponseEntity.status(
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<?> verifyEmail(
+            @RequestParam("token") String token) {
         try {
             userService.verifyEmail(token);
-            return ResponseEntity.ok("Account verified successfully. You can now login.");
+            return ResponseEntity.ok(
+                    "Xác thực tài khoản thành công. Bạn có thể đăng nhập.");
         } catch (BadRequestException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(e.getMessage());
         }
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody LogoutRequest request) {
+    public ResponseEntity<?> logout(
+            @RequestBody LogoutRequest request) {
+
         try {
-            refreshTokenService.deleteByToken(request.refreshToken());
-            return ResponseEntity.ok("Logged out successfully");
+            refreshTokenService.deleteByToken(
+                    request.refreshToken()
+            );
+            return ResponseEntity.ok(
+                    "Đăng xuất thành công");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Logout failed: " + e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body("Đăng xuất thất bại: " + e.getMessage());
         }
     }
 
     @PostMapping("/resend-verification")
-    public ResponseEntity<?> resendVerification(@RequestParam("email") String email) {
+    public ResponseEntity<?> resendVerification(
+            @RequestParam("email") String email) {
         userService.resendVerificationEmail(email);
-        return ResponseEntity.ok("Verification email has been resent. Please check your inbox.");
+        return ResponseEntity.ok(
+                "Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư.");
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<?> forgotPassword(
+            @RequestBody ForgotPasswordRequest request) {
         try {
-            userService.processForgotPassword(request.email());
-            return ResponseEntity.ok("Password reset link has been sent. Please check your email.");
+            userService.processForgotPassword(
+                    request.email());
+            return ResponseEntity.ok(
+                    "Đã gửi liên kết đặt lại mật khẩu. Vui lòng kiểm tra email.");
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
+            return ResponseEntity.status(
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<?> resetPassword(
+            @RequestBody ResetPasswordRequest request) {
         try {
             userService.resetPassword(request);
-            return ResponseEntity.ok("Password reset successful. You can now login with your new password.");
+            return ResponseEntity.ok(
+                    "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
         } catch (BadRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
+            return ResponseEntity.status(
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 }

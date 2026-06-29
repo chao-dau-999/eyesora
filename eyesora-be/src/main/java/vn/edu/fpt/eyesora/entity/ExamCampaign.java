@@ -21,8 +21,14 @@ public class ExamCampaign {
     @Column(name = "facility_year", length = 20)
     private String facilityYear;
 
-    @Column(name = "start_date")
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
+
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "manager_name")
     private String managerName;
@@ -40,4 +46,5 @@ public class ExamCampaign {
     private Facility targetfacility;
 
     public enum CampaignStatus { ACTIVE, LOCKED, DELETED }
+
 }
