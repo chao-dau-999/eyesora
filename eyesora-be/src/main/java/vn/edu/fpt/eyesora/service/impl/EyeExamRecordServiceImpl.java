@@ -3,8 +3,9 @@ package vn.edu.fpt.eyesora.service.impl;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import vn.edu.fpt.eyesora.dto.request.EyeExamRecordRequest;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
@@ -27,38 +28,41 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
 
-
     @Override
     @Transactional
-    public List<EyeExamRecordResponse> getExamRecords(String campaignId, String classId) {
-
-        Sort sort = Sort.by("examDate").descending();
+    public Page<EyeExamRecordResponse> getExamRecords(String keyword, Pageable pageable) {
 
         Specification<EyeExamRecord> spec = (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             predicates.add(criteriaBuilder.equal(root.get("isDeleted"), false));
 
-            if (campaignId != null && !campaignId.isBlank()) {
-                predicates.add(criteriaBuilder.equal(root.get("campaign").get("campaignId"), campaignId));
-            }
+            if (keyword != null && !keyword.isBlank()) {
+                String likePattern = "%" + keyword.trim().toLowerCase() + "%";
 
-            if (classId != null && !classId.isBlank()) {
-                predicates.add(criteriaBuilder.equal(root.get("classesField").get("id"), classId));
+                Predicate searchPatient = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("patient").get("patientName")), likePattern);
+
+                Predicate searchClass = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("classesField").get("className")), likePattern);
+
+                Predicate searchCampaign = criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("campaign").get("campaignTitle")), likePattern);
+
+                Predicate globalSearchPredicate = criteriaBuilder.or(searchPatient, searchClass, searchCampaign);
+
+                predicates.add(globalSearchPredicate);
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
 
-        List<EyeExamRecord> records = eyeExamRecordRepository.findAll(spec, sort);
-
-        return records.stream()
-                .map(this::mapToResponse)
-                .toList();
+        Page<EyeExamRecord> recordsPage = eyeExamRecordRepository.findAll(spec, pageable);
+        return recordsPage.map(this::mapToResponse);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public EyeExamRecordResponse updateExamRecord(String examId, EyeExamRecordRequest request) {
         EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
                 .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
@@ -85,12 +89,11 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         entity.setAxisRight(request.getAxisRight());
 
         EyeExamRecord updatedEntity = eyeExamRecordRepository.save(entity);
-
         return mapToResponse(updatedEntity);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public EyeExamRecordResponse createExamRecord(EyeExamRecordRequest request) {
         EyeExamRecord entity = new EyeExamRecord();
 
@@ -125,21 +128,19 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         entity.setAxisRight(request.getAxisRight());
 
         EyeExamRecord savedEntity = eyeExamRecordRepository.save(entity);
-
         return mapToResponse(savedEntity);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional
     public EyeExamRecordResponse getExamRecordDetail(String examId) {
         EyeExamRecord eyeExamRecord = eyeExamRecordRepository.findById(examId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ khám mắt"));
-
         return mapToResponse(eyeExamRecord);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void deleteExamRecord(String examId) {
         EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
                 .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
