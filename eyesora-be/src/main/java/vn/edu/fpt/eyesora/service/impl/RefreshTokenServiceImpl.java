@@ -9,7 +9,6 @@ import vn.edu.fpt.eyesora.exceptions.RefreshTokenException;
 import vn.edu.fpt.eyesora.repository.RefreshTokenRepository;
 import vn.edu.fpt.eyesora.service.IRefreshTokenService;
 
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -17,38 +16,57 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RefreshTokenServiceImpl implements IRefreshTokenService {
+
     @Value("${JWT_REFRESH_EXPIRES_IN}")
     private long refreshExpirationDays;
 
     private final RefreshTokenRepository refreshTokenRepository;
-
 
     @Override
     public RefreshToken createRefreshToken(String username, String source) {
         refreshTokenRepository.deleteByUsernameAndSource(username, source);
 
         RefreshToken rt = new RefreshToken();
+
         rt.setToken(UUID.randomUUID().toString());
         rt.setUsername(username);
         rt.setSource(source);
-        rt.setExpiryDate(Instant.now().plus(refreshExpirationDays, ChronoUnit.DAYS));
+        rt.setExpiryDate(
+                Instant.now().plus(
+                        refreshExpirationDays,
+                        ChronoUnit.DAYS
+                )
+        );
         rt.setRevoked(false);
+
         return refreshTokenRepository.save(rt);
     }
 
     @Override
     @Transactional
     public RefreshToken verifyRefreshToken(String token) {
+
         RefreshToken rt = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RefreshTokenException("Refresh token not found"));
+                .orElseThrow(() ->
+                        new RefreshTokenException(
+                                "Không tìm thấy refresh token"
+                        )
+                );
 
         if (rt.isRevoked()) {
-            throw new RefreshTokenException("Refresh token has been  revoked");
+            throw new RefreshTokenException(
+                    "Refresh token đã bị thu hồi"
+            );
         }
+
         if (rt.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(rt);
-            throw new RefreshTokenException("Refresh token has expired.");
+
+            throw new RefreshTokenException(
+                    "Refresh token đã hết hạn."
+            );
         }
+
         return rt;
     }
 
@@ -56,15 +74,20 @@ public class RefreshTokenServiceImpl implements IRefreshTokenService {
     public RefreshToken rotate(RefreshToken old) {
         // Refresh token rotation: xoá cái cũ, tạo cái mới
         refreshTokenRepository.delete(old);
-        return createRefreshToken(old.getUsername(), old.getSource());
+
+        return createRefreshToken(
+                old.getUsername(),
+                old.getSource()
+        );
     }
 
     @Override
     public void revokeByToken(String token) {
-        refreshTokenRepository.findByToken(token).ifPresent(rt -> {
-            rt.setRevoked(true);
-            refreshTokenRepository.save(rt);
-        });
+        refreshTokenRepository.findByToken(token)
+                .ifPresent(rt -> {
+                    rt.setRevoked(true);
+                    refreshTokenRepository.save(rt);
+                });
     }
 
     @Override

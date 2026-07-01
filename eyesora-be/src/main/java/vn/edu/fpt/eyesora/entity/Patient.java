@@ -1,9 +1,11 @@
 package vn.edu.fpt.eyesora.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -18,8 +20,9 @@ public class Patient {
     @Column(name = "patient_id", nullable = false, length = 36)
     private String patientId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ward_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ward_id")
+    @JsonIgnore
     private Ward ward;
 
     @Column(name = "patient_name", nullable = false, length = 150)
@@ -39,7 +42,19 @@ public class Patient {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "campaign_id")
+    private ExamCampaign examCampaign;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facility_id")
+    private Facility facility;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    private Classes classes;
+
+    @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
 

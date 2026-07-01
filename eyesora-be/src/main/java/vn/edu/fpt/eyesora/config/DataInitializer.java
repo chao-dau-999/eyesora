@@ -26,40 +26,52 @@ public class DataInitializer {
         return args -> {
 
             if (userRepo.count() > 0) {
-                return; // tránh insert lại
+                return;
             }
 
             Role adminRole = new Role();
             adminRole.setName("ADMIN");
 
-            Role userRole = new Role();
-            userRole.setName("USER");
+            Role examinerRole = new Role();
+            examinerRole.setName("EXAMINER");
 
-            Role ownerRole = new Role();
-            ownerRole.setName("OWNER");
+            Role facilityOwner = new Role();
+            facilityOwner.setName("FACILITY_OWNER");
 
             roleRepository.save(adminRole);
-            roleRepository.save(userRole);
-            roleRepository.save(ownerRole);
+            roleRepository.save(examinerRole);
+            roleRepository.save(facilityOwner);
 
             User admin = new User();
             admin.setUsername("admin");
             admin.setPassword_hash(passwordEncoder.encode("password"));
             admin.setFull_name("System Super Admin");
+            admin.setEmail("admin12345@gmail.com");
             admin.setFacility_id(null);
-            admin.setRoles(Set.of(adminRole, userRole, ownerRole));
+            admin.setRoles(Set.of(adminRole));
             admin.setStatus(AccountStatus.ACTIVE);
 
             User owner = new User();
             owner.setUsername("owner1");
             owner.setPassword_hash(passwordEncoder.encode("password"));
-            owner.setFull_name("Facility Admin 1");
+            owner.setFull_name("Facility 1");
+            owner.setEmail("owner1@gmail.com");
             owner.setFacility_id(null);
-            owner.setRoles(Set.of(ownerRole, userRole));
+            owner.setRoles(Set.of(facilityOwner));
             owner.setStatus(AccountStatus.ACTIVE);
+
+            User examiner = new User();
+            examiner.setUsername("examiner");
+            examiner.setPassword_hash(passwordEncoder.encode("password"));
+            examiner.setFull_name("Examiner 1");
+            examiner.setEmail("examiner@gmail.com");
+            examiner.setFacility_id(null);
+            examiner.setRoles(Set.of(examinerRole));
+            examiner.setStatus(AccountStatus.ACTIVE);
 
             userRepo.save(admin);
             userRepo.save(owner);
+            userRepo.save(examiner);
         };
     }
 }

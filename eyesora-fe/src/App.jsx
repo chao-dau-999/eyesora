@@ -1,122 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
-
+import { Route, Routes, BrowserRouter } from 'react-router-dom'
+import AppLayout from "./shared/layout/AppLayout";
+import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
+import LoginPage from "./features/auth/page/LoginPage.jsx";
+import PatientPage from "./features/patient/pages/PatientPage.jsx";
+import FacilitiesPage from "./features/facility/pages/FacilitiesPage.jsx";
+import FacilityFormPage from "./features/facility/pages/FacilityFormPage.jsx";
+import CampaignsPage from "./features/campaign/pages/CampaignsPage.jsx";
+import CampaignFormPage from './features/campaign/pages/CampaignFormPage';
+import UsersPage from "./features/user/pages/UsersPage.jsx";
+import DistrictsPage from "./features/district/pages/DistrictsPage.jsx";
+import DistrictFormPage from './features/district/pages/DistrictFormPage';
+import WardsPage from "./features/ward/pages/WardsPage.jsx";
+import WardsFormPage from "./features/ward/pages/WardsFormPage.jsx";
+import PatientFormPage from "./features/patient/pages/PatientFormPage.jsx";
+import ClassesPage from "./features/class/pages/ClassesPage";
+import ClassFormPage from "./features/class/pages/ClassFormPage";
+import ExamRecordPage from "./features/eye-exam-record/pages/ExamRecordPage.jsx";
+import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormPage.jsx";
+import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImportPage.jsx";
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/" element={<AppLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="/classes" element={<ClassesPage />} />
+                    <Route path="/classes/create" element={<ClassFormPage />} />
+                    <Route path="/classes/edit/:id" element={<ClassFormPage />} />
+                    <Route path="/patients" element={<PatientPage />} />
+                    <Route path="/patients/create" element={<PatientFormPage />} />
+                    <Route path="/patients/edit/:id" element={<PatientFormPage />} />
+                    <Route path="/facilities" element={<FacilitiesPage />} />
+                    <Route path="/facilities/create" element={<FacilityFormPage />} />
+                    <Route path="/facilities/edit/:id" element={<FacilityFormPage />} />
+                    <Route path="/campaigns" element={<CampaignsPage />} />
+                    <Route path="/campaigns/create" element={<CampaignFormPage />} />
+                    <Route path="/campaigns/edit/:id" element={<CampaignFormPage />} />
+                    <Route path="/admin/users" element={<UsersPage />} />
+                    <Route path="/districts" element={<DistrictsPage />} />
+                    <Route path="/districts/create" element={<DistrictFormPage />} />
+                    <Route path="/districts/edit/:id" element={<DistrictFormPage />} />
+                    <Route path="/wards" element={<WardsPage />} />
+                    <Route path="/wards/create" element={<WardsFormPage />} />
+                    <Route path="/wards/edit/:id" element={<WardsFormPage />} />
+                    <Route path="/eye-exam-records" element={<ExamRecordPage />} />
+                    <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage />} />
+                    <Route path="/eye-exam-records/import" element={<ExamRecordImportPage />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    )
 }
 
 export default App
