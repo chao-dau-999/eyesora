@@ -14,15 +14,15 @@ public class Facility {
     @Column(name = "facility_id", nullable = false, length = 36)
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ward_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "ward_id", nullable = true)
     private Ward ward;
 
     @Column(name = "facility_name", nullable = false)
     private String facilityName;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "facility_type", nullable = false, length = 10)
+    @Column(name = "facility_type", nullable = true, length = 10)
     private FacilityType facilityType;
 
     @Column(name = "address")

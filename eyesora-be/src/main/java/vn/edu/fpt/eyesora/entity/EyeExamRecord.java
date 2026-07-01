@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -36,7 +35,7 @@ public class EyeExamRecord {
 
     @CreationTimestamp
     @Column(name = "exam_date")
-    private Instant examDate;
+    private LocalDate examDate;
 
     @Column(name = "va_left_without_glasses", nullable = false)
     private Float vaLeftWithoutGlasses;
@@ -75,4 +74,8 @@ public class EyeExamRecord {
     @ColumnDefault("0")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+//    private Boolean hasRefractiveError;
+//
+//    private String diagnosis;
 }

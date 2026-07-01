@@ -9,7 +9,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.eyesora.dto.request.EyeExamRecordRequest;
+import vn.edu.fpt.eyesora.dto.response.ExcelImportResponse;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 import vn.edu.fpt.eyesora.service.IEyeExamRecordService;
 
@@ -57,5 +59,16 @@ public class EyeExamRecordController {
     public ResponseEntity<Void> deleteExamRecord(@PathVariable String examId) {
         eyeExamRecordService.deleteExamRecord(examId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ExcelImportResponse> importExcel(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "campaignId", required = false) String campaignId,
+            @RequestParam(value = "examinerId", required = false) String examinerId,
+            @RequestParam(value = "facilityId", required = false) String facilityId) {
+
+        ExcelImportResponse result = eyeExamRecordService.importExamRecordsFromExcel(file, campaignId, examinerId, facilityId);
+        return ResponseEntity.ok(result);
     }
 }

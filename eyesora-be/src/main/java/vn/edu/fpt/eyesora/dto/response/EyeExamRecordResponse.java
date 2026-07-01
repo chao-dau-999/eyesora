@@ -2,6 +2,7 @@ package vn.edu.fpt.eyesora.dto.response;
 
 import lombok.Builder;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Builder
 public record EyeExamRecordResponse(
@@ -12,7 +13,7 @@ public record EyeExamRecordResponse(
         Integer grade,
         String schoolYear,
         String examinerName,
-        Instant examDate,
+        LocalDate examDate,
 
         Float vaLeftWithoutGlasses,
         Float vaLeftWithGlasses,

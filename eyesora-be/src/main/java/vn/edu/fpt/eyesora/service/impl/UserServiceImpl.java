@@ -243,7 +243,10 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
+    public Page<UserResponse> getAllUsers(Pageable pageable, String role) {
+        if(role != null && !role.trim().isEmpty()) {
+            return userRepository.findByRoleName(role, pageable).map(this::mapToUserResponse);
+        }
         return userRepository.findAll(pageable).map(this::mapToUserResponse);
     }
 
