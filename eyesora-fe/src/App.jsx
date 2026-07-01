@@ -1,8 +1,8 @@
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
-import AppLayout from "./shared/layout/AppLayout"; // Bỏ đuôi file
+import AppLayout from "./shared/layout/AppLayout";
 import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
 import LoginPage from "./features/auth/page/LoginPage.jsx";
-import PatientPage from "./features/patient/pages/PatientPage.jsx"; // Bỏ đuôi file (hoặc bỏ {} nếu export default)
+import PatientPage from "./features/patient/pages/PatientPage.jsx";
 import FacilitiesPage from "./features/facility/pages/FacilitiesPage.jsx";
 import FacilityFormPage from "./features/facility/pages/FacilityFormPage.jsx";
 import CampaignsPage from "./features/campaign/pages/CampaignsPage.jsx";
@@ -17,6 +17,7 @@ import ClassesPage from "./features/class/pages/ClassesPage";
 import ClassFormPage from "./features/class/pages/ClassFormPage";
 import ExamRecordPage from "./features/eye-exam-record/pages/ExamRecordPage.jsx";
 import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormPage.jsx";
+import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImportPage.jsx";
 function App() {
     return (
         <BrowserRouter>
@@ -45,6 +46,7 @@ function App() {
                     <Route path="/wards/edit/:id" element={<WardsFormPage />} />
                     <Route path="/eye-exam-records" element={<ExamRecordPage />} />
                     <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage />} />
+                    <Route path="/eye-exam-records/import" element={<ExamRecordImportPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>
