@@ -19,6 +19,8 @@ public interface CampaignRepository extends JpaRepository<ExamCampaign, String> 
     @EntityGraph(attributePaths = {"organization", "targetfacility"})
     Page<ExamCampaign> findByStatusNot(ExamCampaign.CampaignStatus status, Pageable pageable);
 
+    Page<ExamCampaign> findByStatus(ExamCampaign.CampaignStatus status, Pageable pageable);
+
 
     @EntityGraph(attributePaths = {"organization", "targetfacility"})
     Optional<ExamCampaign> findWithDetailByCampaignId(String campaignId);

@@ -9,7 +9,7 @@ import vn.edu.fpt.eyesora.entity.ExamCampaign;
 import java.util.List;
 
 public interface ICampaignService {
-    Page<CampaignResponse> getAllCampaigns(Pageable pageable);
+    Page<CampaignResponse> getAllCampaigns(String status, Pageable pageable);
 
     CampaignResponse createCampaign(CampaignRequest req);
 

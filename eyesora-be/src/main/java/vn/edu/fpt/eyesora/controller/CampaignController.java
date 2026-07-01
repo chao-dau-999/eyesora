@@ -29,8 +29,10 @@ public class CampaignController {
 
     @GetMapping
     public ResponseEntity<Page<CampaignResponse>> getAllCampaigns(
-            @PageableDefault(size = 10, sort = "startDate") Pageable pageable) {
-        return ResponseEntity.ok(campaignService.getAllCampaigns(pageable));
+            @PageableDefault(size = 10, sort = "startDate") Pageable pageable,
+            @RequestParam(required = false) String status
+            ) {
+        return ResponseEntity.ok(campaignService.getAllCampaigns(status, pageable));
     }
 
     @GetMapping("/{campaignId}/patient-count")

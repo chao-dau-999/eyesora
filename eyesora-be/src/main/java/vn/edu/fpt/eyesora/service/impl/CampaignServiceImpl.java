@@ -26,7 +26,16 @@ public class CampaignServiceImpl implements ICampaignService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CampaignResponse> getAllCampaigns(Pageable pageable) {
+    public Page<CampaignResponse> getAllCampaigns(String status, Pageable pageable) {
+        if (status != null && !status.isEmpty()) {
+            try {
+                ExamCampaign.CampaignStatus campaignStatus = ExamCampaign.CampaignStatus.valueOf(status.toUpperCase());
+                return campaignRepository.findByStatus(campaignStatus, pageable)
+                        .map(this::mapToResponse);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Trạng thái không hợp lệ: " + status);
+            }
+        }
         return campaignRepository.findByStatusNot(ExamCampaign.CampaignStatus.DELETED, pageable)
                 .map(this::mapToResponse);
     }
