@@ -21,10 +21,12 @@ public class UserController {
     public ResponseEntity<?> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "username") String sortBy) {
+            @RequestParam(defaultValue = "username") String sortBy,
+            @RequestParam(required = false) String role
+            ) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        return ResponseEntity.ok(userService.getAllUsers(pageable));
+        return ResponseEntity.ok(userService.getAllUsers(pageable, role));
     }
 
     // Body: { "status": "LOCKED" } hoặc { "status": "ACTIVE" }
