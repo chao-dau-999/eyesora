@@ -77,6 +77,7 @@ DROP TABLE IF EXISTS `exam_campaigns`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `exam_campaigns` (
   `start_date` date NOT NULL,
+  `end_date` date DEFAULT NULL,
   `campaign_id` varchar(36) NOT NULL,
   `organization_id` varchar(36) NOT NULL,
   `campaign_title` varchar(255) NOT NULL,
@@ -220,7 +221,7 @@ CREATE TABLE `patients` (
   `created_at` datetime(6) DEFAULT NULL,
   `parent_phone` varchar(15) DEFAULT NULL,
   `patient_id` varchar(36) NOT NULL,
-  `ward_id` varchar(36) NOT NULL,
+  `ward_id` varchar(36) DEFAULT NULL,
   `patient_name` varchar(150) NOT NULL,
   `gender` enum('FEMALE','MALE','OTHER') NOT NULL,
   `campaign_id` varchar(36) DEFAULT NULL,
