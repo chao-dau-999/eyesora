@@ -72,13 +72,12 @@ const CampaignFormPage = () => {
         } catch (err) {
             const errorData = err.response?.data;
 
-            // Xử lý thông minh: Tự map lỗi chuỗi vào đúng field nếu Backend trả về chuỗi
             if (typeof errorData === 'string') {
                 if (errorData.includes("Ngày bắt đầu")) setErrors({ startDate: errorData });
                 else if (errorData.includes("trùng lịch")) setErrors({ targetId: errorData });
                 else setErrors({ server: errorData });
             }
-            // Nếu Backend trả về object (Map), dùng trực tiếp
+
             else if (errorData && typeof errorData === 'object') {
                 setErrors(errorData);
             }

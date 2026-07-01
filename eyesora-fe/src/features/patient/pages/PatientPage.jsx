@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import SearchBar from "../../../shared/components/SearchBar.jsx";
 import PatientAction from "../components/PatientAction.jsx";
 import PatientTable from "../components/PatientTable.jsx";
 import PatientDetailModal from "../components/PatientDetailModal.jsx";
 
 const PatientPage = () => {
-    const navigate = useNavigate(); // 2. Khởi tạo hook điều hướng
+    const navigate = useNavigate();
 
 
     const [patients, setPatients] = useState([]);
@@ -56,7 +56,6 @@ const PatientPage = () => {
                     <p className="text-xs text-gray-500 mt-0.5">Tổng số: {pageInfo.totalElements} học sinh</p>
                 </div>
 
-                {/* Nút thao tác dồn về bên phải */}
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/patients/create')}
@@ -67,7 +66,6 @@ const PatientPage = () => {
                 </div>
             </div>
 
-            {/* Thanh tìm kiếm & Bộ lọc riêng biệt (Sử dụng Reusable SearchBar của bạn) */}
             <div className="mb-6">
                 <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
@@ -87,7 +85,6 @@ const PatientPage = () => {
                 />
             </div>
 
-            {/* Modal Detail giữ lại làm hộp thoại xem nhanh thông tin */}
             {isDetailModalOpen && (
                 <PatientDetailModal
                     patient={selectedPatient}

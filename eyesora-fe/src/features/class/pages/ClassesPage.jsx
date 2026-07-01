@@ -36,12 +36,11 @@ const ClassesPage = () => {
     const openDetailModal = async (cls, page = 0) => {
         try {
             const res = await axiosClient.get(`/master-data/classes/${cls.id}/patients?page=${page}&size=10`);
-            console.log("DỮ LIỆU TỪ API CHI TIẾT LỚP:", res.data); // <--- XEM LOG NÀY
+            // console.log("DỮ LIỆU TỪ API CHI TIẾT LỚP:", res.data);
 
-            // CÓ THỂ LÀ CẤU TRÚC LÀ res.data.content thay vì res.data.patients.content
             setDetailData({
                 ...res.data,
-                patients: res.data.patients?.content || [], // Kiểm tra kỹ đường dẫn này
+                patients: res.data.patients?.content || [],
                 classInfo: cls,
                 number: res.data.patients?.number || 0,
                 totalPages: res.data.patients?.totalPages || 0
