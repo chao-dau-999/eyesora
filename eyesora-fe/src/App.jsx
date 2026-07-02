@@ -18,6 +18,7 @@ import ClassFormPage from "./features/class/pages/ClassFormPage";
 import ExamRecordPage from "./features/eye-exam-record/pages/ExamRecordPage.jsx";
 import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormPage.jsx";
 import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImportPage.jsx";
+import UserProfilePage from "./features/user/pages/UserProfilePage.jsx";
 function App() {
     return (
         <BrowserRouter>
@@ -47,6 +48,7 @@ function App() {
                     <Route path="/eye-exam-records" element={<ExamRecordPage />} />
                     <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage />} />
                     <Route path="/eye-exam-records/import" element={<ExamRecordImportPage />} />
+                    <Route path="/profile" element={<UserProfilePage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

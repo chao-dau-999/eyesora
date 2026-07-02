@@ -1,41 +1,57 @@
 import { create } from 'zustand';
 
 export const useAuthStore = create((set) => ({
-    // Trạng thái ban đầu: Thử lấy dữ liệu cũ từ localStorage nếu có
-    user: localStorage.getItem('username')
+    user: localStorage.getItem("accessToken")
         ? {
-            id: localStorage.getItem('userId'),
-            username: localStorage.getItem('username'),
-            // img: localStorage.getItem('userImg'),
-            role: localStorage.getItem('userRole'),
+            id: localStorage.getItem("userId"),
+            name: localStorage.getItem("name"),
+            username: localStorage.getItem("username"),
+            img: localStorage.getItem("userImg"),
+            roles: JSON.parse(localStorage.getItem("roles") || "[]"),
         }
         : null,
+
     isAuthenticated: !!localStorage.getItem('accessToken'),
 
-    // Hành động Đăng nhập thành công
     loginSuccess: (tokenData) => {
-        localStorage.setItem('accessToken', tokenData.accessToken);
-        localStorage.setItem('refreshToken', tokenData.refreshToken);
-        localStorage.setItem('userId', tokenData.id);
-        localStorage.setItem('username', tokenData.username);
-        localStorage.setItem('userImg', tokenData.img || '');
-        localStorage.setItem('userRole', tokenData.role);
+        localStorage.setItem("accessToken", tokenData.accessToken);
+        localStorage.setItem("refreshToken", tokenData.refreshToken);
+
+        localStorage.setItem("userId", tokenData.id);
+        localStorage.setItem("name", tokenData.name);
+        localStorage.setItem("username", tokenData.username);
+        localStorage.setItem("userImg", tokenData.img || "");
+        localStorage.setItem(
+            "roles",
+            JSON.stringify(tokenData.roles || [])
+        );
 
         set({
             isAuthenticated: true,
             user: {
                 id: tokenData.id,
+                name: tokenData.name,
                 username: tokenData.username,
                 img: tokenData.img,
-                role: tokenData.role
+                roles: tokenData.roles || [],
             }
         });
     },
 
-    // Hành động Đăng xuất
+
     logout: () => {
-        localStorage.clear(); // Hoặc xóa từng item cụ thể
-        set({ isAuthenticated: false, user: null });
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("name");
+        localStorage.removeItem("username");
+        localStorage.removeItem("userImg");
+        localStorage.removeItem("roles");
+
+        set({
+            isAuthenticated: false,
+            user: null,
+        });
         window.location.href = '/login';
     }
 }));

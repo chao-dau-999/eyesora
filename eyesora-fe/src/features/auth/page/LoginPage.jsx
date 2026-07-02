@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Lock, Eye, EyeOff, ShieldCheck, BarChart3, FileText, ScanEye, ArrowRight, Loader2 } from 'lucide-react';
-import { authService } from '../api/authService.js'; // Import service vừa tạo
+import { authService } from '../api/authService.js';
+import {useAuthStore} from "../store/authStore.js"; // Import service vừa tạo
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -8,6 +9,7 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({ username: '', password: '', apiError: '' }); // Thêm apiError
+    const loginSuccess = useAuthStore(state => state.loginSuccess);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -31,17 +33,12 @@ export default function LoginPage() {
             try {
                 const data = await authService.login(username, password);
 
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('refreshToken', data.refreshToken);
-                localStorage.setItem('userId', data.id);
-                localStorage.setItem('username', data.username);
-                localStorage.setItem('userImg', data.img || '');
-                localStorage.setItem('userRole', data.role);
+                loginSuccess(data);
 
-                if (data.role === 'ADMIN') {
-                    window.location.href = '/admin/dashboard'; // Ví dụ trang admin
+                if (data.roles?.includes("ROLE_ADMIN")) {
+                    window.location.href = "/";
                 } else {
-                    window.location.href = '/'; // Ví dụ trang user
+                    window.location.href = "/";
                 }
 
             } catch (error) {
@@ -55,7 +52,6 @@ export default function LoginPage() {
 
     return (
         <main className="flex min-h-screen bg-[#faf9f9] text-[#1b1c1c] font-sans antialiased">
-            {/* LEFT SIDE: Brand & Icon Features (60% Desktop) */}
             <section className="hidden md:flex md:w-3/5 bg-gradient-to-br from-[#faf9f9] to-[#f0f5ff] relative flex-col justify-between p-12 overflow-hidden border-r border-slate-200">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#006ef2] opacity-5 rounded-full -mr-48 -mt-48 blur-3xl" />
                 <div className="flex items-center space-x-2 z-10">
