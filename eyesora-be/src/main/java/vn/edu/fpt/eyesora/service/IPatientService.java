@@ -12,4 +12,5 @@ public interface IPatientService {
     void createPatient(PatientRequest req);
     Integer countPatientsByCampaign(String campaignId);
     PatientResponse updatePatient(String id, PatientRequest req);
+    void deletePatient(String id);
 }

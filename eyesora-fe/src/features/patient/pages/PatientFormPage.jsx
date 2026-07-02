@@ -17,6 +17,14 @@ const PatientFormPage = () => {
     const [errors, setErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
+    // FIX: Cập nhật component ErrorMsg để hiện icon + chữ đỏ giống giao diện User
+    const ErrorMsg = ({field}) => errors[field] ? (
+        <div className="flex items-center gap-1 mt-1.5 text-red-600">
+            <AlertCircle size={14} />
+            <span className="text-[11px] font-bold">{errors[field]}</span>
+        </div>
+    ) : null;
+
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
@@ -24,7 +32,7 @@ const PatientFormPage = () => {
                     axiosClient.get('/campaigns?size=999').catch(() => ({data: []})),
                     axiosClient.get('/master-data/facilities?size=999').catch(() => ({data: []})),
                     axiosClient.get('/master-data/classes?size=999').catch(() => ({data: []})),
-                    axiosClient.get('/master-data/wards?size=999').catch(() => ({data: []})) // API Phường/Xã mới thêm
+                    axiosClient.get('/master-data/wards?size=999').catch(() => ({data: []}))
                 ]);
 
                 setOptions({
@@ -40,12 +48,10 @@ const PatientFormPage = () => {
         fetchMasterData();
     }, []);
 
-    // 2. Nếu ở chế độ Edit, fetch thông tin chi tiết của học sinh/bệnh nhân theo ID
     useEffect(() => {
         if (isEditMode) {
             const fetchPatientDetail = async () => {
                 try {
-                    // Thay thế bằng endpoint chi tiết bệnh nhân thực tế của bạn
                     const res = await axiosClient.get(`/patients/${id}`);
                     const patient = res.data;
                     if (patient) {
@@ -72,20 +78,20 @@ const PatientFormPage = () => {
         }
     }, [id, isEditMode]);
 
-    // 3. Xử lý gửi Form lên Backend (Submit)
+    // FIX: Cập nhật logic handleSubmit để bắt lỗi từ Backend trả về dạng Object trực tiếp
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
 
         const payload = {
             patientName: formData.patientName,
-            classId: formData.classId,
-            dob: formData.dob,
+            classId: formData.classId || null,
+            dob: formData.dob ? formData.dob : null,
             gender: formData.gender,
-            parentPhone: formData.parentPhone,
-            campaignId: formData.campaignId,
-            facilityId: formData.facilityId,
-            wardId: formData.wardId
+            parentPhone: formData.parentPhone ? formData.parentPhone : null,
+            campaignId: formData.campaignId || null,
+            facilityId: formData.facilityId || null,
+            wardId: formData.wardId ? formData.wardId : null
         };
 
         try {
@@ -96,20 +102,17 @@ const PatientFormPage = () => {
             }
             navigate('/patients');
         } catch (err) {
-            try {
-                // Xử lý bắt lỗi Validation từ Backend trả về dạng JSON chuỗi
-                const errorObj = JSON.parse(err.message);
-                setErrors(errorObj);
-            } catch (e) {
-                setErrors({server: err.response?.data?.message || err.message});
+            const errorData = err.response?.data;
+            if (errorData && typeof errorData === 'object' && !errorData.message) {
+                setErrors(errorData); // Gán lỗi trực tiếp vào state nếu backend trả về dạng {field: msg}
+            } else {
+                setErrors({server: errorData?.message || "Thao tác thất bại."});
             }
         }
     };
 
     const inputStyle = `w-full border border-gray-200 bg-white p-3 rounded-xl text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all text-sm outline-none`;
     const labelStyle = `text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block`;
-    const ErrorMsg = ({field}) => errors[field] ?
-        <p className="text-red-500 text-[10px] font-bold mt-1">{errors[field]}</p> : null;
 
     if (pageLoading) {
         return (
@@ -122,7 +125,6 @@ const PatientFormPage = () => {
     return (
         <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
 
-            {/* Header điều hướng quay lại - Đồng bộ w-full */}
             <div className="flex items-center gap-3 mb-6 w-full">
                 <button
                     onClick={() => navigate('/patients')}
@@ -138,7 +140,6 @@ const PatientFormPage = () => {
                 </div>
             </div>
 
-            {/* 🟢 FIXED: Thay max-w-3xl bằng w-full để khớp chiều ngang các trang trước */}
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm w-full p-6 md:p-8">
 
                 {errors.server && (
@@ -150,8 +151,6 @@ const PatientFormPage = () => {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5 w-full">
-
-                    {/* Thông tin cơ bản */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Mã bệnh nhân (Mặc định)</label>
@@ -169,17 +168,15 @@ const PatientFormPage = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className={labelStyle}>Số điện thoại phụ huynh (*)</label>
+                            <label className={labelStyle}>Số điện thoại phụ huynh</label>
                             <input className={inputStyle} value={formData.parentPhone}
                                    onChange={e => setFormData({...formData, parentPhone: e.target.value})}
                                    placeholder="Ví dụ: 0912345678"/>
                             <ErrorMsg field="parentPhone"/>
                         </div>
-
-                        {/* 🟢 Tối ưu lại grid đều đặn giữa Ngày sinh và Giới tính */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
-                                <label className={labelStyle}>Ngày sinh (*)</label>
+                                <label className={labelStyle}>Ngày sinh</label>
                                 <input className={inputStyle} type="date" value={formData.dob}
                                        onChange={e => setFormData({...formData, dob: e.target.value})}/>
                                 <ErrorMsg field="dob"/>
@@ -197,10 +194,9 @@ const PatientFormPage = () => {
 
                     <div className="border-t border-gray-100 my-6 pt-4"></div>
 
-                    {/* Khối quản lý địa phương và cơ sở học tập - Trải rộng full grid đồng bộ */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label className={labelStyle}>Địa chỉ (Phường/Xã) (*)</label>
+                            <label className={labelStyle}>Địa chỉ (Phường/Xã)</label>
                             <select className={inputStyle} value={formData.wardId}
                                     onChange={e => setFormData({...formData, wardId: e.target.value})}>
                                 <option value="">Chọn Phường/Xã...</option>
@@ -243,7 +239,6 @@ const PatientFormPage = () => {
                         </div>
                     </div>
 
-                    {/* Các nút thao tác cuối trang */}
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8 w-full">
                         <button
                             type="button"

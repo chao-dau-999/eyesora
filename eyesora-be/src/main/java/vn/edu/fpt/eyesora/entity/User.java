@@ -33,8 +33,9 @@ public class User implements UserDetails {
     @Column(nullable = false, length = 100)
     private String full_name;
 
-    @Column(length = 36)
-    private String facility_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "facility_id")
+    private Facility facility;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

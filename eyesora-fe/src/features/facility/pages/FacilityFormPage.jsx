@@ -5,7 +5,7 @@ import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const FacilityFormPage = () => {
     const navigate = useNavigate();
-    const { id } = useParams(); // Kiểm tra nếu có id thì là sửa, không thì là thêm mới
+    const { id } = useParams();
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
