@@ -9,16 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
-import vn.edu.fpt.eyesora.entity.PasswordResetToken;
-import vn.edu.fpt.eyesora.entity.Role;
-import vn.edu.fpt.eyesora.entity.User;
-import vn.edu.fpt.eyesora.entity.VerificationToken;
+import vn.edu.fpt.eyesora.entity.*;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
-import vn.edu.fpt.eyesora.repository.PasswordResetTokenRepository;
-import vn.edu.fpt.eyesora.repository.RoleRepository;
-import vn.edu.fpt.eyesora.repository.UserRepository;
-import vn.edu.fpt.eyesora.repository.VerificationTokenRepository;
+import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IAuthService;
 
 import java.time.LocalDateTime;
@@ -36,6 +30,7 @@ public class AuthServiceImpl implements IAuthService {
     private final VerificationTokenRepository tokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JavaMailSender mailSender;
+    private final FacilityRepository facilityRepository;
 
     @Override
     @Transactional
@@ -53,6 +48,9 @@ public class AuthServiceImpl implements IAuthService {
             throw new BadRequestException("Mật khẩu phải từ 8-50 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
         }
 
+        Facility facility = facilityRepository.findById(request.facilityId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + request.facilityId()));
+
         Role defaultRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new ResourceNotFoundException("Cấu hình ROLE_USER bị thiếu"));
 
@@ -61,7 +59,7 @@ public class AuthServiceImpl implements IAuthService {
         user.setEmail(request.email());
         user.setPassword_hash(passwordEncoder.encode(request.password()));
         user.setFull_name(request.fullName());
-        user.setFacility_id(request.facilityId());
+        user.setFacility(facility);
         user.setStatus(User.AccountStatus.UNVERIFIED);
         user.setRoles(Set.of(defaultRole));
 

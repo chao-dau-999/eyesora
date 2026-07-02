@@ -3,6 +3,7 @@ package vn.edu.fpt.eyesora.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import vn.edu.fpt.eyesora.dto.request.ChangePasswordRequest;
+import vn.edu.fpt.eyesora.dto.request.UserCreateRequest;
 import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.User;
 
@@ -12,4 +13,5 @@ public interface IUserService {
     void updateUserStatus(String userId, User.AccountStatus status);
     User findByUsername(String username);
     void changePassword(String userId, ChangePasswordRequest request);
+    void createUserByAdmin(UserCreateRequest request);
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.ChangePasswordRequest;
+import vn.edu.fpt.eyesora.dto.request.UserCreateRequest;
 import vn.edu.fpt.eyesora.dto.request.UserStatusRequest;
 import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.User;
@@ -60,5 +61,11 @@ public class UserController {
         } catch (BadRequestException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<String> createUser(@Valid @RequestBody UserCreateRequest request) {
+        userService.createUserByAdmin(request);
+        return ResponseEntity.ok("Tạo tài khoản " + request.roleNames() + " thành công!");
     }
 }

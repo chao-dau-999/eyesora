@@ -8,15 +8,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.ChangePasswordRequest;
+import vn.edu.fpt.eyesora.dto.request.UserCreateRequest;
 import vn.edu.fpt.eyesora.dto.response.UserResponse;
+import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Role;
 import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
+import vn.edu.fpt.eyesora.repository.RoleRepository;
 import vn.edu.fpt.eyesora.repository.UserRepository;
 import vn.edu.fpt.eyesora.service.IUserService;
 
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,7 @@ public class UserServiceImpl implements IUserService {
     private final UserRepository userRepository;
     private final FacilityRepository facilityRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable, String role) {
@@ -82,18 +87,56 @@ public class UserServiceImpl implements IUserService {
         log.info("Người dùng {} đã thay đổi mật khẩu thành công.", user.getEmail());
     }
 
+    @Override
+    @Transactional
+    public void createUserByAdmin(UserCreateRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new BadRequestException("Username đã tồn tại!");
+        }
+
+        Set<Role> roles = request.roleNames().stream()
+                .map(name -> roleRepository.findByName(name)
+                        .orElseThrow(() -> new ResourceNotFoundException("Quyền không tồn tại: " + name)))
+                .collect(Collectors.toSet());
+
+        boolean isGlobalRole = roles.stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase("ADMIN") ||
+                        role.getName().equalsIgnoreCase("EXAMINER") ||
+                        role.getName().equalsIgnoreCase("OWNER")) ;
+
+        User user = new User();
+        user.setUsername(request.username());
+        user.setPassword_hash(passwordEncoder.encode(request.password()));
+        user.setEmail(request.email());
+        user.setFull_name(request.fullName());
+        user.setRoles(roles);
+        user.setStatus(User.AccountStatus.ACTIVE);
+
+        if (!isGlobalRole) {
+            if (request.facilityId() == null || request.facilityId().isBlank()) {
+                throw new BadRequestException("Cơ sở là bắt buộc đối với vai trò này!");
+            }
+            Facility facility = facilityRepository.findById(request.facilityId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + request.facilityId()));
+            user.setFacility(facility);
+        }
+
+        userRepository.save(user);
+
+        String facilityInfo = (user.getFacility() != null) ? user.getFacility().getFacilityName() : "Toàn hệ thống";
+        log.info("Super Admin đã tạo tài khoản cho: {} với quyền {}, tại cơ sở: {}",
+                request.username(), request.roleNames(), facilityInfo);
+    }
+
     private boolean isValidPassword(String password) {
         String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,50}$";
         return password != null && password.matches(regex);
     }
 
     private UserResponse mapToUserResponse(User user) {
-        String facilityName = "N/A";
-        if (user.getFacility_id() != null) {
-            facilityName = facilityRepository.findById(user.getFacility_id())
-                    .map(facility -> facility.getFacilityName())
-                    .orElse("Không xác định");
-        }
+        String facilityName = (user.getFacility() != null)
+                ? user.getFacility().getFacilityName()
+                : "N/A";
 
         return new UserResponse(
                 user.getId(),
