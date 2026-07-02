@@ -145,17 +145,29 @@ public class PatientServiceImpl implements IPatientService {
         patient.setDob(req.dob());
         patient.setGender(Patient.Gender.valueOf(req.gender().toUpperCase()));
         patient.setParentPhone(req.parentPhone());
-
         patient.setExamCampaign(campaign);
         patient.setFacility(facility);
         patient.setClasses(patientClass);
         patient.setWard(patientWard);
-
         System.out.println("Đã cập nhật thông tin mới của bệnh nhân: " + patient);
-
         Patient updatedPatient = patientRepository.save(patient);
 
         return convertToDto(updatedPatient);
+    }
+
+    @Override
+    @Transactional
+    public void deletePatient(String id) {
+        Patient patient = patientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân với ID: " + id));
+
+        if (patient.getExamCampaign() != null &&
+                patient.getExamCampaign().getStatus() == ExamCampaign.CampaignStatus.LOCKED) {
+            throw new BusinessException("Không thể xóa! Chiến dịch đã bị khóa.");
+        }
+
+        patient.setIsDeleted(true);
+        patientRepository.save(patient);
     }
 
     private PatientResponse convertToDto(Patient p) {
