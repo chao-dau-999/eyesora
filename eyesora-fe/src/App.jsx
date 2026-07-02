@@ -8,6 +8,7 @@ import FacilityFormPage from "./features/facility/pages/FacilityFormPage.jsx";
 import CampaignsPage from "./features/campaign/pages/CampaignsPage.jsx";
 import CampaignFormPage from './features/campaign/pages/CampaignFormPage';
 import UsersPage from "./features/user/pages/UsersPage.jsx";
+import UserFormPage from "./features/user/pages/UserFormPage.jsx";
 import DistrictsPage from "./features/district/pages/DistrictsPage.jsx";
 import DistrictFormPage from './features/district/pages/DistrictFormPage';
 import WardsPage from "./features/ward/pages/WardsPage.jsx";
@@ -38,6 +39,8 @@ function App() {
                     <Route path="/campaigns/create" element={<CampaignFormPage />} />
                     <Route path="/campaigns/edit/:id" element={<CampaignFormPage />} />
                     <Route path="/admin/users" element={<UsersPage />} />
+                    <Route path="/admin/users/create" element={<UserFormPage />} />
+                    <Route path="/users/edit/:id" element={<UserFormPage />} />
                     <Route path="/districts" element={<DistrictsPage />} />
                     <Route path="/districts/create" element={<DistrictFormPage />} />
                     <Route path="/districts/edit/:id" element={<DistrictFormPage />} />

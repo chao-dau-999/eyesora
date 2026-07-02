@@ -17,6 +17,14 @@ const PatientFormPage = () => {
     const [errors, setErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
+    // FIX: Cập nhật component ErrorMsg để hiện icon + chữ đỏ giống giao diện User
+    const ErrorMsg = ({field}) => errors[field] ? (
+        <div className="flex items-center gap-1 mt-1.5 text-red-600">
+            <AlertCircle size={14} />
+            <span className="text-[11px] font-bold">{errors[field]}</span>
+        </div>
+    ) : null;
+
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
@@ -44,7 +52,6 @@ const PatientFormPage = () => {
         if (isEditMode) {
             const fetchPatientDetail = async () => {
                 try {
-
                     const res = await axiosClient.get(`/patients/${id}`);
                     const patient = res.data;
                     if (patient) {
@@ -71,18 +78,19 @@ const PatientFormPage = () => {
         }
     }, [id, isEditMode]);
 
+    // FIX: Cập nhật logic handleSubmit để bắt lỗi từ Backend trả về dạng Object trực tiếp
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
 
         const payload = {
             patientName: formData.patientName,
-            classId: formData.classId,
+            classId: formData.classId || null,
             dob: formData.dob ? formData.dob : null,
             gender: formData.gender,
             parentPhone: formData.parentPhone ? formData.parentPhone : null,
-            campaignId: formData.campaignId,
-            facilityId: formData.facilityId,
+            campaignId: formData.campaignId || null,
+            facilityId: formData.facilityId || null,
             wardId: formData.wardId ? formData.wardId : null
         };
 
@@ -94,19 +102,17 @@ const PatientFormPage = () => {
             }
             navigate('/patients');
         } catch (err) {
-            try {
-                const errorObj = JSON.parse(err.message);
-                setErrors(errorObj);
-            } catch (e) {
-                setErrors({server: err.response?.data?.message || err.message});
+            const errorData = err.response?.data;
+            if (errorData && typeof errorData === 'object' && !errorData.message) {
+                setErrors(errorData); // Gán lỗi trực tiếp vào state nếu backend trả về dạng {field: msg}
+            } else {
+                setErrors({server: errorData?.message || "Thao tác thất bại."});
             }
         }
     };
 
     const inputStyle = `w-full border border-gray-200 bg-white p-3 rounded-xl text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 transition-all text-sm outline-none`;
     const labelStyle = `text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 block`;
-    const ErrorMsg = ({field}) => errors[field] ?
-        <p className="text-red-500 text-[10px] font-bold mt-1">{errors[field]}</p> : null;
 
     if (pageLoading) {
         return (
@@ -233,7 +239,6 @@ const PatientFormPage = () => {
                         </div>
                     </div>
 
-                    {/* Các nút thao tác cuối trang */}
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8 w-full">
                         <button
                             type="button"
