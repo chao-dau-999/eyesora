@@ -2,34 +2,20 @@ package vn.edu.fpt.eyesora.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record EyeExamRecordRequest(
-
-        @NotBlank(message = "Mã chiến dịch không được để trống")
-        String campaignId,
-
-        @NotBlank(message = "Mã bệnh nhân không được để trống")
-        String patientId,
-
-        @NotBlank(message = "Mã lớp không được để trống")
-        String classId,
-
-        @NotBlank(message = "Mã người khám không được để trống")
-        String examinerId,
-
+public record EyeExamRecordUpdateRequest(
 
         // ===== KHÔNG KÍNH =====
-        @NotNull(message = "Thị lực mắt trái chưa kính không được để trống")
+        @NotNull(message = "Thị lực mắt trái chưa đeo kính không được để trống")
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
         Float vaLeftWithoutGlasses,
 
-        @NotNull(message = "Thị lực mắt phải chưa kính không được để trống")
+        @NotNull(message = "Thị lực mắt phải chưa đeo kính không được để trống")
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
         Float vaRightWithoutGlasses,
 
-        // ===== CÓ KÍNH CŨ =====
+        // ===== CÓ KÍNH (CŨ) =====
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
         Float vaLeftOldGlasses,
 
@@ -43,23 +29,22 @@ public record EyeExamRecordRequest(
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
         Float vaRightPinhole,
 
-        // ===== ĐỘ CẦU =====
+        // ===== ĐỘ CẦU (SPH) =====
         Float sphLeft,
         Float sphRight,
 
-        // ===== ĐỘ TRỤ =====
+        // ===== ĐỘ TRỤ (CYL) =====
         Float cylLeft,
         Float cylRight,
 
-        // ===== TRỤC =====
-        @Min(value = 0, message = "Trục mắt trái phải >= 0")
-        @Max(value = 180, message = "Trục mắt trái phải <= 180")
+        // ===== TRỤC (AXIS) =====
+        @Min(value = 0, message = "Trục mắt trái phải lớn hơn hoặc bằng 0")
+        @Max(value = 180, message = "Trục mắt trái phải nhỏ hơn hoặc bằng 180")
         Integer axisLeft,
 
-        @Min(value = 0, message = "Trục mắt phải phải >= 0")
-        @Max(value = 180, message = "Trục mắt phải phải <= 180")
+        @Min(value = 0, message = "Trục mắt phải phải lớn hơn hoặc bằng 0")
+        @Max(value = 180, message = "Trục mắt phải phải nhỏ hơn hoặc bằng 180")
         Integer axisRight,
-
 
         // ===== TLCK =====
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
@@ -67,7 +52,6 @@ public record EyeExamRecordRequest(
 
         @Min(value = 0, message = "Thị lực không được nhỏ hơn 0")
         Float vaRightWithGlasses,
-
 
         // ===== KCĐT =====
         String pdLeft,

@@ -1,5 +1,7 @@
 package vn.edu.fpt.eyesora.service.impl;
 
+import jakarta.persistence.criteria.Fetch;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.eyesora.dto.request.EyeExamRecordRequest;
+import vn.edu.fpt.eyesora.dto.request.EyeExamRecordUpdateRequest;
 import vn.edu.fpt.eyesora.dto.response.ExcelImportResponse;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 import vn.edu.fpt.eyesora.dto.response.RowError;
@@ -44,12 +47,31 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
 
     @Override
     @Transactional
-    public Page<EyeExamRecordResponse> getExamRecords(String keyword, Pageable pageable) {
+    public Page<EyeExamRecordResponse> getExamRecords(String keyword, String facilityId, String campaignId, Pageable pageable) {
 
         Specification<EyeExamRecord> spec = (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
+            if (Long.class != query.getResultType()) {
+                Fetch<EyeExamRecord, Classes> classFetch = root.fetch("classesField", JoinType.LEFT);
+                classFetch.fetch("facility", JoinType.LEFT);
+                root.fetch("patient", JoinType.LEFT);
+                root.fetch("campaign", JoinType.LEFT);
+                root.fetch("examiner", JoinType.LEFT);
+            }
 
+            List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("isDeleted"), false));
+
+            if (facilityId != null && !facilityId.isBlank()) {
+                predicates.add(criteriaBuilder.equal(
+                        root.get("classesField").get("facility").get("id"), facilityId.trim()
+                ));
+            }
+
+            if (campaignId != null && !campaignId.isBlank()) {
+                predicates.add(criteriaBuilder.equal(
+                        root.get("campaign").get("campaignId"), campaignId.trim()
+                ));
+            }
 
             if (keyword != null && !keyword.isBlank()) {
                 String likePattern = "%" + keyword.trim().toLowerCase() + "%";
@@ -64,7 +86,6 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
                         criteriaBuilder.lower(root.get("campaign").get("campaignTitle")), likePattern);
 
                 Predicate globalSearchPredicate = criteriaBuilder.or(searchPatient, searchClass, searchCampaign);
-
                 predicates.add(globalSearchPredicate);
             }
 
@@ -77,32 +98,35 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
 
     @Override
     @Transactional
-    public EyeExamRecordResponse updateExamRecord(String examId, EyeExamRecordRequest request) {
+    public EyeExamRecordResponse updateExamRecord(
+            String examId,
+            EyeExamRecordUpdateRequest request) {
+
         EyeExamRecord entity = eyeExamRecordRepository.findById(examId)
                 .filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu kiểm tra thị lực, ID: " + examId));
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy phiếu kiểm tra thị lực, ID: " + examId)
+                );
 
-        if (request.getClassId() != null && !request.getClassId().isBlank()) {
-            if (entity.getClassesField() == null || !entity.getClassesField().getId().equals(request.getClassId())) {
-                Classes newClasses = classesRepository.findById(request.getClassId())
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học mới nào có ID: " + request.getClassId()));
-                entity.setClassesField(newClasses);
-            }
-        }
-
-        entity.setVaLeftWithoutGlasses(request.getVaLeftWithoutGlasses());
-        entity.setVaLeftWithGlasses(request.getVaLeftWithGlasses());
-        entity.setSphLeft(request.getSphLeft() != null ? request.getSphLeft() : 0f);
-        entity.setCylLeft(request.getCylLeft() != null ? request.getCylLeft() : 0f);
-        entity.setAxisLeft(request.getAxisLeft());
-
-        entity.setVaRightWithoutGlasses(request.getVaRightWithoutGlasses());
-        entity.setVaRightWithGlasses(request.getVaRightWithGlasses());
-        entity.setSphRight(request.getSphRight() != null ? request.getSphRight() : 0f);
-        entity.setCylRight(request.getCylRight() != null ? request.getCylRight() : 0f);
-        entity.setAxisRight(request.getAxisRight());
+        entity.setVaLeftWithoutGlasses(request.vaLeftWithoutGlasses());
+        entity.setVaRightWithoutGlasses(request.vaRightWithoutGlasses());
+        entity.setVaLeftOldGlasses(request.vaLeftOldGlasses());
+        entity.setVaRightOldGlasses(request.vaRightOldGlasses());
+        entity.setVaLeftPinhole(request.vaLeftPinhole());
+        entity.setVaRightPinhole(request.vaRightPinhole());
+        entity.setSphLeft(request.sphLeft() != null ? request.sphLeft() : 0f);
+        entity.setSphRight(request.sphRight() != null ? request.sphRight() : 0f);
+        entity.setCylLeft(request.cylLeft() != null ? request.cylLeft() : 0f);
+        entity.setCylRight(request.cylRight() != null ? request.cylRight() : 0f);
+        entity.setAxisLeft(request.axisLeft());
+        entity.setAxisRight(request.axisRight());
+        entity.setVaLeftWithGlasses(request.vaLeftWithGlasses());
+        entity.setVaRightWithGlasses(request.vaRightWithGlasses());
+        entity.setPdLeft(request.pdLeft());
+        entity.setPdRight(request.pdRight());
 
         EyeExamRecord updatedEntity = eyeExamRecordRepository.save(entity);
+
         return mapToResponse(updatedEntity);
     }
 
@@ -111,37 +135,42 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     public EyeExamRecordResponse createExamRecord(EyeExamRecordRequest request) {
         EyeExamRecord entity = new EyeExamRecord();
 
-        if (request.getCampaignId() != null && !request.getCampaignId().isBlank()) {
-            entity.setCampaign(campaignRepository.getReferenceById(request.getCampaignId()));
+        if (request.campaignId() != null && !request.campaignId().isBlank()) {
+            entity.setCampaign(campaignRepository.getReferenceById(request.campaignId()));
         }
 
-        if (request.getPatientId() != null && !request.getPatientId().isBlank()) {
-            entity.setPatient(patientRepository.getReferenceById(request.getPatientId()));
+        if (request.patientId() != null && !request.patientId().isBlank()) {
+            entity.setPatient(patientRepository.getReferenceById(request.patientId()));
         }
 
-        if (request.getClassId() != null && !request.getClassId().isBlank()) {
-            entity.setClassesField(classesRepository.getReferenceById(request.getClassId()));
+        if (request.classId() != null && !request.classId().isBlank()) {
+            entity.setClassesField(classesRepository.getReferenceById(request.classId()));
         }
 
-        if (request.getExaminerId() != null && !request.getExaminerId().isBlank()) {
-            entity.setExaminer(userRepository.getReferenceById(request.getExaminerId()));
+        if (request.examinerId() != null && !request.examinerId().isBlank()) {
+            entity.setExaminer(userRepository.getReferenceById(request.examinerId()));
         }
 
         entity.setIsDeleted(false);
-
-        entity.setVaLeftWithoutGlasses(request.getVaLeftWithoutGlasses());
-        entity.setVaLeftWithGlasses(request.getVaLeftWithGlasses());
-        entity.setSphLeft(request.getSphLeft() != null ? request.getSphLeft() : 0f);
-        entity.setCylLeft(request.getCylLeft() != null ? request.getCylLeft() : 0f);
-        entity.setAxisLeft(request.getAxisLeft());
-
-        entity.setVaRightWithoutGlasses(request.getVaRightWithoutGlasses());
-        entity.setVaRightWithGlasses(request.getVaRightWithGlasses());
-        entity.setSphRight(request.getSphRight() != null ? request.getSphRight() : 0f);
-        entity.setCylRight(request.getCylRight() != null ? request.getCylRight() : 0f);
-        entity.setAxisRight(request.getAxisRight());
+        entity.setVaLeftWithoutGlasses(request.vaLeftWithoutGlasses());
+        entity.setVaRightWithoutGlasses(request.vaRightWithoutGlasses());
+        entity.setVaLeftOldGlasses(request.vaLeftOldGlasses());
+        entity.setVaRightOldGlasses(request.vaRightOldGlasses());
+        entity.setVaLeftPinhole(request.vaLeftPinhole());
+        entity.setVaRightPinhole(request.vaRightPinhole());
+        entity.setSphLeft(request.sphLeft() != null ? request.sphLeft() : 0f);
+        entity.setSphRight(request.sphRight() != null ? request.sphRight() : 0f);
+        entity.setCylLeft(request.cylLeft() != null ? request.cylLeft() : 0f);
+        entity.setCylRight(request.cylRight() != null ? request.cylRight() : 0f);
+        entity.setAxisLeft(request.axisLeft());
+        entity.setAxisRight(request.axisRight());
+        entity.setVaLeftWithGlasses(request.vaLeftWithGlasses());
+        entity.setVaRightWithGlasses(request.vaRightWithGlasses());
+        entity.setPdLeft(request.pdLeft());
+        entity.setPdRight(request.pdRight());
 
         EyeExamRecord savedEntity = eyeExamRecordRepository.save(entity);
+
         return mapToResponse(savedEntity);
     }
 
@@ -423,25 +452,39 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     }
 
     private EyeExamRecordResponse mapToResponse(EyeExamRecord entity) {
+        String facilityName = null;
+        if (entity.getClassesField() != null && entity.getClassesField().getFacility() != null) {
+            facilityName = entity.getClassesField().getFacility().getFacilityName(); // Đổi thành .getName() nếu biến là name
+        }
+
         return EyeExamRecordResponse.builder()
                 .examId(entity.getExamId())
                 .examDate(entity.getExamDate())
                 .campaignTitle(entity.getCampaign() != null ? entity.getCampaign().getCampaignTitle() : null)
                 .patientName(entity.getPatient() != null ? entity.getPatient().getPatientName() : null)
+                .gender(entity.getPatient() != null && entity.getPatient().getGender() != null
+                        ? entity.getPatient().getGender().name()
+                        : null)
                 .className(entity.getClassesField() != null ? entity.getClassesField().getClassName() : null)
+                .facilityName(facilityName)
                 .examinerName(entity.getExaminer() != null ? entity.getExaminer().getFull_name() : null)
-
                 .vaLeftWithoutGlasses(entity.getVaLeftWithoutGlasses())
-                .vaLeftWithGlasses(entity.getVaLeftWithGlasses())
-                .sphLeft(entity.getSphLeft())
-                .cylLeft(entity.getCylLeft())
-                .axisLeft(entity.getAxisLeft())
-
                 .vaRightWithoutGlasses(entity.getVaRightWithoutGlasses())
+                .vaLeftOldGlasses(entity.getVaLeftOldGlasses())
+                .vaRightOldGlasses(entity.getVaRightOldGlasses())
+                .vaLeftPinhole(entity.getVaLeftPinhole())
+                .vaRightPinhole(entity.getVaRightPinhole())
+                .vaLeftWithGlasses(entity.getVaLeftWithGlasses())
                 .vaRightWithGlasses(entity.getVaRightWithGlasses())
+                .sphLeft(entity.getSphLeft())
                 .sphRight(entity.getSphRight())
+                .cylLeft(entity.getCylLeft())
                 .cylRight(entity.getCylRight())
+                .axisLeft(entity.getAxisLeft())
                 .axisRight(entity.getAxisRight())
+                .pdLeft(entity.getPdLeft())
+                .pdRight(entity.getPdRight())
+
                 .build();
     }
 }
