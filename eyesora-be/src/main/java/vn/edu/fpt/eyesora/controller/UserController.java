@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.ChangePasswordRequest;
 import vn.edu.fpt.eyesora.dto.request.UserCreateRequest;
 import vn.edu.fpt.eyesora.dto.request.UserStatusRequest;
+import vn.edu.fpt.eyesora.dto.request.UserUpdateRequest;
 import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.exceptions.BadRequestException;
@@ -67,5 +68,13 @@ public class UserController {
     public ResponseEntity<String> createUser(@Valid @RequestBody UserCreateRequest request) {
         userService.createUserByAdmin(request);
         return ResponseEntity.ok("Tạo tài khoản " + request.roleNames() + " thành công!");
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<String> updateUser(
+            @PathVariable String id,
+            @Valid @RequestBody UserUpdateRequest request) {
+        userService.updateUserByAdmin(id, request);
+        return ResponseEntity.ok("Cập nhật thông tin thành công!");
     }
 }

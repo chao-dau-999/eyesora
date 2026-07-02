@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.ChangePasswordRequest;
 import vn.edu.fpt.eyesora.dto.request.UserCreateRequest;
+import vn.edu.fpt.eyesora.dto.request.UserUpdateRequest;
 import vn.edu.fpt.eyesora.dto.response.UserResponse;
 import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Role;
@@ -99,10 +100,9 @@ public class UserServiceImpl implements IUserService {
                         .orElseThrow(() -> new ResourceNotFoundException("Quyền không tồn tại: " + name)))
                 .collect(Collectors.toSet());
 
-        boolean isGlobalRole = roles.stream()
-                .anyMatch(role -> role.getName().equalsIgnoreCase("ADMIN") ||
-                        role.getName().equalsIgnoreCase("EXAMINER") ||
-                        role.getName().equalsIgnoreCase("OWNER")) ;
+        boolean needsFacility = roles.stream()
+                .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
+                        !role.getName().equalsIgnoreCase("EXAMINER"));
 
         User user = new User();
         user.setUsername(request.username());
@@ -112,13 +112,15 @@ public class UserServiceImpl implements IUserService {
         user.setRoles(roles);
         user.setStatus(User.AccountStatus.ACTIVE);
 
-        if (!isGlobalRole) {
+        if (needsFacility) {
             if (request.facilityId() == null || request.facilityId().isBlank()) {
-                throw new BadRequestException("Cơ sở là bắt buộc đối với vai trò này!");
+                throw new BadRequestException("Tài khoản này có vai trò yêu cầu cơ sở quản lý, vui lòng chọn cơ sở!");
             }
             Facility facility = facilityRepository.findById(request.facilityId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở với ID: " + request.facilityId()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở: " + request.facilityId()));
             user.setFacility(facility);
+        } else {
+            user.setFacility(null);
         }
 
         userRepository.save(user);
@@ -126,6 +128,45 @@ public class UserServiceImpl implements IUserService {
         String facilityInfo = (user.getFacility() != null) ? user.getFacility().getFacilityName() : "Toàn hệ thống";
         log.info("Super Admin đã tạo tài khoản cho: {} với quyền {}, tại cơ sở: {}",
                 request.username(), request.roleNames(), facilityInfo);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserByAdmin(String userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+
+        user.setFull_name(request.fullName());
+        user.setEmail(request.email());
+
+        if (request.roleNames() != null && !request.roleNames().isEmpty()) {
+            Set<Role> roles = request.roleNames().stream()
+                    .map(name -> roleRepository.findByName(name)
+                            .orElseThrow(() -> new ResourceNotFoundException("Quyền không tồn tại: " + name)))
+                    .collect(Collectors.toSet());
+            user.setRoles(roles);
+        }
+
+        boolean needsFacility = user.getRoles().stream()
+                .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
+                        !role.getName().equalsIgnoreCase("EXAMINER") &&
+                        !role.getName().equalsIgnoreCase("OWNER"));
+
+        if (needsFacility) {
+            if ((request.facilityId() == null || request.facilityId().isBlank()) && user.getFacility() == null) {
+                throw new BadRequestException("Tài khoản này cần cơ sở quản lý, vui lòng chọn cơ sở!");
+            }
+            if (request.facilityId() != null && !request.facilityId().isBlank()) {
+                Facility facility = facilityRepository.findById(request.facilityId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cơ sở"));
+                user.setFacility(facility);
+            }
+        } else {
+            user.setFacility(null);
+        }
+
+        userRepository.save(user);
+        log.info("Super Admin đã cập nhật thông tin người dùng: {}", user.getUsername());
     }
 
     private boolean isValidPassword(String password) {
