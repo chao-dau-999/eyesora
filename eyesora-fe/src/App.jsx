@@ -1,4 +1,4 @@
-import { Route, Routes, BrowserRouter } from 'react-router-dom'
+import {Route, Routes, BrowserRouter} from 'react-router-dom'
 import AppLayout from "./shared/layout/AppLayout";
 import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
 import LoginPage from "./features/auth/page/LoginPage.jsx";
@@ -20,38 +20,42 @@ import ExamRecordPage from "./features/eye-exam-record/pages/ExamRecordPage.jsx"
 import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormPage.jsx";
 import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImportPage.jsx";
 import UserProfilePage from "./features/user/pages/UserProfilePage.jsx";
+import ProtectedRoute from "./shared/components/ProtectedRoute.jsx";
+
 function App() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<LoginPage/>}/>
-                <Route path="/" element={<AppLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                    <Route path="/classes" element={<ClassesPage />} />
-                    <Route path="/classes/create" element={<ClassFormPage />} />
-                    <Route path="/classes/edit/:id" element={<ClassFormPage />} />
-                    <Route path="/patients" element={<PatientPage />} />
-                    <Route path="/patients/create" element={<PatientFormPage />} />
-                    <Route path="/patients/edit/:id" element={<PatientFormPage />} />
-                    <Route path="/facilities" element={<FacilitiesPage />} />
-                    <Route path="/facilities/create" element={<FacilityFormPage />} />
-                    <Route path="/facilities/edit/:id" element={<FacilityFormPage />} />
-                    <Route path="/campaigns" element={<CampaignsPage />} />
-                    <Route path="/campaigns/create" element={<CampaignFormPage />} />
-                    <Route path="/campaigns/edit/:id" element={<CampaignFormPage />} />
-                    <Route path="/admin/users" element={<UsersPage />} />
-                    <Route path="/admin/users/create" element={<UserFormPage />} />
-                    <Route path="/users/edit/:id" element={<UserFormPage />} />
-                    <Route path="/districts" element={<DistrictsPage />} />
-                    <Route path="/districts/create" element={<DistrictFormPage />} />
-                    <Route path="/districts/edit/:id" element={<DistrictFormPage />} />
-                    <Route path="/wards" element={<WardsPage />} />
-                    <Route path="/wards/create" element={<WardsFormPage />} />
-                    <Route path="/wards/edit/:id" element={<WardsFormPage />} />
-                    <Route path="/eye-exam-records" element={<ExamRecordPage />} />
-                    <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage />} />
-                    <Route path="/eye-exam-records/import" element={<ExamRecordImportPage />} />
-                    <Route path="/profile" element={<UserProfilePage />} />
+                <Route element={<ProtectedRoute/>}>
+                    <Route path="/" element={<AppLayout/>}>
+                        <Route index element={<AdminDashboard/>}/>
+                        <Route path="/classes" element={<ClassesPage/>}/>
+                        <Route path="/classes/create" element={<ClassFormPage/>}/>
+                        <Route path="/classes/edit/:id" element={<ClassFormPage/>}/>
+                        <Route path="/patients" element={<PatientPage/>}/>
+                        <Route path="/patients/create" element={<PatientFormPage/>}/>
+                        <Route path="/patients/edit/:id" element={<PatientFormPage/>}/>
+                        <Route path="/facilities" element={<FacilitiesPage/>}/>
+                        <Route path="/facilities/create" element={<FacilityFormPage/>}/>
+                        <Route path="/facilities/edit/:id" element={<FacilityFormPage/>}/>
+                        <Route path="/campaigns" element={<CampaignsPage/>}/>
+                        <Route path="/campaigns/create" element={<CampaignFormPage/>}/>
+                        <Route path="/campaigns/edit/:id" element={<CampaignFormPage/>}/>
+                        <Route path="/admin/users" element={<UsersPage/>}/>
+                        <Route path="/admin/users/create" element={<UserFormPage/>}/>
+                        <Route path="/users/edit/:id" element={<UserFormPage/>}/>
+                        <Route path="/districts" element={<DistrictsPage/>}/>
+                        <Route path="/districts/create" element={<DistrictFormPage/>}/>
+                        <Route path="/districts/edit/:id" element={<DistrictFormPage/>}/>
+                        <Route path="/wards" element={<WardsPage/>}/>
+                        <Route path="/wards/create" element={<WardsFormPage/>}/>
+                        <Route path="/wards/edit/:id" element={<WardsFormPage/>}/>
+                        <Route path="/eye-exam-records" element={<ExamRecordPage/>}/>
+                        <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage/>}/>
+                        <Route path="/eye-exam-records/import" element={<ExamRecordImportPage/>}/>
+                        <Route path="/profile" element={<UserProfilePage/>}/>
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>

@@ -6,6 +6,7 @@ import PatientTable from "../components/PatientTable.jsx";
 import PatientDetailModal from "../components/PatientDetailModal.jsx";
 import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
 import Pagination from "../../../shared/components/Pagination.jsx";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const PatientPage = () => {
     const navigate = useNavigate();
@@ -23,8 +24,8 @@ const PatientPage = () => {
     const fetchPatients = async (page = 0, size = 10) => {
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:8080/api/patients?page=${page}&size=${size}`);
-            const data = await res.json();
+            const res = await axiosClient(`/patients?page=${page}&size=${size}`);
+            const data = await res.data;
             setPatients(data.content || []);
             setPageInfo({
                 pageNumber: data.pageable?.pageNumber || 0,
