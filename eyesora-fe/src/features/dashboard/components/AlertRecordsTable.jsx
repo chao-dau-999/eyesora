@@ -27,7 +27,9 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                     <thead className="bg-gray-50/50 border-b border-gray-200">
                     <tr className="text-xs font-bold text-gray-400 uppercase tracking-wider">
                         <th className="px-6 py-4">Họ Và Tên</th>
+                        <th className="px-6 py-4">Giới tính</th>
                         <th className="px-6 py-4">Lớp</th>
+                        <th className="px-6 py-4">Trường học</th>
                         <th className="px-6 py-4">Mắt Trái (SPH)</th>
                         <th className="px-6 py-4">Mắt Phải (SPH)</th>
                         <th className="px-6 py-4 text-center">Trạng thái</th>
@@ -37,7 +39,7 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                     <tbody className="divide-y divide-gray-200">
                     {records.length === 0 ? (
                         <tr>
-                            <td colSpan="6" className="text-center py-8 text-xs text-gray-400 font-semibold italic">
+                            <td colSpan="8" className="text-center py-8 text-xs text-gray-400 font-semibold italic">
                                 Trang này hiện tại không ghi nhận hồ sơ cảnh báo cận nặng lâm sàng nào.
                             </td>
                         </tr>
@@ -45,7 +47,15 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                         records.map((record, index) => (
                             <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 text-sm font-medium">
                                 <td className="px-6 py-4 text-sm font-bold text-gray-900">{record.patientName ?? "N/A"}</td>
+                                <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                                    {record.gender === "MALE" ? "Nam" : record.gender === "FEMALE" ? "Nữ" : "Khác"}
+                                </td>
                                 <td className="px-6 py-4 text-xs text-gray-600">{record.className ?? "-"}</td>
+
+                                <td className="px-6 py-4 text-xs text-gray-600 max-w-[160px] truncate" title={record.facilityName}>
+                                    {record.facilityName ?? "-"}
+                                </td>
+
                                 <td className="px-6 py-4 font-mono text-xs font-bold text-[#ba1a1a]">
                                     {formatDiopter(record.sphLeft)}
                                 </td>
@@ -69,13 +79,11 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                 </table>
             </div>
 
-            {/* Khối phân trang được dọn dẹp sạch bằng component Pagination */}
             <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
                 <div className="text-sm font-semibold text-gray-500">
                     Trang <span className="text-blue-900 font-bold">{pageData.page + 1}</span> / {totalPages}
                 </div>
 
-                {/* Component phân trang tái sử dụng */}
                 <Pagination
                     currentPage={pageData.page}
                     totalPages={totalPages}

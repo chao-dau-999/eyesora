@@ -13,6 +13,14 @@ const ClassFormPage = () => {
     const [errors, setErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
+    // Component hiển thị lỗi chuẩn
+    const ErrorMsg = ({ field }) => errors[field] ? (
+        <div className="flex items-center gap-1 mt-1.5 text-red-600">
+            <AlertCircle size={14} />
+            <span className="text-[11px] font-bold">{errors[field]}</span>
+        </div>
+    ) : null;
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -23,7 +31,6 @@ const ClassFormPage = () => {
                 if (isEditMode) {
                     const res = await axiosClient.get(`/master-data/classes/${id}`);
                     const c = res.data;
-
                     const matchedFacility = facilityList.find(f => f.facilityName === c.facilityName);
 
                     setFormData({
@@ -46,23 +53,18 @@ const ClassFormPage = () => {
         e.preventDefault();
         setErrors({});
 
-        let newErrors = {};
-        if (!formData.className.trim()) newErrors.className = "Class Name is required";
-        if (!formData.grade.trim()) newErrors.grade = "Grade Level is required";
-        if (!formData.facilityId) newErrors.facilityId = "Facility is required";
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-
         try {
-            const payload = { ...formData, grade: parseInt(formData.grade) };
+            const payload = { ...formData, grade: parseInt(formData.grade) || 0 };
             if (isEditMode) await axiosClient.put(`/master-data/classes/${id}`, payload);
             else await axiosClient.post("/master-data/classes", payload);
             navigate('/classes');
         } catch (err) {
-            setErrors(err.response?.data || { server: "Lưu thất bại" });
+            // Nhận lỗi từ backend theo dạng { field: "message" }
+            if (err.response?.data) {
+                setErrors(err.response.data);
+            } else {
+                setErrors({ server: "Lưu thất bại" });
+            }
         }
     };
 
@@ -96,28 +98,29 @@ const ClassFormPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Tên lớp (*)</label>
-                            <input className={inputStyle} value={formData.className} onChange={e => setFormData({...formData, className: e.target.value})} placeholder="Ví dụ: 10A1" />
-                            {errors.className && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.className}</p>}
+                            <input className={`${inputStyle} ${errors.className ? 'border-red-500' : ''}`} value={formData.className} onChange={e => setFormData({...formData, className: e.target.value})} placeholder="Ví dụ: 10A1" />
+                            <ErrorMsg field="className" />
                         </div>
                         <div>
                             <label className={labelStyle}>Khối (*)</label>
-                            <input type="number" className={inputStyle} value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})} placeholder="Ví dụ: 10" />
-                            {errors.grade && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.grade}</p>}
+                            <input type="number" className={`${inputStyle} ${errors.grade ? 'border-red-500' : ''}`} value={formData.grade} onChange={e => setFormData({...formData, grade: e.target.value})} placeholder="Ví dụ: 10" />
+                            <ErrorMsg field="grade" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Năm học</label>
-                            <input className={inputStyle} value={formData.schoolYear} onChange={e => setFormData({...formData, schoolYear: e.target.value})} placeholder="Ví dụ: 2025-2026" />
+                            <input className={`${inputStyle} ${errors.schoolYear ? 'border-red-500' : ''}`} value={formData.schoolYear} onChange={e => setFormData({...formData, schoolYear: e.target.value})} placeholder="Ví dụ: 2025-2026" />
+                            <ErrorMsg field="schoolYear" />
                         </div>
                         <div>
                             <label className={labelStyle}>Cơ sở (*)</label>
-                            <select className={inputStyle} value={formData.facilityId} onChange={e => setFormData({...formData, facilityId: e.target.value})}>
+                            <select className={`${inputStyle} ${errors.facilityId ? 'border-red-500' : ''}`} value={formData.facilityId} onChange={e => setFormData({...formData, facilityId: e.target.value})}>
                                 <option value="">Chọn cơ sở...</option>
                                 {facilities.map(f => <option key={f.id} value={String(f.id)}>{f.facilityName}</option>)}
                             </select>
-                            {errors.facilityId && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.facilityId}</p>}
+                            <ErrorMsg field="facilityId" />
                         </div>
                     </div>
 

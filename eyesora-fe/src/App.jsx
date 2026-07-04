@@ -22,12 +22,15 @@ import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImp
 import UserProfilePage from "./features/user/pages/UserProfilePage.jsx";
 import ProtectedRoute from "./shared/components/ProtectedRoute.jsx";
 
+import ExamRecordCreatePage from "./features/eye-exam-record/pages/ExamRecordCreatePage.jsx";
+
 function App() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route element={<ProtectedRoute/>}>
+
                     <Route path="/" element={<AppLayout/>}>
                         <Route index element={<AdminDashboard/>}/>
                         <Route path="/classes" element={<ClassesPage/>}/>
@@ -52,9 +55,10 @@ function App() {
                         <Route path="/wards/create" element={<WardsFormPage/>}/>
                         <Route path="/wards/edit/:id" element={<WardsFormPage/>}/>
                         <Route path="/eye-exam-records" element={<ExamRecordPage/>}/>
+                        <Route path="/eye-exam-records/create" element={<ExamRecordCreatePage/>}/>
+                        <Route path="/profile" element={<UserProfilePage/>}/>
                         <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage/>}/>
                         <Route path="/eye-exam-records/import" element={<ExamRecordImportPage/>}/>
-                        <Route path="/profile" element={<UserProfilePage/>}/>
                     </Route>
                 </Route>
             </Routes>

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.fpt.eyesora.dto.request.EyeExamRecordRequest;
+import vn.edu.fpt.eyesora.dto.request.EyeExamRecordUpdateRequest;
 import vn.edu.fpt.eyesora.dto.response.ExcelImportResponse;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 import vn.edu.fpt.eyesora.service.IEyeExamRecordService;
@@ -25,12 +26,14 @@ public class EyeExamRecordController {
     @GetMapping
     public ResponseEntity<Page<EyeExamRecordResponse>> getExamRecords(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String facilityId,
+            @RequestParam(required = false) String campaignId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("examDate").descending());
 
-        Page<EyeExamRecordResponse> result = eyeExamRecordService.getExamRecords(keyword, pageable);
+        Page<EyeExamRecordResponse> result = eyeExamRecordService.getExamRecords(keyword, facilityId, campaignId, pageable);
         return ResponseEntity.ok(result);
     }
 
@@ -50,7 +53,7 @@ public class EyeExamRecordController {
     @PutMapping("/edit/{examId}")
     public ResponseEntity<EyeExamRecordResponse> updateExamRecord(
             @PathVariable String examId,
-            @Valid @RequestBody EyeExamRecordRequest request) {
+            @Valid @RequestBody EyeExamRecordUpdateRequest request) {
         EyeExamRecordResponse updatedRecord = eyeExamRecordService.updateExamRecord(examId, request);
         return ResponseEntity.ok(updatedRecord);
     }

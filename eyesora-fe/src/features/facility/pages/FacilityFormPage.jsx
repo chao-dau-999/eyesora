@@ -15,6 +15,14 @@ const FacilityFormPage = () => {
     const [wards, setWards] = useState([]);
     const [errors, setErrors] = useState({});
 
+    // Component hiển thị lỗi chuẩn (giữ nguyên phong cách bạn muốn)
+    const ErrorMsg = ({ field }) => errors[field] ? (
+        <div className="flex items-center gap-1 mt-1.5 text-red-600">
+            <AlertCircle size={14} />
+            <span className="text-[11px] font-bold">{errors[field]}</span>
+        </div>
+    ) : null;
+
     useEffect(() => {
         axiosClient.get("/master-data/districts?size=100").then(r => setDistricts(r.data.content || []));
         if (isEditMode) {
@@ -32,6 +40,7 @@ const FacilityFormPage = () => {
 
     const handleSave = async (e) => {
         e.preventDefault();
+        setErrors({}); // Reset lỗi trước khi validate
         try {
             if (isEditMode) await axiosClient.put(`/master-data/facilities/${id}`, formData);
             else await axiosClient.post("/master-data/facilities", formData);
@@ -64,6 +73,7 @@ const FacilityFormPage = () => {
                         <div>
                             <label className={labelStyle}>Tên cơ sở (*)</label>
                             <input className={inputStyle} value={formData.facilityName} onChange={e => setFormData({...formData, facilityName: e.target.value})} placeholder="Nhập tên cơ sở" />
+                            <ErrorMsg field="facilityName" />
                         </div>
                         <div>
                             <label className={labelStyle}>Loại hình (*)</label>
@@ -72,6 +82,7 @@ const FacilityFormPage = () => {
                                 <option value="HOSPITAL">Bệnh viện</option>
                                 <option value="SCHOOL">Trường học</option>
                             </select>
+                            <ErrorMsg field="facilityType" />
                         </div>
                     </div>
 
@@ -82,6 +93,7 @@ const FacilityFormPage = () => {
                                 <option value="">Chọn Quận/Huyện</option>
                                 {districts.map(d => <option key={d.id} value={d.id}>{d.districtName}</option>)}
                             </select>
+                            <ErrorMsg field="districtId" />
                         </div>
                         <div>
                             <label className={labelStyle}>Phường/Xã (*)</label>
@@ -89,6 +101,7 @@ const FacilityFormPage = () => {
                                 <option value="">Chọn Phường/Xã</option>
                                 {wards.map(w => <option key={w.id} value={w.id}>{w.wardName}</option>)}
                             </select>
+                            <ErrorMsg field="wardId" />
                         </div>
                     </div>
 
@@ -100,12 +113,13 @@ const FacilityFormPage = () => {
                             onChange={e => setFormData({...formData, phone: e.target.value})}
                             placeholder="Nhập số điện thoại (10-11 số)"
                         />
-                        {errors.phone && <p className="text-red-500 text-[10px] font-bold mt-1">{errors.phone}</p>}
+                        <ErrorMsg field="phone" />
                     </div>
 
                     <div>
                         <label className={labelStyle}>Địa chỉ</label>
                         <input className={inputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Số nhà, đường..." />
+                        <ErrorMsg field="address" />
                     </div>
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8 w-full">
