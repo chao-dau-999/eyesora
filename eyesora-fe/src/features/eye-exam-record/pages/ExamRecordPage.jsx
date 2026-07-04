@@ -58,11 +58,8 @@ const ExamRecordPage = () => {
                     axiosClient.get('/campaigns', { params: { size: 1000 } }).catch(() => ({ data: {} }))
                 ]);
 
-                const facilityList = facilityRes.data?.content || [];
-                const campaignList = campaignRes.data?.content || campaignRes.data || [];
-
-                setFacilities(facilityList);
-                setCampaigns(campaignList);
+                setFacilities(facilityRes.data?.content || facilityRes.data || []);
+                setCampaigns(campaignRes.data?.content || campaignRes.data || []);
             } catch (error) {
                 console.error("Lỗi khi tải danh sách bộ lọc:", error);
             }
@@ -100,8 +97,14 @@ const ExamRecordPage = () => {
     }, [debouncedSearchQuery, selectedFacility, selectedCampaign]);
 
     useEffect(() => {
-        fetchData(pageData.page);
+        setPageData(prev => ({ ...prev, page: 0 }));
+        fetchData(0);
     }, [debouncedSearchQuery, selectedFacility, selectedCampaign, fetchData]);
+
+    const handlePageChange = (targetPage) => {
+        setPageData(prev => ({ ...prev, page: targetPage }));
+        fetchData(targetPage);
+    };
 
     const openDetail = async (record) => {
         try {
@@ -132,7 +135,7 @@ const ExamRecordPage = () => {
             const isLastItemOnPage = records.length === 1 && pageData.page > 0;
             const targetPage = isLastItemOnPage ? pageData.page - 1 : pageData.page;
 
-            fetchData(targetPage);
+            handlePageChange(targetPage);
         } catch (error) {
             alert(error.response?.data?.message || "Có lỗi xảy ra khi xóa hồ sơ.");
         }
@@ -170,7 +173,6 @@ const ExamRecordPage = () => {
     return (
         <div className="p-6 h-full overflow-y-auto bg-[#f5f7fa] text-gray-950 scrollbar-thin">
 
-            {/* 1. Header */}
             <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -183,8 +185,8 @@ const ExamRecordPage = () => {
 
                 <div className="flex items-center gap-3">
                     <ExamRecordAction
-                        onAddClick={() => alert('Đang phát triển Thêm bản ghi')}
-                        onBulkClick={() => alert('Đang phát triển Nhập hàng loạt')}
+                        onAddClick={() => navigate('/eye-exam-records/create')}
+                        onBulkClick={() => navigate('/eye-exam-records/import')}
                     />
                 </div>
             </div>
@@ -201,10 +203,7 @@ const ExamRecordPage = () => {
                 <div className="flex flex-row gap-3 w-full md:w-auto flex-shrink-0">
                     <select
                         value={selectedFacility}
-                        onChange={(e) => {
-                            setSelectedFacility(e.target.value);
-                            setPageData(prev => ({ ...prev, page: 0 }));
-                        }}
+                        onChange={(e) => setSelectedFacility(e.target.value)}
                         className="bg-white border border-gray-200 text-sm font-medium text-gray-700 px-4 py-2.5 rounded-xl shadow-sm outline-none focus:border-blue-900 transition-all cursor-pointer min-w-[160px] max-w-[200px]"
                     >
                         <option value="">Tất cả trường học</option>
@@ -217,10 +216,7 @@ const ExamRecordPage = () => {
 
                     <select
                         value={selectedCampaign}
-                        onChange={(e) => {
-                            setSelectedCampaign(e.target.value);
-                            setPageData(prev => ({ ...prev, page: 0 })); // Reset về trang 1 khi đổi bộ lọc chiến dịch
-                        }}
+                        onChange={(e) => setSelectedCampaign(e.target.value)}
                         className="bg-white border border-gray-200 text-sm font-medium text-gray-700 px-4 py-2.5 rounded-xl shadow-sm outline-none focus:border-blue-900 transition-all cursor-pointer min-w-[160px] max-w-[200px]"
                     >
                         <option value="">Tất cả chiến dịch</option>
@@ -237,7 +233,7 @@ const ExamRecordPage = () => {
                 records={records}
                 loading={loading}
                 pageData={pageData}
-                fetchData={fetchData}
+                fetchData={handlePageChange}
                 openDetail={openDetail}
                 openUpdateModal={openUpdatePage}
                 triggerDeleteModal={triggerDeleteModal}

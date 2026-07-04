@@ -44,6 +44,7 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final FacilityRepository facilityRepository;
+    private final WardRepository wardRepository;
 
     @Override
     @Transactional
@@ -135,22 +136,75 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     public EyeExamRecordResponse createExamRecord(EyeExamRecordRequest request) {
         EyeExamRecord entity = new EyeExamRecord();
 
+        ExamCampaign campaign = null;
         if (request.campaignId() != null && !request.campaignId().isBlank()) {
-            entity.setCampaign(campaignRepository.getReferenceById(request.campaignId()));
+            campaign = campaignRepository.findById(request.campaignId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chiến dịch: " + request.campaignId()));
+            entity.setCampaign(campaign);
         }
 
-        if (request.patientId() != null && !request.patientId().isBlank()) {
-            entity.setPatient(patientRepository.getReferenceById(request.patientId()));
-        }
-
+        Classes patientClass = null;
         if (request.classId() != null && !request.classId().isBlank()) {
-            entity.setClassesField(classesRepository.getReferenceById(request.classId()));
+            patientClass = classesRepository.findById(request.classId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp: " + request.classId()));
+            entity.setClassesField(patientClass);
         }
 
         if (request.examinerId() != null && !request.examinerId().isBlank()) {
             entity.setExaminer(userRepository.getReferenceById(request.examinerId()));
         }
 
+        Patient patient;
+        if (request.patientId() != null && !request.patientId().isBlank()) {
+            patient = patientRepository.findById(request.patientId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bệnh nhân với ID: " + request.patientId()));
+        } else {
+            if (request.newPatientName() == null || request.newPatientName().isBlank()) {
+                throw new IllegalArgumentException("Tên bệnh nhân mới không được để trống khi tạo mới.");
+            }
+            if (request.newPatientDob() == null) {
+                throw new IllegalArgumentException("Ngày sinh của bệnh nhân mới không được để trống.");
+            }
+            if (request.newPatientGender() == null || request.newPatientGender().isBlank()) {
+                throw new IllegalArgumentException("Giới tính của bệnh nhân mới không được để trống.");
+            }
+            if (request.newPatientWardId() == null || request.newPatientWardId().isBlank()) {
+                throw new IllegalArgumentException("Mã phường/xã (Ward ID) của bệnh nhân mới không được để trống.");
+            }
+
+            if (campaign != null && campaign.getStatus() == ExamCampaign.CampaignStatus.LOCKED) {
+                throw new vn.edu.fpt.eyesora.exceptions.BusinessException("Chiến dịch đã bị khóa, không thể tạo thêm bệnh nhân mới!");
+            }
+
+            // Tìm thông tin phường xã
+            Ward patientWard = wardRepository.findById(request.newPatientWardId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã với ID: " + request.newPatientWardId()));
+
+            Patient newPatient = new Patient();
+            newPatient.setPatientName(request.newPatientName().trim());
+            newPatient.setDob(request.newPatientDob());
+            newPatient.setParentPhone(request.newPatientParentPhone());
+
+            try {
+                newPatient.setGender(Patient.Gender.valueOf(request.newPatientGender().toUpperCase()));
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Giới tính không hợp lệ. Phải là MALE, FEMALE hoặc OTHER.");
+            }
+
+            // Đồng bộ các thực thể liên kết (Campaign, Facility, Class, Ward)
+            newPatient.setExamCampaign(campaign);
+            newPatient.setClasses(patientClass);
+            newPatient.setWard(patientWard);
+
+            if (patientClass != null && patientClass.getFacility() != null) {
+                newPatient.setFacility(patientClass.getFacility());
+            }
+
+            newPatient.setIsDeleted(false);
+            patient = patientRepository.save(newPatient);
+        }
+
+        entity.setPatient(patient);
         entity.setIsDeleted(false);
         entity.setVaLeftWithoutGlasses(request.vaLeftWithoutGlasses());
         entity.setVaRightWithoutGlasses(request.vaRightWithoutGlasses());
