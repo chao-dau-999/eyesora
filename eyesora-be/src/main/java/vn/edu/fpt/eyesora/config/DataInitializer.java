@@ -47,7 +47,7 @@ public class DataInitializer {
             admin.setPassword_hash(passwordEncoder.encode("password"));
             admin.setFull_name("System Super Admin");
             admin.setEmail("admin12345@gmail.com");
-            admin.setFacility_id(null);
+            admin.setFacility(null);
             admin.setRoles(Set.of(adminRole));
             admin.setStatus(AccountStatus.ACTIVE);
 
@@ -56,7 +56,7 @@ public class DataInitializer {
             owner.setPassword_hash(passwordEncoder.encode("password"));
             owner.setFull_name("Facility 1");
             owner.setEmail("owner1@gmail.com");
-            owner.setFacility_id(null);
+            owner.setFacility(null);
             owner.setRoles(Set.of(facilityOwner));
             owner.setStatus(AccountStatus.ACTIVE);
 
@@ -65,7 +65,7 @@ public class DataInitializer {
             examiner.setPassword_hash(passwordEncoder.encode("password"));
             examiner.setFull_name("Examiner 1");
             examiner.setEmail("examiner@gmail.com");
-            examiner.setFacility_id(null);
+            examiner.setFacility(null);
             examiner.setRoles(Set.of(examinerRole));
             examiner.setStatus(AccountStatus.ACTIVE);
 

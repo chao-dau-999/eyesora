@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import SearchBar from "../../../shared/components/SearchBar.jsx";
 import PatientAction from "../components/PatientAction.jsx";
 import PatientTable from "../components/PatientTable.jsx";
 import PatientDetailModal from "../components/PatientDetailModal.jsx";
+import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
+import Pagination from "../../../shared/components/Pagination.jsx";
 
 const PatientPage = () => {
-    const navigate = useNavigate(); // 2. Khởi tạo hook điều hướng
-
+    const navigate = useNavigate();
 
     const [patients, setPatients] = useState([]);
     const [pageInfo, setPageInfo] = useState({ pageNumber: 0, pageSize: 10, totalElements: 0, totalPages: 1 });
@@ -15,7 +16,9 @@ const PatientPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
 
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
+    const [deleteError, setDeleteError] = useState(null);
 
     const fetchPatients = async (page = 0, size = 10) => {
         setLoading(true);
@@ -33,6 +36,26 @@ const PatientPage = () => {
             console.error("Lỗi fetch dữ liệu:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedPatient) return;
+        setDeleteError(null);
+        try {
+            const res = await fetch(`http://localhost:8080/api/patients/${selectedPatient.patientId}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                setIsDeleteModalOpen(false);
+                fetchPatients(pageInfo.pageNumber);
+            } else {
+                const errorMessage = await res.text();
+                setDeleteError(errorMessage || "Có lỗi xảy ra, không thể xóa!");
+            }
+        } catch (error) {
+            setDeleteError("Không thể kết nối tới máy chủ.");
         }
     };
 
@@ -56,7 +79,6 @@ const PatientPage = () => {
                     <p className="text-xs text-gray-500 mt-0.5">Tổng số: {pageInfo.totalElements} học sinh</p>
                 </div>
 
-                {/* Nút thao tác dồn về bên phải */}
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/patients/create')}
@@ -67,7 +89,6 @@ const PatientPage = () => {
                 </div>
             </div>
 
-            {/* Thanh tìm kiếm & Bộ lọc riêng biệt (Sử dụng Reusable SearchBar của bạn) */}
             <div className="mb-6">
                 <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
             </div>
@@ -78,16 +99,23 @@ const PatientPage = () => {
                     loading={loading}
                     pageInfo={pageInfo}
                     formatDate={formatDate}
-
-                    onEdit={(p) => {
-                        console.log("Navigating to edit form page for patient:", p);
-                        navigate(`/patients/edit/${p.patientId}`);
-                    }}
+                    onEdit={(p) => navigate(`/patients/edit/${p.patientId}`)}
                     onDetail={(p) => { setSelectedPatient(p); setIsDetailModalOpen(true); }}
+                    onDelete={(p) => { setSelectedPatient(p); setIsDeleteModalOpen(true); }}
                 />
+
+                <div className="flex items-center justify-between px-6 py-5 bg-white border-t border-gray-100">
+                    <span className="text-xs font-black text-gray-400 uppercase">
+                        Trang {pageInfo.pageNumber + 1} / {pageInfo.totalPages || 1}
+                    </span>
+                    <Pagination
+                        currentPage={pageInfo.pageNumber}
+                        totalPages={pageInfo.totalPages}
+                        onPageChange={fetchPatients}
+                    />
+                </div>
             </div>
 
-            {/* Modal Detail giữ lại làm hộp thoại xem nhanh thông tin */}
             {isDetailModalOpen && (
                 <PatientDetailModal
                     patient={selectedPatient}
@@ -95,6 +123,18 @@ const PatientPage = () => {
                     onClose={() => setIsDetailModalOpen(false)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeleteError(null);
+                }}
+                onConfirm={handleDelete}
+                error={deleteError}
+                title="Xác nhận xóa"
+                message={`Bạn có chắc chắn muốn xóa bệnh nhân ${selectedPatient?.patientName}? Hành động này không thể hoàn tác.`}
+            />
         </div>
     );
 };

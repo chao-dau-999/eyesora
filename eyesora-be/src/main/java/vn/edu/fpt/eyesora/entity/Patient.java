@@ -28,7 +28,7 @@ public class Patient {
     @Column(name = "patient_name", nullable = false, length = 150)
     private String patientName;
 
-    @Column(name = "dob", nullable = false)
+    @Column(name = "dob")
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)

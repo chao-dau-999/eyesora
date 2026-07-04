@@ -58,4 +58,10 @@ public class PatientController {
         PatientResponse updatedPatient = patientService.updatePatient(id, req);
         return ResponseEntity.ok(updatedPatient);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletePatient(@PathVariable String id) {
+        patientService.deletePatient(id);
+        return ResponseEntity.ok("Đã xóa bệnh nhân thành công!");
+    }
 }

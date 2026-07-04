@@ -1,6 +1,6 @@
 import { Users, SquarePen, Trash } from "lucide-react";
 
-const PatientTable = ({ patients, loading, pageInfo, onDetail, onEdit, formatDate }) => (
+const PatientTable = ({ patients, loading, pageInfo, onDetail, onEdit, onDelete, formatDate }) => (
     <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
             <thead>
@@ -36,7 +36,7 @@ const PatientTable = ({ patients, loading, pageInfo, onDetail, onEdit, formatDat
                             <div className="flex items-center justify-end gap-3">
                                 <button onClick={() => onDetail(p)} className="text-green-600 hover:text-green-800"><Users size={20}/></button>
                                 <button onClick={() => onEdit(p)} className="text-blue-600"><SquarePen size={18}/></button>
-                                <button className="text-gray-400 hover:text-red-600"><Trash size={20}/></button>
+                                <button onClick={() => onDelete(p)} className="text-gray-400 hover:text-red-600"><Trash size={20}/></button>
                             </div>
                         </td>
                     </tr>
