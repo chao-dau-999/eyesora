@@ -3,6 +3,7 @@ import { LayoutDashboard, University, GraduationCap, UsersRound, Eye, X, Calenda
 
 const MENU_ITEMS = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/' },
+    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Facility-Dashboard', path: '/facility-dashboard' },
     { icon: <University className="w-5 h-5" />, label: 'Facilities', path: '/facilities' },
     { icon: <GraduationCap className="w-5 h-5" />, label: 'Classes', path: '/classes' },
     { icon: <ClipboardList className="w-5 h-5" />, label: 'Exam Records', path: '/eye-exam-records' },

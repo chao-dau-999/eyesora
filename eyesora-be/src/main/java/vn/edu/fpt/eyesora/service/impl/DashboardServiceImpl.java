@@ -8,6 +8,7 @@ import vn.edu.fpt.eyesora.entity.EyeExamRecord;
 import vn.edu.fpt.eyesora.repository.EyeExamRecordRepository;
 import vn.edu.fpt.eyesora.service.IDashboardService;
 
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -143,5 +144,30 @@ public class DashboardServiceImpl implements IDashboardService {
             } catch (Exception ignored) {}
         }
         return timelineStats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<FacilityMyopiaResponse> getFacilityStats() {
+        List<EyeExamRecord> entityList = eyeExamRecordRepository.findByIsDeletedFalse();
+
+        Map<String, List<EyeExamRecord>> groupByFacility = entityList.stream()
+                .filter(e -> e.getClassesField() != null && e.getClassesField().getFacility() != null && e.getClassesField().getFacility().getFacilityName() != null)
+                .collect(Collectors.groupingBy(e -> e.getClassesField().getFacility().getFacilityName()));
+
+        List<FacilityMyopiaResponse> facilityStats = new ArrayList<>();
+
+        groupByFacility.forEach((facilityName, facilityRecords) -> {
+            long totalInFacility = facilityRecords.size();
+            long myopiaInFacility = facilityRecords.stream()
+                    .filter(e -> (e.getSphLeft() != null && e.getSphLeft() < 0) || (e.getSphRight() != null && e.getSphRight() < 0))
+                    .count();
+
+            double rate = totalInFacility > 0 ? Math.round((myopiaInFacility * 100.0 / totalInFacility) * 10.0) / 10.0 : 0.0;
+            facilityStats.add(new FacilityMyopiaResponse(facilityName, rate));
+        });
+
+        facilityStats.sort((a, b) -> Double.compare(b.rate(), a.rate()));
+        return facilityStats;
     }
 }

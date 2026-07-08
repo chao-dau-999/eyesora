@@ -1,6 +1,7 @@
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
 import AppLayout from "./shared/layout/AppLayout";
 import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
+import FacilityDashboard from "./features/facility-dashboard/pages/FacilityDashboard.jsx";
 import LoginPage from "./features/auth/page/LoginPage.jsx";
 import PatientPage from "./features/patient/pages/PatientPage.jsx";
 import FacilitiesPage from "./features/facility/pages/FacilitiesPage.jsx";
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/login" element={<LoginPage/>}/>
                 <Route path="/" element={<AppLayout />}>
                     <Route index element={<AdminDashboard />} />
+                    <Route path="/facility-dashboard" element={<FacilityDashboard />} />
                     <Route path="/classes" element={<ClassesPage />} />
                     <Route path="/classes/create" element={<ClassFormPage />} />
                     <Route path="/classes/edit/:id" element={<ClassFormPage />} />

@@ -18,6 +18,7 @@ const Dashboard = () => {
     });
     const [gradeStats, setGradeStats] = useState([]);
     const [timelineStats, setTimelineStats] = useState([]);
+    const [facilityStats, setFacilityStats] = useState([]); // <-- Thêm state lưu tỉ lệ theo trường
 
     const [records, setRecords] = useState([]);
     const [pageData, setPageData] = useState({ page: 0, totalPages: 1, totalElements: 0 });
@@ -29,10 +30,12 @@ const Dashboard = () => {
 
     const fetchDashboardStaticData = async () => {
         try {
-            const [countersRes, gradeRes, timelineRes] = await axios.all([
+            // Tích hợp thêm endpoint lấy thống kê của các trường học
+            const [countersRes, gradeRes, timelineRes, facilityRes] = await axios.all([
                 axiosClient.get('/dashboard/counters'),
                 axiosClient.get('/dashboard/grade-stats'),
-                axiosClient.get('/dashboard/myopia-timeline')
+                axiosClient.get('/dashboard/myopia-timeline'),
+                axiosClient.get('/dashboard/facility-stats') // <-- Gọi API mới ở đây
             ]);
 
             setSummary(countersRes.data || {
@@ -44,6 +47,8 @@ const Dashboard = () => {
             });
             setGradeStats(gradeRes.data || []);
             setTimelineStats(timelineRes.data || []);
+            setFacilityStats(facilityRes.data || []); // <-- Cập nhật dữ liệu trường học vào state
+
             setTimeout(() => setAnimateBars(true), 150);
         } catch (error) {
             console.error("Lỗi khi tải dữ liệu cấu trúc bảng thống kê", error);
@@ -128,7 +133,7 @@ const Dashboard = () => {
         return `${value}°`;
     };
 
-     const generateSvgPathAndCircles = () => {
+    const generateSvgPathAndCircles = () => {
         if (!timelineStats || timelineStats.length === 0) return { path: "", circles: [] };
 
         const width = 400;
@@ -168,9 +173,11 @@ const Dashboard = () => {
         <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin text-gray-950">
             <StatsCards summary={summary} />
 
+            {/* Truyền thêm prop facilityStats xuống component đồ thị */}
             <AnalyticsCharts
                 gradeStats={gradeStats}
                 timelineStats={timelineStats}
+                facilityStats={facilityStats} // <-- Prop mới truyền đi
                 animateBars={animateBars}
                 path={path}
                 circles={circles}
