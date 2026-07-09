@@ -1,23 +1,45 @@
 import React from 'react';
-import { SlidersHorizontal, Download, Eye } from 'lucide-react';
+import {SlidersHorizontal, Download, Eye} from 'lucide-react';
 import Pagination from "../../../shared/components/Pagination.jsx";
+import axiosClient from "../../../shared/axios/axiosClient.js";
 
-const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDiopter }) => {
+const handleExport = async () => {
+    try {
+        const res = await axiosClient.get('/dashboard/export/city', {responseType: 'blob'});
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'Bao_Cao_Tu_EyeSora.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        console.error("Lỗi xuất file", error);
+        alert("Có lỗi xảy ra khi xuất báo cáo!");
+    }
+};
+
+const AlertRecordsTable = ({records, pageData, fetchData, openDetail, formatDiopter}) => {
     const totalPages = pageData.totalPages || 1;
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center bg-gray-50/70 gap-2">
+            <div
+                className="px-6 py-4 border-b border-gray-200 flex flex-wrap justify-between items-center bg-gray-50/70 gap-2">
                 <h3 className="text-base font-bold text-red-900 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-red-600 animate-ping"></span>
                     Danh sách ca bệnh cần cảnh báo gấp
                 </h3>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200/60 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer">
-                        <SlidersHorizontal className="w-3.5 h-3.5" /> Bộ lọc
+                    <button
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200/60 text-xs font-semibold text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer">
+                        <SlidersHorizontal className="w-3.5 h-3.5"/> Bộ lọc
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#004194] text-white text-xs font-semibold hover:bg-blue-800 transition-colors cursor-pointer">
-                        <Download className="w-3.5 h-3.5" /> Xuất báo cáo
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#004194] text-white text-xs font-semibold hover:bg-blue-800 transition-colors cursor-pointer"
+                    >
+                        <Download className="w-3.5 h-3.5"/> Xuất báo cáo
                     </button>
                 </div>
             </div>
@@ -45,14 +67,16 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                         </tr>
                     ) : (
                         records.map((record, index) => (
-                            <tr key={index} className="hover:bg-blue-50/50 transition-all duration-200 text-sm font-medium">
+                            <tr key={index}
+                                className="hover:bg-blue-50/50 transition-all duration-200 text-sm font-medium">
                                 <td className="px-6 py-4 text-sm font-bold text-gray-900">{record.patientName ?? "N/A"}</td>
                                 <td className="px-6 py-4 text-sm font-bold text-gray-900">
                                     {record.gender === "MALE" ? "Nam" : record.gender === "FEMALE" ? "Nữ" : "Khác"}
                                 </td>
                                 <td className="px-6 py-4 text-xs text-gray-600">{record.className ?? "-"}</td>
 
-                                <td className="px-6 py-4 text-xs text-gray-600 max-w-[160px] truncate" title={record.facilityName}>
+                                <td className="px-6 py-4 text-xs text-gray-600 max-w-[160px] truncate"
+                                    title={record.facilityName}>
                                     {record.facilityName ?? "-"}
                                 </td>
 
@@ -63,13 +87,16 @@ const AlertRecordsTable = ({ records, pageData, fetchData, openDetail, formatDio
                                     {formatDiopter(record.sphRight)}
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase border bg-[#ffdad6] text-[#93000a] border-[#ba1a1a]/10">
+                                    <span
+                                        className="px-2 py-0.5 rounded text-[10px] font-bold uppercase border bg-[#ffdad6] text-[#93000a] border-[#ba1a1a]/10">
                                         Cận nặng
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-center">
-                                    <button type="button" onClick={() => openDetail(record)} className="p-2 text-gray-500 hover:text-gray-900 transition-colors cursor-pointer" title="Xem chi tiết">
-                                        <Eye className="w-4 h-4" />
+                                    <button type="button" onClick={() => openDetail(record)}
+                                            className="p-2 text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
+                                            title="Xem chi tiết">
+                                        <Eye className="w-4 h-4"/>
                                     </button>
                                 </td>
                             </tr>
