@@ -21,6 +21,7 @@ import vn.edu.fpt.eyesora.entity.*;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IEyeExamRecordService;
+import vn.edu.fpt.eyesora.util.SecurityUtil;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -29,6 +30,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +53,23 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     @Transactional
     public Page<EyeExamRecordResponse> getExamRecords(String keyword, String facilityId, String campaignId, Pageable pageable) {
 
+        User currentUser = SecurityUtil.getCurrentUser();
+        String finalFacilityId;
+
+        if (currentUser != null) {
+            boolean isFacilityAdmin = currentUser.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_FACILITY_ADMIN"));
+
+            if (isFacilityAdmin) {
+                finalFacilityId = currentUser.getFacility().getId();
+            } else {
+                finalFacilityId = facilityId;
+            }
+        } else {
+            finalFacilityId = facilityId;
+        }
+
+
         Specification<EyeExamRecord> spec = (root, query, criteriaBuilder) -> {
             if (Long.class != query.getResultType()) {
                 Fetch<EyeExamRecord, Classes> classFetch = root.fetch("classesField", JoinType.LEFT);
@@ -62,12 +82,11 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.equal(root.get("isDeleted"), false));
 
-            if (facilityId != null && !facilityId.isBlank()) {
+            if (finalFacilityId != null && !finalFacilityId.isBlank()) {
                 predicates.add(criteriaBuilder.equal(
-                        root.get("classesField").get("facility").get("id"), facilityId.trim()
+                        root.get("classesField").get("facility").get("id"), finalFacilityId.trim()
                 ));
             }
-
             if (campaignId != null && !campaignId.isBlank()) {
                 predicates.add(criteriaBuilder.equal(
                         root.get("campaign").get("campaignId"), campaignId.trim()
@@ -272,7 +291,36 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
             Map<String, Classes> classCache = new HashMap<>();
             Map<String, Patient> patientCache = new HashMap<>();
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            // 1. TỰ ĐỘNG TÌM DÒNG TIÊU ĐỀ CHÍNH
+            int headerRowIndex = -1;
+            for (int i = 0; i <= Math.min(sheet.getLastRowNum(), 10); i++) { // Quét tối đa 10 dòng đầu
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                // Kiểm tra xem dòng này có chứa chữ "STT" hay "HỌ VÀ TÊN" không
+                String firstCellText = getCellValueAsString(row.getCell(0)).trim().toUpperCase();
+                String secondCellText = getCellValueAsString(row.getCell(1)).trim().toUpperCase();
+
+                if (firstCellText.contains("STT") || secondCellText.contains("HỌ VÀ TÊN") || secondCellText.contains("HO VA TEN")) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+
+            // Nếu không tìm thấy tiêu đề bằng từ khóa, fallback mặc định bỏ qua 4 dòng đầu theo cấu trúc file của bạn
+            int startRowIndex = (headerRowIndex != -1) ? (headerRowIndex + 1) : 4;
+
+            // Vì file mẫu của bạn có tiêu đề lồng nhau (2-3 dòng tiêu đề phụ bên dưới chữ STT),
+            // ta cần kiểm tra thêm cho đến khi gặp dòng có dữ liệu thật (Cột STT phải là số)
+            while (startRowIndex <= sheet.getLastRowNum()) {
+                Row row = sheet.getRow(startRowIndex);
+                if (row != null && isDataRow(row)) {
+                    break; // Đã tìm thấy dòng dữ liệu thật đầu tiên!
+                }
+                startRowIndex++;
+            }
+
+            for (int i = startRowIndex; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null || isRowEmpty(row)) continue;
 
@@ -304,13 +352,21 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         );
     }
 
+    @Override
+    public List<EyeExamRecordResponse> getByPatientId(String patientId) {
+        return this.eyeExamRecordRepository.findByPatient_PatientId(patientId)
+                .stream().filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
+                .map(this::mapToResponse).toList();
+    }
+
+
     private EyeExamRecord parseRowToEntitySafe(Row row, ExamCampaign campaign, User examiner, Facility facility,
                                                Map<String, Classes> classCache,
                                                Map<String, Patient> patientCache,
                                                List<String> localErrors) {
 
-        // 1. XỬ LÝ LỚP HỌC THEO CƠ SỞ (Cột 4)
-        String className = getCellValueAsString(row.getCell(4));
+        // 1. XỬ LÝ LỚP HỌC THEO CƠ SỞ (Cột 2)
+        String className = getCellValueAsString(row.getCell(2));
         if (className.isEmpty()) {
             localErrors.add("Tên lớp (Class Name) không được để trống");
             return null;
@@ -339,124 +395,246 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
             classCache.put(className, clazz);
         }
 
-        // 2. XỬ LÝ THÔNG TIN BỆNH NHÂN (Cột 0, 1, 2, 3)
-        String patientId = getCellValueAsString(row.getCell(0));
-        String patientName = getCellValueAsString(row.getCell(1));
-        String dobStr = getCellValueAsString(row.getCell(2));
-        String genderStr = getCellValueAsString(row.getCell(3));
+        // 2. XỬ LÝ THÔNG TIN BỆNH NHÂN (Dựa vào Tên, Giới tính, Lớp thay vì ID trống)
+        String patientName = getCellValueAsString(row.getCell(1)).trim(); // Cột HỌ VÀ TÊN
+        String genderStr = getCellValueAsString(row.getCell(2)).trim();      // Cột GIỚI TÍNH (Trong ảnh là số 0/1 hoặc chữ)
 
-        if (patientId.isEmpty()) {
-            localErrors.add("Mã bệnh nhân (Patient ID) không được để trống");
+        if (patientName.isEmpty()) {
+            localErrors.add("Tên học sinh không được để trống");
             return null;
         }
 
-        Patient patient = patientCache.get(patientId);
+// Chuyển đổi giới tính (Ví dụ: file ghi 0 là Nữ, 1 là Nam hoặc chữ "Nam"/"Nữ")
+        Patient.Gender gender = Patient.Gender.OTHER;
+        if (genderStr.equalsIgnoreCase("1") || genderStr.equalsIgnoreCase("nam")) {
+            gender = Patient.Gender.MALE;
+        } else if (genderStr.equalsIgnoreCase("0") || genderStr.equalsIgnoreCase("nữ")) {
+            gender = Patient.Gender.FEMALE;
+        }
+
+        String patientCacheKey = String.format("%s_%s_%s", patientName.toLowerCase(), gender.name(), clazz.getId());
+
+        Patient patient = patientCache.get(patientCacheKey);
         if (patient == null) {
-            patient = patientRepository.findById(patientId).orElse(null);
-            if (patient == null) {
-                if (patientName.isEmpty()) {
-                    localErrors.add("Bệnh nhân mới yêu cầu bắt buộc nhập Tên (Patient Name)");
-                    return null;
-                }
+            Optional<Patient> existingPatient = patientRepository.findByPatientNameAndGenderAndClasses(patientName, gender, clazz);
+
+            if (existingPatient.isPresent()) {
+                patient = existingPatient.get();
+            } else {
                 Patient newPatient = new Patient();
                 newPatient.setPatientName(patientName);
-                newPatient.setClasses(clazz); // Gắn học sinh vào lớp vừa tìm/tạo ở trên
-
-                // Parse Ngày sinh an toàn
-                if (dobStr.trim().isEmpty()) {
-                    localErrors.add("Bệnh nhân mới yêu cầu bắt buộc nhập Ngày sinh (DOB)");
-                    return null;
-                }
-                try {
-                    if (row.getCell(2).getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(row.getCell(2))) {
-                        newPatient.setDob(row.getCell(2).getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                    } else {
-                        newPatient.setDob(LocalDate.parse(dobStr, DATE_FORMATTER));
-                    }
-                } catch (Exception e) {
-                    localErrors.add("Định dạng Ngày sinh (DOB) lỗi. Chuẩn: dd/MM/yyyy");
-                    return null;
-                }
-
-                if (genderStr.trim().isEmpty()) {
-                    localErrors.add("Bệnh nhân mới yêu cầu bắt buộc nhập giới tính)");
-                    return null;
-                }
-                try {
-                    newPatient.setGender(genderStr.equalsIgnoreCase("nam") ? Patient.Gender.MALE :
-                            genderStr.equalsIgnoreCase("nữ") ? Patient.Gender.FEMALE : Patient.Gender.OTHER);
-                } catch (Exception e) {
-                    localErrors.add("Giới tính của bệnh nhân required");
-                    return null;
-                }
+                newPatient.setGender(gender);
+                newPatient.setClasses(clazz);
                 patient = patientRepository.save(newPatient);
             }
-            patientCache.put(patientId, patient);
+            patientCache.put(patientCacheKey, patient);
         }
 
-        // 3. KHỞI TẠO RECORD & NGÀY KHÁM (Cột 5)
-        EyeExamRecord record = new EyeExamRecord();
-        record.setCampaign(campaign);
-        record.setExaminer(examiner);
-        record.setClassesField(clazz);
-        record.setPatient(patient);
-        record.setIsDeleted(false);
+        // 3. KHỞI TẠO HOẶC CẬP NHẬT RECORD
+        EyeExamRecord record = null;
 
-        DataFormatter dataFormatter = new DataFormatter();
-        Cell examDateCell = row.getCell(5);
-        if (examDateCell != null && examDateCell.getCellType() != CellType.BLANK) {
-            try {
-                if (examDateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(examDateCell)) {
-                    record.setExamDate(examDateCell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
-                } else {
-                    // Dùng dataFormatter cứu cánh cho trường hợp cột 5 bị sai định dạng ô
-                    String examDateStrClean = dataFormatter.formatCellValue(examDateCell).trim();
-                    record.setExamDate(LocalDate.parse(examDateStrClean, DATE_FORMATTER));
-                }
-            } catch (Exception e) {
-                localErrors.add("Định dạng Ngày khám không hợp lệ. Chuẩn: dd/MM/yyyy");
-                return null;
-            }
+        if (campaign != null && patient.getPatientId() != null) {
+            record = eyeExamRecordRepository.findByPatientAndCampaign(patient, campaign).orElse(null);
         }
 
-        // 4. ĐỌC THÔNG SỐ THỊ LỰC & KHÚC XẠ (Cột 6 - 15)
+        if (record == null) {
+            record = new EyeExamRecord();
+            record.setCampaign(campaign);
+            record.setPatient(patient);
+            record.setClassesField(clazz);
+            record.setIsDeleted(false);
+        } else {
+            // Nếu đã tồn tại và bạn muốn cho phép ghi đè/cập nhật,
+            record.setClassesField(clazz);
+        }
+
+        record.setExamDate(LocalDate.now());
+
+//          Cập nhật ngày khám
+//        if (examDateCell != null && examDateCell.getCellType() != CellType.BLANK) {
+//            // ... Giữ nguyên logic parse ngày khám của bạn ...
+//            record.setExamDate(parsedDate);
+//        } else {
+//            record.setExamDate(LocalDate.now()); // Mặc định ngày hiện tại nếu trống
+//        }
+
+        // 4. ĐỌC THÔNG SỐ THỊ LỰC & KHÚC XẠ
         try {
-            Float vaLeftWO = getCellValueAsFloat(row.getCell(6), "VA không kính (Trái) bắt buộc");
-            Float vaRightWO = getCellValueAsFloat(row.getCell(11), "VA không kính (Phải) bắt buộc");
+            // --- THỊ LỰC KHÔNG KÍNH ---
+            // Cột 3 (MP), Cột 4 (MT)
+            record.setVaRightWithoutGlasses(parseVaToFloat(row.getCell(3)));
+            record.setVaLeftWithoutGlasses(parseVaToFloat(row.getCell(4)));
 
-            if (vaLeftWO == null || vaRightWO == null) {
-                localErrors.add("Thiếu thông số thị lực không kính bắt buộc");
-                return null;
-            }
+            // --- CÓ KÍNH CŨ ---
+            // Cột 5 (MP), Cột 6 (MT)
+            record.setVaRightOldGlasses(parseVaToFloat(row.getCell(5)));
+            record.setVaLeftOldGlasses(parseVaToFloat(row.getCell(6)));
 
-            // Mắt Trái
-            record.setVaLeftWithoutGlasses(vaLeftWO);
-            record.setVaLeftWithGlasses(getCellValueAsFloat(row.getCell(7), null));
-            float sphLeft = Optional.ofNullable(getCellValueAsFloat(row.getCell(8), null)).orElse(0f);
-            float cylLeft = Optional.ofNullable(getCellValueAsFloat(row.getCell(9), null)).orElse(0f);
-            record.setSphLeft(sphLeft);
-            record.setCylLeft(cylLeft);
-            record.setAxisLeft(getCellValueAsInteger(row.getCell(10)));
+            // --- KÍNH LỖ ---
+            // Cột 7 (MP), Cột 8 (MT)
+            record.setVaRightPinhole(parseVaToFloat(row.getCell(7)));
+            record.setVaLeftPinhole(parseVaToFloat(row.getCell(8)));
 
-            // Mắt Phải
-            record.setVaRightWithoutGlasses(vaRightWO);
-            record.setVaRightWithGlasses(getCellValueAsFloat(row.getCell(12), null));
-            float sphRight = Optional.ofNullable(getCellValueAsFloat(row.getCell(13), null)).orElse(0f);
-            float cylRight = Optional.ofNullable(getCellValueAsFloat(row.getCell(14), null)).orElse(0f);
-            record.setSphRight(sphRight);
-            record.setCylRight(cylRight);
-            record.setAxisRight(getCellValueAsInteger(row.getCell(15)));
+            // --- ĐỘ CẦU (SPH) ---
+            // Cột 9 (MP), Cột 10 (MT) -> Có chứa số kiểu -150, -3.25, PLANO
+            record.setSphRight(parseDiopterToFloat(row.getCell(9)));
+            record.setSphLeft(parseDiopterToFloat(row.getCell(10)));
 
-            boolean hasError = (sphLeft != 0 || cylLeft != 0 || sphRight != 0 || cylRight != 0);
-//            record.setHasRefractiveError(hasError);
-//            record.setDiagnosis(generateDynamicDiagnosis(sphLeft, cylLeft, sphRight, cylRight));
+            // --- ĐỘ TRỤ (CYL) ---
+            // Cột 11 (MP), Cột 12 (MT)
+            record.setCylRight(parseDiopterToFloat(row.getCell(11)));
+            record.setCylLeft(parseDiopterToFloat(row.getCell(12)));
+
+            // --- TRỤC (AXIS) ---
+            // Cột 13 (MP), Cột 14 (MT)
+            record.setAxisRight(getCellValueAsInteger(row.getCell(13)));
+            record.setAxisLeft(getCellValueAsInteger(row.getCell(14)));
+
+            // --- TLCK (Thị lực có kính mới) ---
+            // Cột 15 (MP), Cột 16 (MT)
+            record.setVaRightWithGlasses(parseVaToFloat(row.getCell(15)));
+            record.setVaLeftWithGlasses(parseVaToFloat(row.getCell(16)));
+
+            System.out.println(record.getVaRightWithoutGlasses() + " - " + record.getVaLeftWithoutGlasses());
 
         } catch (Exception e) {
-            localErrors.add("Lỗi định dạng số tại các cột thông số mắt: " + e.getMessage());
+            localErrors.add("Lỗi xử lý dữ liệu các cột mắt: " + e.getMessage());
             return null;
         }
 
         return record;
+    }
+
+    /**
+     * Kiểm tra xem dòng này có phải là dòng chứa dữ liệu học sinh thật hay không.
+     * Điều kiện: Ô STT (Cột 0) phải chứa dữ liệu số nguyên hợp lệ.
+     */
+    private boolean isDataRow(Row row) {
+        Cell firstCell = row.getCell(0);
+        if (firstCell == null || firstCell.getCellType() == CellType.BLANK) {
+            return false;
+        }
+
+        if (firstCell.getCellType() == CellType.NUMERIC) {
+            return true; // Định dạng ô là Number -> Chắc chắn là dòng dữ liệu (STT)
+        }
+
+        if (firstCell.getCellType() == CellType.STRING) {
+            String value = firstCell.getStringCellValue().trim();
+            // Kiểm tra xem chuỗi có phải là số hay không (ví dụ: "77")
+            return value.matches("^\\d+$");
+        }
+
+        return false;
+    }
+
+    /**
+     * Helper 1: Chuẩn hóa ĐỘ CẦU / ĐỘ TRỤ (Xử lý -150 -> -1.5, -3.25 -> -3.25, PLANO -> 0.0)
+     */
+    private Float parseDiopterToFloat(Cell cell) {
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return 0.0f;
+        }
+
+        // 1. KIỂM TRA KIỂU DỮ LIỆU CỦA Ô (BAO GỒM CẢ Ô CÔNG THỨC)
+        CellType cellType = cell.getCellType();
+
+        // Nếu ô chứa công thức (ví dụ: =--300), ta lấy kiểu dữ liệu của KẾT QUẢ công thức
+        if (cellType == CellType.FORMULA) {
+            cellType = cell.getCachedFormulaResultType();
+        }
+
+        // 2. XỬ LÝ NẾU KẾT QUẢ LÀ SỐ (NUMERIC)
+        if (cellType == CellType.NUMERIC) {
+            double val = cell.getNumericCellValue();
+            if (Math.abs(val) >= 25) {
+                return (float) (val / 100.0);
+            }
+            return (float) val;
+        }
+
+        // 3. XỬ LÝ NẾU KẾT QUẢ LÀ CHUỖI (STRING)
+        String cellValue = "";
+        if (cellType == CellType.STRING) {
+            cellValue = cell.getStringCellValue().trim().toUpperCase();
+        } else {
+            // Fallback dùng DataFormatter nếu rơi vào các kiểu định dạng lạ khác
+            DataFormatter formatter = new DataFormatter();
+            cellValue = formatter.formatCellValue(cell).trim().toUpperCase();
+        }
+
+        if (cellValue.isEmpty() || cellValue.equals("_") || cellValue.equals("-")) {
+            return 0.0f;
+        }
+        if (cellValue.contains("PLANO")) {
+            return 0.0f;
+        }
+
+        try {
+            long minusCount = cellValue.chars().filter(ch -> ch == '-').count();
+            boolean isNegative = (minusCount % 2 != 0);
+
+            // Lọc sạch các ký tự lạ, giữ lại số và dấu chấm thập phân
+            String cleanValue = cellValue.replaceAll("[^0-9.]", "");
+
+            if (cleanValue.isEmpty()) {
+                return 0.0f;
+            }
+
+            double val = Double.parseDouble(cleanValue);
+
+            if (isNegative) {
+                val = -val;
+            }
+            if (Math.abs(val) >= 25) {
+                return (float) (val / 100.0);
+            }
+            return (float) val;
+        } catch (NumberFormatException e) {
+            return 0.0f;
+        }
+    }
+
+    /**
+     * Helper 2: Chuẩn hóa THỊ LỰC (Xử lý phân số dạng "4/10" -> 0.4. Nếu gặp chữ như "2M ĐNT" trả về null hoặc 0)
+     */
+    private Float parseVaToFloat(Cell cell) {
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return null;
+        }
+
+        if (cell.getCellType() == CellType.NUMERIC) {
+            return (float) cell.getNumericCellValue();
+        }
+
+        String cellValue = cell.getStringCellValue().trim();
+        if (cellValue.isEmpty() || cellValue.equals("_") || cellValue.equals("-")) {
+            return null;
+        }
+
+        // Xử lý chuỗi dạng phân số "04/10" hoặc "4/10"
+        if (cellValue.contains("/")) {
+            try {
+                String[] parts = cellValue.split("/");
+                float tuSo = Float.parseFloat(parts[0].trim());
+                float mauSo = Float.parseFloat(parts[1].trim());
+                return tuSo / mauSo; // Ví dụ: 4 / 10 = 0.4f
+            } catch (Exception e) {
+                return 0.0f; // Không parse được (ví dụ format lỗi)
+            }
+        }
+
+        // Xử lý trường hợp chữ "2M ĐNT" -> Vì DB của bạn đang để Float nên bắt buộc phải quy ước trả về một số
+        // Hoặc tốt nhất là sửa trường VA trong DB thành String để lưu trọn vẹn chữ "2M ĐNT"
+        if (cellValue.toUpperCase().contains("ĐNT") || cellValue.toUpperCase().contains("ST")) {
+            return 0.05f; // Quy ước y khoa tạm thời cho đếm ngón tay (hoặc để null)
+        }
+
+        try {
+            return Float.parseFloat(cellValue);
+        } catch (NumberFormatException e) {
+            return 0.0f;
+        }
     }
 
 
@@ -481,11 +659,36 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     }
 
     private Integer getCellValueAsInteger(Cell cell) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) return null;
+        if (cell == null || cell.getCellType() == CellType.BLANK) {
+            return null;
+        }
+
         try {
-            return (int) cell.getNumericCellValue();
+            if (cell.getCellType() == CellType.NUMERIC) {
+                return (int) cell.getNumericCellValue();
+            }
+
+            String value = cell.toString().trim();
+
+            if (value.isEmpty() || "_".equals(value) || "-".equals(value)) {
+                return null;
+            }
+
+            // Chỉ chứa số
+            if (value.matches("-?\\d+")) {
+                return Integer.parseInt(value);
+            }
+
+            // Chứa chữ + số -> lấy số đầu tiên
+            Matcher matcher = Pattern.compile("-?\\d+").matcher(value);
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group());
+            }
+
+            throw new IllegalArgumentException();
         } catch (Exception e) {
-            throw new IllegalArgumentException("Định dạng số nguyên không hợp lệ tại ô " + cell.getAddress());
+            throw new IllegalArgumentException(
+                    "Định dạng số nguyên không hợp lệ tại ô " + cell.getAddress());
         }
     }
 

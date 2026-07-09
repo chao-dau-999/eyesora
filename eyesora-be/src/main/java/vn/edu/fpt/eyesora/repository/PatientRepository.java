@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
+import vn.edu.fpt.eyesora.entity.Classes;
 import vn.edu.fpt.eyesora.entity.Patient;
 
 import java.util.Optional;
@@ -19,6 +20,8 @@ public interface PatientRepository extends JpaRepository<Patient, String>, JpaSp
 
     @EntityGraph(attributePaths = {"classes"})
     Optional<Patient> findByPatientId(String patientId);
+
+    Optional<Patient> findByPatientNameAndGenderAndClasses(String patientName, Patient.Gender gender, Classes classes);
 
     Integer countByExamCampaign_CampaignIdAndIsDeletedFalse(String campaignId);
 }

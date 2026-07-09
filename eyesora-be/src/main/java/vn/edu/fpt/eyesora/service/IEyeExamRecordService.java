@@ -8,6 +8,8 @@ import vn.edu.fpt.eyesora.dto.request.EyeExamRecordUpdateRequest;
 import vn.edu.fpt.eyesora.dto.response.ExcelImportResponse;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 
+import java.util.List;
+
 public interface IEyeExamRecordService {
     Page<EyeExamRecordResponse> getExamRecords(String keyword, String facilityId, String campaignId, Pageable pageable);
     EyeExamRecordResponse updateExamRecord(String examId, EyeExamRecordUpdateRequest request);
@@ -15,4 +17,5 @@ public interface IEyeExamRecordService {
     EyeExamRecordResponse getExamRecordDetail(String examId);
     void deleteExamRecord(String examId);
     ExcelImportResponse importExamRecordsFromExcel(MultipartFile file, String campaignId, String examinerId, String facilityId);
+    List<EyeExamRecordResponse> getByPatientId(String patientId);
 }
