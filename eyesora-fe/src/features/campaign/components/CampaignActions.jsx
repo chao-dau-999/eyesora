@@ -2,19 +2,19 @@ import {Download, Upload, Plus} from "lucide-react";
 
 const CampaignActions = ({onAdd, onImport, onExport}) => {
     return (<div className="flex items-center gap-2">
-        <button
-            onClick={onExport}
-            className="flex items-center gap-1 px-3 py-2 text-blue-900 font-bold hover:bg-gray-50 transition-colors text-sm rounded-lg border border-gray-200 cursor-pointer"
-        >
-            <Download size={18}/> Tải xuống mẫu
-        </button>
+        {/*<button*/}
+        {/*    onClick={onExport}*/}
+        {/*    className="flex items-center gap-1 px-3 py-2 text-blue-900 font-bold hover:bg-gray-50 transition-colors text-sm rounded-lg border border-gray-200 cursor-pointer"*/}
+        {/*>*/}
+        {/*    <Download size={18}/> Tải xuống mẫu*/}
+        {/*</button>*/}
 
-        <button
-            onClick={onImport}
-            className="flex items-center gap-1 px-3 py-2 text-blue-900 font-bold hover:bg-gray-50 transition-colors text-sm rounded-lg border border-gray-200 cursor-pointer"
-        >
-            <Upload size={18}/> Nhập Excel
-        </button>
+        {/*<button*/}
+        {/*    onClick={onImport}*/}
+        {/*    className="flex items-center gap-1 px-3 py-2 text-blue-900 font-bold hover:bg-gray-50 transition-colors text-sm rounded-lg border border-gray-200 cursor-pointer"*/}
+        {/*>*/}
+        {/*    <Upload size={18}/> Nhập Excel*/}
+        {/*</button>*/}
 
         <button
             onClick={onAdd}
