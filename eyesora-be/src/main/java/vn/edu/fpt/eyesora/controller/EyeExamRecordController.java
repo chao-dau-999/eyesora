@@ -16,6 +16,8 @@ import vn.edu.fpt.eyesora.dto.response.ExcelImportResponse;
 import vn.edu.fpt.eyesora.dto.response.EyeExamRecordResponse;
 import vn.edu.fpt.eyesora.service.IEyeExamRecordService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/eye-exam-records")
 @RequiredArgsConstructor
@@ -73,5 +75,19 @@ public class EyeExamRecordController {
 
         ExcelImportResponse result = eyeExamRecordService.importExamRecordsFromExcel(file, campaignId, examinerId, facilityId);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<EyeExamRecordResponse>> getExamRecordByPatient(
+            @PathVariable String patientId) {
+
+        List<EyeExamRecordResponse> records =
+                eyeExamRecordService.getByPatientId(patientId);
+
+        System.out.println(records);
+
+        return records.isEmpty()
+                ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(records);
     }
 }

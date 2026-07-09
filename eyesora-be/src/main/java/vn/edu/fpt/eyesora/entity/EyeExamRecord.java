@@ -10,46 +10,49 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "eye_exam_records")
+@Table(
+        name = "eye_exam_records",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_patient_campaign",
+                columnNames = {"patient_id", "campaign_id"}
+        ))
 public class EyeExamRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "exam_id", nullable = false, length = 36)
     private String examId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id")
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "campaign_id", nullable = false)
     private ExamCampaign campaign;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "class_id", nullable = false)
     private Classes classesField;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "examiner_id")
     private User examiner;
 
-    @CreationTimestamp
     @Column(name = "exam_date")
     private LocalDate examDate;
 
-//    private Boolean hasRefractiveError;
-//
-//    private String diagnosis;
-
     // KHÔNG KÍNH
-    @Column(name = "va_left_without_glasses", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "va_left_without_glasses")
     private Float vaLeftWithoutGlasses;
 
-    @Column(name = "va_right_without_glasses", nullable = false)
+    @ColumnDefault("0")
+    @Column(name = "va_right_without_glasses")
     private Float vaRightWithoutGlasses;
 
 
     // CÓ KÍNH(CŨ)
+
     @Column(name = "va_left_old_glasses")
     private Float vaLeftOldGlasses;
 

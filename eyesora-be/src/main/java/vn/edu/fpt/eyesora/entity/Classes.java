@@ -20,7 +20,7 @@ public class Classes {
     @Column(name = "class_id", nullable = false, length = 36)
     private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "facility_id", nullable = false)
     private Facility facility;
 

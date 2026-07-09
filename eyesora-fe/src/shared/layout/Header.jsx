@@ -6,14 +6,11 @@ import { useAuthStore } from "../../features/auth/store/authStore.js";
 const Header = ({ onMenuClick }) => {
     const navigate = useNavigate();
 
-    // Rút trích dữ liệu và hàm logout từ Zustand store toàn cục
-    // Lưu ý: userRole ở store của bạn tương ứng với role ở file tham khảo
-    const { id, username, userRole, isAuthenticated, logout } = useAuthStore();
+    const { user, isAuthenticated, logout } = useAuthStore();
+    const { id, username, name, roles } = user || {};
 
-    // State và Ref phục vụ cho Dropdown menu
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    const [searchQuery, setSearchQuery] = useState('');
 
     // Xử lý đăng xuất
     const handleLogout = () => {
@@ -34,7 +31,6 @@ const Header = ({ onMenuClick }) => {
     return (
         <header className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center justify-between z-30 gap-4">
 
-            {/* Khối Logo / Menu Button */}
             <div className="flex items-center gap-3">
                 <button
                     onClick={onMenuClick}
@@ -53,20 +49,18 @@ const Header = ({ onMenuClick }) => {
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
 
-                {/* Khu vực Dropdown cấu hình theo trạng thái Auth */}
                 <div className="relative" ref={dropdownRef}>
                     {isAuthenticated ? (
-                        // TRƯỜNG HỢP 1: ĐÃ ĐĂNG NHẬP
                         <button
                             onClick={() => setDropdownOpen(!dropdownOpen)}
                             className="flex items-center gap-2 border-l pl-2 md:pl-4 border-gray-200 cursor-pointer text-left bg-transparent border-y-0 border-r-0 focus:outline-none group"
                         >
                             <div className="text-right hidden md:block">
                                 <p className="text-sm font-medium text-gray-900 whitespace-nowrap group-hover:text-blue-600 transition-colors">
-                                    {username || 'Lê Minh Nhựt'}
+                                    {name || 'User'}
                                 </p>
                                 <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                                    {userRole === 'admin' ? 'SUPER ADMIN' : userRole || 'USER'}
+                                    {/*{roles === 'admin' ? 'SUPER ADMIN' : roles || 'USER'}*/}
                                 </p>
                             </div>
                             <img
@@ -77,7 +71,6 @@ const Header = ({ onMenuClick }) => {
                             <ChevronDown size={14} className={`text-gray-400 hidden md:block transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
                     ) : (
-                        // TRƯỜNG HỢP 2: CHƯA ĐĂNG NHẬP (GUEST)
                         <button
                             onClick={() => setDropdownOpen(!dropdownOpen)}
                             className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 p-1.5 pr-3 rounded-full border border-gray-200 transition-colors cursor-pointer"
@@ -98,11 +91,11 @@ const Header = ({ onMenuClick }) => {
                                     {/* Khối User Info hiển thị trên Mobile (Do trên Mobile phần text góc phải đã bị ẩn đi) */}
                                     <div className="px-4 py-2.5 border-b border-gray-100 md:hidden bg-gray-50/50">
                                         <p className="text-sm font-bold text-gray-900 truncate">{username}</p>
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{userRole}</p>
+                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">{roles}</p>
                                     </div>
 
                                     {/* Khối quản trị nếu Role là Admin */}
-                                    {userRole === 'admin' && (
+                                    {roles === 'admin' && (
                                         <button
                                             onClick={() => { setDropdownOpen(false); navigate('/admin'); }}
                                             className="w-full text-left px-4 py-2.5 text-sm font-medium text-blue-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors bg-transparent border-none cursor-pointer"

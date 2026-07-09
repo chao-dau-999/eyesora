@@ -21,7 +21,6 @@ public class JwtUtil {
     }
 
     public String generateToken(UserDetails user) {
-        // xác định source để filter sau này biết load từ bảng nào
         String source = "user";  // default
         String role   = user.getAuthorities().iterator().next().getAuthority();
 
@@ -31,7 +30,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("role",   role)
-                .claim("source", source)   // <-- key point
+                .claim("source", source)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expMs))
                 .signWith(key())

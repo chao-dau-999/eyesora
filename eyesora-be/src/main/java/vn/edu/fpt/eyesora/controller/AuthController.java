@@ -1,5 +1,10 @@
 package vn.edu.fpt.eyesora.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +12,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.request.ForgotPasswordRequest;
@@ -14,6 +20,7 @@ import vn.edu.fpt.eyesora.dto.request.LoginRequest;
 import vn.edu.fpt.eyesora.dto.request.LogoutRequest;
 import vn.edu.fpt.eyesora.dto.request.RegisterRequest;
 import vn.edu.fpt.eyesora.dto.request.ResetPasswordRequest;
+import vn.edu.fpt.eyesora.dto.request.*;
 import vn.edu.fpt.eyesora.dto.response.TokenResponse;
 import vn.edu.fpt.eyesora.entity.RefreshToken;
 import vn.edu.fpt.eyesora.entity.User;
@@ -21,6 +28,8 @@ import vn.edu.fpt.eyesora.exceptions.BadRequestException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.service.IAuthService;
 import vn.edu.fpt.eyesora.service.IRefreshTokenService;
+import vn.edu.fpt.eyesora.service.IUserService;
+import vn.edu.fpt.eyesora.service.impl.UserDetailsService;
 import vn.edu.fpt.eyesora.util.JwtUtil;
 
 import java.util.Set;
@@ -35,6 +44,7 @@ public class AuthController {
     private final AuthenticationManager authManager;
     private final IRefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
+    private final UserDetailsService userDetailsService;
 
     @PostMapping("/login")
     @Transactional
@@ -49,12 +59,41 @@ public class AuthController {
         Set<String> roles = user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
 
+        String name = user.getFull_name();
         String accessToken = jwtUtil.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getUsername(), source);
 
         return ResponseEntity.ok(
-                new TokenResponse(accessToken, refreshToken.getToken(), id, user.getUsername(), null, roles)
+                new TokenResponse(
+                        accessToken,
+                        refreshToken.getToken(),
+                        id,
+                        name,
+                        user.getUsername(),
+                        null,
+                        roles
+                )
         );
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Refresh Access Token", description = "Generates a new access token and refresh token using a valid refresh token. Implements token rotation for security.")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest req) {
+        RefreshToken rt = refreshTokenService.verifyRefreshToken(req.refreshToken());
+        UserDetails user = userDetailsService.loadUserByUsername(rt.getUsername());
+
+       User userEntity = (User) user;
+        String id = userEntity.getId();
+        String name = userEntity.getFull_name();
+        Set<String> roles = user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
+        String newAccess = jwtUtil.generateToken(user);
+        RefreshToken newRt = refreshTokenService.rotate(rt);
+
+        return ResponseEntity.ok(new TokenResponse(newAccess, newRt.getToken(), id, name , user.getUsername(), null, roles));
     }
 
     @PostMapping("/register")

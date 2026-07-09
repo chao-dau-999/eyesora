@@ -23,9 +23,9 @@ public record FacilityRequest(
         )
         String phone,
 
-        @NotBlank(message = "Mã quận/huyện là bắt buộc")
+//        @NotBlank(message = "Mã quận/huyện là bắt buộc")
         String districtId,
 
-        @NotBlank(message = "Mã phường/xã là bắt buộc")
+//        @NotBlank(message = "Mã phường/xã là bắt buộc")
         String wardId
 ) {}
