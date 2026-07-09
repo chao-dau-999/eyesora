@@ -21,14 +21,18 @@ import ExamRecordFormPage from "./features/eye-exam-record/pages/ExamRecordFormP
 import ExamRecordImportPage from "./features/eye-exam-record/pages/ExamRecordImportPage.jsx";
 import UserProfilePage from "./features/user/pages/UserProfilePage.jsx";
 import ProtectedRoute from "./shared/components/ProtectedRoute.jsx";
-
 import ExamRecordCreatePage from "./features/eye-exam-record/pages/ExamRecordCreatePage.jsx";
+import ForgotPasswordPage from "./features/auth/page/ForgotPassword.jsx";
+import ResetPasswordPage from "./features/auth/page/ResetPasswordPage.jsx";
+import PatientDetailPage from "./features/patient/pages/PatientDetailsPage.jsx";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/login" element={<LoginPage/>}/>
+                <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
+                <Route path="/reset-password" element={<ResetPasswordPage/>}/>
                 <Route element={<ProtectedRoute/>}>
 
                     <Route path="/" element={<AppLayout/>}>
@@ -37,6 +41,7 @@ function App() {
                         <Route path="/classes/create" element={<ClassFormPage/>}/>
                         <Route path="/classes/edit/:id" element={<ClassFormPage/>}/>
                         <Route path="/patients" element={<PatientPage/>}/>
+                        <Route path="/patients/detail/:id" element={<PatientDetailPage/>}/>
                         <Route path="/patients/create" element={<PatientFormPage/>}/>
                         <Route path="/patients/edit/:id" element={<PatientFormPage/>}/>
                         <Route path="/facilities" element={<FacilitiesPage/>}/>
