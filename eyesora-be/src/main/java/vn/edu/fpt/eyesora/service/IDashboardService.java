@@ -8,7 +8,7 @@ import java.util.List;
 public interface IDashboardService {
     DashboardSummaryResponse getSummaryCounters();
     List<GradeMyopiaResponse> getGradeStats();
-    List<MyopiaTimelineResponse> getMyopiaTimeline();
+//    List<MyopiaTimelineResponse> getMyopiaTimeline();
     List<FacilityMyopiaResponse> getFacilityStats();
 
     ByteArrayInputStream  exportDashboardReport();

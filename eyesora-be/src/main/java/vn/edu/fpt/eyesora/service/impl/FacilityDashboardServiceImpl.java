@@ -3,10 +3,12 @@ package vn.edu.fpt.eyesora.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.fpt.eyesora.dto.response.FacilityAlertRecordResponse;
 import vn.edu.fpt.eyesora.dto.response.FacilityGradeMyopiaResponse;
 import vn.edu.fpt.eyesora.dto.response.FacilitySelectResponse;
-import vn.edu.fpt.eyesora.dto.response.MyopiaTimelineResponse;
+import vn.edu.fpt.eyesora.dto.response.FacilitySummaryResponse;
 import vn.edu.fpt.eyesora.entity.EyeExamRecord;
+import vn.edu.fpt.eyesora.entity.Patient;
 import vn.edu.fpt.eyesora.repository.EyeExamRecordRepository;
 import vn.edu.fpt.eyesora.service.IFacilityDashboardService;
 
@@ -26,17 +28,17 @@ public class FacilityDashboardServiceImpl implements IFacilityDashboardService {
                 .filter(e -> e.getClassesField() != null && e.getClassesField().getFacility() != null)
                 .map(e -> e.getClassesField().getFacility())
                 .distinct()
-                .map(f -> new FacilitySelectResponse(String.valueOf(f.getId()), f.getFacilityName()))
+                .map(f -> new FacilitySelectResponse(f.getId(), f.getFacilityName()))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FacilityGradeMyopiaResponse> getFacilityGradeStats(String facilityId) { // <-- Sửa từ Long sang String
+    public List<FacilityGradeMyopiaResponse> getFacilityGradeStats(String facilityId) {
         List<EyeExamRecord> records = eyeExamRecordRepository.findByIsDeletedFalse().stream()
                 .filter(e -> e.getClassesField() != null
                         && e.getClassesField().getFacility() != null
-                        && String.valueOf(e.getClassesField().getFacility().getId()).equals(facilityId))
+                        && Objects.equals(e.getClassesField().getFacility().getId(), facilityId))
                 .toList();
 
         Map<Integer, List<EyeExamRecord>> groupByGrade = records.stream()
@@ -63,43 +65,92 @@ public class FacilityDashboardServiceImpl implements IFacilityDashboardService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MyopiaTimelineResponse> getFacilityTimeline(String facilityId) { // <-- Sửa từ Long sang String
+    public FacilitySummaryResponse getFacilitySummary(String facilityId) {
         List<EyeExamRecord> records = eyeExamRecordRepository.findByIsDeletedFalse().stream()
                 .filter(e -> e.getClassesField() != null
                         && e.getClassesField().getFacility() != null
-                        && String.valueOf(e.getClassesField().getFacility().getId()).equals(facilityId))
+                        && Objects.equals(e.getClassesField().getFacility().getId(), facilityId))
                 .toList();
 
-        Map<String, List<EyeExamRecord>> groupByYear = records.stream()
-                .filter(e -> e.getClassesField().getSchoolYear() != null)
-                .collect(Collectors.groupingBy(e -> e.getClassesField().getSchoolYear()));
+        long totalStudents = records.size();
+        long totalAlertCases = records.stream()
+                .filter(e -> (e.getSphLeft() != null && e.getSphLeft() <= -6.00)
+                        || (e.getSphRight() != null && e.getSphRight() <= -6.00))
+                .count();
 
-        List<MyopiaTimelineResponse> timelineStats = new ArrayList<>();
-        groupByYear.forEach((schoolYear, yearRecords) -> {
-            long totalInYear = yearRecords.size();
-            long myopiaInYear = yearRecords.stream()
-                    .filter(e -> (e.getSphLeft() != null && e.getSphLeft() < 0)
-                            || (e.getSphRight() != null && e.getSphRight() < 0))
-                    .count();
+        long totalMyopia = records.stream()
+                .filter(e -> (e.getSphLeft() != null && e.getSphLeft() < 0)
+                        || (e.getSphRight() != null && e.getSphRight() < 0))
+                .count();
 
-            double rate = totalInYear > 0 ? Math.round((myopiaInYear * 100.0 / totalInYear) * 10.0) / 10.0 : 0.0;
-            timelineStats.add(new MyopiaTimelineResponse(schoolYear, rate, "ACTUAL"));
-        });
+        double currentMyopiaRate = totalStudents > 0 ? Math.round((totalMyopia * 100.0 / totalStudents) * 10.0) / 10.0 : 0.0;
 
-        timelineStats.sort(Comparator.comparing(MyopiaTimelineResponse::schoolYear));
+        return FacilitySummaryResponse.builder()
+                .totalExaminedStudents(totalStudents)
+                .currentMyopiaRate(currentMyopiaRate)
+                .totalAlertCases(totalAlertCases)
+                .build();
+    }
 
-        if (timelineStats.size() >= 2) {
-            MyopiaTimelineResponse latest = timelineStats.get(timelineStats.size() - 1);
-            MyopiaTimelineResponse previous = timelineStats.get(timelineStats.size() - 2);
-            double diff = Math.round((latest.rate() - previous.rate()) * 10.0) / 10.0;
+    @Override
+    @Transactional(readOnly = true)
+    public List<FacilityAlertRecordResponse> getFacilityAlertRecords(String facilityId) {
+        return eyeExamRecordRepository.findByIsDeletedFalse().stream()
+                .filter(e -> e.getClassesField() != null
+                        && e.getClassesField().getFacility() != null
+                        && Objects.equals(e.getClassesField().getFacility().getId(), facilityId))
+                .filter(e -> (e.getSphLeft() != null && e.getSphLeft() <= -6.00)
+                        || (e.getSphRight() != null && e.getSphRight() <= -6.00))
+                .map(this::mapToAlertResponse)
+                .collect(Collectors.toList());
+    }
 
-            try {
-                int startYear = Integer.parseInt(latest.schoolYear().substring(0, 4));
-                String nextSchoolYear = (startYear + 1) + "-" + (startYear + 2);
-                double predictedRate = Math.round((latest.rate() + diff) * 10.0) / 10.0;
-                timelineStats.add(new MyopiaTimelineResponse(nextSchoolYear, Math.max(0, predictedRate), "PREDICTED"));
-            } catch (Exception ignored) {}
+    private FacilityAlertRecordResponse mapToAlertResponse(EyeExamRecord entity) {
+        String studentName = "N/A";
+        String genderStr = "Khác";
+
+        if (entity.getPatient() != null) {
+            studentName = entity.getPatient().getPatientName() != null ? entity.getPatient().getPatientName() : "N/A";
+
+            if (entity.getPatient().getGender() != null) {
+                Patient.Gender genderEnum = entity.getPatient().getGender();
+                if (genderEnum == Patient.Gender.MALE) {
+                    genderStr = "Nam";
+                } else if (genderEnum == Patient.Gender.FEMALE) {
+                    genderStr = "Nữ";
+                }
+            }
         }
-        return timelineStats;
+
+        String className = "-";
+        Integer grade = 0;
+        String facilityName = "-";
+
+        if (entity.getClassesField() != null) {
+            className = entity.getClassesField().getClassName() != null ? entity.getClassesField().getClassName() : "-";
+            grade = entity.getClassesField().getGrade() != null ? entity.getClassesField().getGrade() : 0;
+
+            if (entity.getClassesField().getFacility() != null) {
+                facilityName = entity.getClassesField().getFacility().getFacilityName() != null
+                        ? entity.getClassesField().getFacility().getFacilityName() : "-";
+            }
+        }
+
+        String examIdStr = entity.getExamId() != null ? entity.getExamId() : "";
+
+        Double sphLeftDouble = entity.getSphLeft() != null ? entity.getSphLeft().doubleValue() : null;
+        Double sphRightDouble = entity.getSphRight() != null ? entity.getSphRight().doubleValue() : null;
+
+        return FacilityAlertRecordResponse.builder()
+                .examId(examIdStr)
+                .studentName(studentName)
+                .gender(genderStr)
+                .className(className)
+                .grade(grade)
+                .facilityName(facilityName)
+                .sphLeft(sphLeftDouble)
+                .sphRight(sphRightDouble)
+                .examDate(entity.getExamDate())
+                .build();
     }
 }

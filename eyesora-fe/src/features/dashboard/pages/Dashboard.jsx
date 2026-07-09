@@ -17,8 +17,7 @@ const Dashboard = () => {
         totalParticipatingFacilities: 0
     });
     const [gradeStats, setGradeStats] = useState([]);
-    const [timelineStats, setTimelineStats] = useState([]);
-    const [facilityStats, setFacilityStats] = useState([]); // <-- Thêm state lưu tỉ lệ theo trường
+    const [facilityStats, setFacilityStats] = useState([]);
 
     const [records, setRecords] = useState([]);
     const [pageData, setPageData] = useState({ page: 0, totalPages: 1, totalElements: 0 });
@@ -30,12 +29,11 @@ const Dashboard = () => {
 
     const fetchDashboardStaticData = async () => {
         try {
-            // Tích hợp thêm endpoint lấy thống kê của các trường học
-            const [countersRes, gradeRes, timelineRes, facilityRes] = await axios.all([
+            // Loại bỏ endpoint gọi API /dashboard/myopia-timeline
+            const [countersRes, gradeRes, facilityRes] = await axios.all([
                 axiosClient.get('/dashboard/counters'),
                 axiosClient.get('/dashboard/grade-stats'),
-                axiosClient.get('/dashboard/myopia-timeline'),
-                axiosClient.get('/dashboard/facility-stats') // <-- Gọi API mới ở đây
+                axiosClient.get('/dashboard/facility-stats')
             ]);
 
             setSummary(countersRes.data || {
@@ -46,8 +44,7 @@ const Dashboard = () => {
                 totalParticipatingFacilities: 0
             });
             setGradeStats(gradeRes.data || []);
-            setTimelineStats(timelineRes.data || []);
-            setFacilityStats(facilityRes.data || []); // <-- Cập nhật dữ liệu trường học vào state
+            setFacilityStats(facilityRes.data || []);
 
             setTimeout(() => setAnimateBars(true), 150);
         } catch (error) {
@@ -133,31 +130,6 @@ const Dashboard = () => {
         return `${value}°`;
     };
 
-    const generateSvgPathAndCircles = () => {
-        if (!timelineStats || timelineStats.length === 0) return { path: "", circles: [] };
-
-        const width = 400;
-        const height = 200;
-        const padding = 20;
-        const chartWidth = width - padding * 2;
-        const chartHeight = height - padding * 2;
-
-        const maxRate = Math.max(...timelineStats.map(d => d.rate || 0), 50);
-        const totalItems = timelineStats.length;
-
-        const points = timelineStats.map((item, index) => {
-            const divisor = totalItems > 1 ? totalItems - 1 : 1;
-            const x = padding + (index / divisor) * chartWidth;
-            const y = height - padding - ((item.rate || 0) / maxRate) * chartHeight;
-            return { x, y, ...item };
-        });
-
-        const path = points.reduce((acc, p, i) => i === 0 ? `M ${p.x},${p.y}` : `${acc} L ${p.x},${p.y}`, "");
-        return { path, circles: points };
-    };
-
-    const { path, circles } = generateSvgPathAndCircles();
-
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full bg-gray-50">
@@ -173,14 +145,11 @@ const Dashboard = () => {
         <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin text-gray-950">
             <StatsCards summary={summary} />
 
-            {/* Truyền thêm prop facilityStats xuống component đồ thị */}
+            {/* Đã dọn dẹp các prop timelineStats, path, circles không cần thiết */}
             <AnalyticsCharts
                 gradeStats={gradeStats}
-                timelineStats={timelineStats}
-                facilityStats={facilityStats} // <-- Prop mới truyền đi
+                facilityStats={facilityStats}
                 animateBars={animateBars}
-                path={path}
-                circles={circles}
             />
 
             <AlertRecordsTable

@@ -5,7 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.fpt.eyesora.dto.response.FacilityGradeMyopiaResponse;
 import vn.edu.fpt.eyesora.dto.response.FacilitySelectResponse;
-import vn.edu.fpt.eyesora.dto.response.MyopiaTimelineResponse;
+import vn.edu.fpt.eyesora.dto.response.FacilitySummaryResponse;
+import vn.edu.fpt.eyesora.entity.EyeExamRecord;
 import vn.edu.fpt.eyesora.service.IFacilityDashboardService;
 
 import java.util.List;
@@ -27,8 +28,13 @@ public class FacilityDashboardController {
         return ResponseEntity.ok(facilityDashboardService.getFacilityGradeStats(facilityId));
     }
 
-    @GetMapping("/timeline")
-    public ResponseEntity<List<MyopiaTimelineResponse>> getFacilityTimeline(@RequestParam String facilityId) {
-        return ResponseEntity.ok(facilityDashboardService.getFacilityTimeline(facilityId));
+    @GetMapping("/summary")
+    public ResponseEntity<FacilitySummaryResponse> getFacilitySummary(@RequestParam String facilityId) {
+        return ResponseEntity.ok(facilityDashboardService.getFacilitySummary(facilityId));
+    }
+
+    @GetMapping("/alert-records")
+    public ResponseEntity<List<vn.edu.fpt.eyesora.dto.response.FacilityAlertRecordResponse>> getFacilityAlertRecords(@RequestParam String facilityId) {
+        return ResponseEntity.ok(facilityDashboardService.getFacilityAlertRecords(facilityId));
     }
 }
