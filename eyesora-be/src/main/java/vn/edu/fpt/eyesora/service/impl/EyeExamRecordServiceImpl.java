@@ -267,6 +267,13 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
     }
 
     @Override
+    public List<EyeExamRecordResponse> getByPatientId(String patientId) {
+        return this.eyeExamRecordRepository.findByPatient_PatientId(patientId)
+                .stream().filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
+                .map(this::mapToResponse).toList();
+    }
+
+    @Override
     @Transactional
     public ExcelImportResponse importExamRecordsFromExcel(MultipartFile file, String campaignId, String examinerId, String facilityId) {
         List<RowError> errorList = new ArrayList<>();
@@ -352,12 +359,7 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
         );
     }
 
-    @Override
-    public List<EyeExamRecordResponse> getByPatientId(String patientId) {
-        return this.eyeExamRecordRepository.findByPatient_PatientId(patientId)
-                .stream().filter(record -> !Boolean.TRUE.equals(record.getIsDeleted()))
-                .map(this::mapToResponse).toList();
-    }
+
 
 
     private EyeExamRecord parseRowToEntitySafe(Row row, ExamCampaign campaign, User examiner, Facility facility,
@@ -365,8 +367,8 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
                                                Map<String, Patient> patientCache,
                                                List<String> localErrors) {
 
-        // 1. XỬ LÝ LỚP HỌC THEO CƠ SỞ (Cột 2)
-        String className = getCellValueAsString(row.getCell(2));
+        // 1. XỬ LÝ LỚP HỌC THEO CƠ SỞ
+        String className = getCellValueAsString(row.getCell(3));
         if (className.isEmpty()) {
             localErrors.add("Tên lớp (Class Name) không được để trống");
             return null;
@@ -395,16 +397,15 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
             classCache.put(className, clazz);
         }
 
-        // 2. XỬ LÝ THÔNG TIN BỆNH NHÂN (Dựa vào Tên, Giới tính, Lớp thay vì ID trống)
-        String patientName = getCellValueAsString(row.getCell(1)).trim(); // Cột HỌ VÀ TÊN
-        String genderStr = getCellValueAsString(row.getCell(2)).trim();      // Cột GIỚI TÍNH (Trong ảnh là số 0/1 hoặc chữ)
+        // 2. XỬ LÝ THÔNG TIN BỆNH NHAN
+        String patientName = getCellValueAsString(row.getCell(1)).trim();
+        String genderStr = getCellValueAsString(row.getCell(2)).trim();
 
         if (patientName.isEmpty()) {
             localErrors.add("Tên học sinh không được để trống");
             return null;
         }
 
-// Chuyển đổi giới tính (Ví dụ: file ghi 0 là Nữ, 1 là Nam hoặc chữ "Nam"/"Nữ")
         Patient.Gender gender = Patient.Gender.OTHER;
         if (genderStr.equalsIgnoreCase("1") || genderStr.equalsIgnoreCase("nam")) {
             gender = Patient.Gender.MALE;
@@ -425,6 +426,9 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
                 newPatient.setPatientName(patientName);
                 newPatient.setGender(gender);
                 newPatient.setClasses(clazz);
+                newPatient.setFacility(facility);
+                newPatient.setIsDeleted(false);
+                newPatient.setExamCampaign(campaign);
                 patient = patientRepository.save(newPatient);
             }
             patientCache.put(patientCacheKey, patient);
@@ -450,50 +454,43 @@ public class EyeExamRecordServiceImpl implements IEyeExamRecordService {
 
         record.setExamDate(LocalDate.now());
 
-//          Cập nhật ngày khám
-//        if (examDateCell != null && examDateCell.getCellType() != CellType.BLANK) {
-//            // ... Giữ nguyên logic parse ngày khám của bạn ...
-//            record.setExamDate(parsedDate);
-//        } else {
-//            record.setExamDate(LocalDate.now()); // Mặc định ngày hiện tại nếu trống
-//        }
 
         // 4. ĐỌC THÔNG SỐ THỊ LỰC & KHÚC XẠ
         try {
             // --- THỊ LỰC KHÔNG KÍNH ---
-            // Cột 3 (MP), Cột 4 (MT)
-            record.setVaRightWithoutGlasses(parseVaToFloat(row.getCell(3)));
-            record.setVaLeftWithoutGlasses(parseVaToFloat(row.getCell(4)));
+            // Cột 4 (MP), Cột 5 (MT)
+            record.setVaRightWithoutGlasses(parseVaToFloat(row.getCell(4)));
+            record.setVaLeftWithoutGlasses(parseVaToFloat(row.getCell(5)));
 
             // --- CÓ KÍNH CŨ ---
-            // Cột 5 (MP), Cột 6 (MT)
-            record.setVaRightOldGlasses(parseVaToFloat(row.getCell(5)));
-            record.setVaLeftOldGlasses(parseVaToFloat(row.getCell(6)));
+            // Cột 6 (MP), Cột 7 (MT)
+            record.setVaRightOldGlasses(parseVaToFloat(row.getCell(6)));
+            record.setVaLeftOldGlasses(parseVaToFloat(row.getCell(7)));
 
             // --- KÍNH LỖ ---
-            // Cột 7 (MP), Cột 8 (MT)
-            record.setVaRightPinhole(parseVaToFloat(row.getCell(7)));
-            record.setVaLeftPinhole(parseVaToFloat(row.getCell(8)));
+            // Cột 8 (MP), Cột 9 (MT)
+            record.setVaRightPinhole(parseVaToFloat(row.getCell(8)));
+            record.setVaLeftPinhole(parseVaToFloat(row.getCell(9)));
 
             // --- ĐỘ CẦU (SPH) ---
-            // Cột 9 (MP), Cột 10 (MT) -> Có chứa số kiểu -150, -3.25, PLANO
-            record.setSphRight(parseDiopterToFloat(row.getCell(9)));
-            record.setSphLeft(parseDiopterToFloat(row.getCell(10)));
+            // Cột 10 (MP), Cột 11 (MT)
+            record.setSphRight(parseDiopterToFloat(row.getCell(10)));
+            record.setSphLeft(parseDiopterToFloat(row.getCell(11)));
 
             // --- ĐỘ TRỤ (CYL) ---
-            // Cột 11 (MP), Cột 12 (MT)
-            record.setCylRight(parseDiopterToFloat(row.getCell(11)));
-            record.setCylLeft(parseDiopterToFloat(row.getCell(12)));
+            // Cột 12 (MP), Cột 13 (MT)
+            record.setCylRight(parseDiopterToFloat(row.getCell(12)));
+            record.setCylLeft(parseDiopterToFloat(row.getCell(13)));
 
             // --- TRỤC (AXIS) ---
-            // Cột 13 (MP), Cột 14 (MT)
-            record.setAxisRight(getCellValueAsInteger(row.getCell(13)));
-            record.setAxisLeft(getCellValueAsInteger(row.getCell(14)));
+            // Cột 14 (MP), Cột 15 (MT)
+            record.setAxisRight(getCellValueAsInteger(row.getCell(14)));
+            record.setAxisLeft(getCellValueAsInteger(row.getCell(15)));
 
             // --- TLCK (Thị lực có kính mới) ---
-            // Cột 15 (MP), Cột 16 (MT)
-            record.setVaRightWithGlasses(parseVaToFloat(row.getCell(15)));
-            record.setVaLeftWithGlasses(parseVaToFloat(row.getCell(16)));
+            // Cột 16 (MP), Cột 17 (MT)
+            record.setVaRightWithGlasses(parseVaToFloat(row.getCell(16)));
+            record.setVaLeftWithGlasses(parseVaToFloat(row.getCell(17)));
 
             System.out.println(record.getVaRightWithoutGlasses() + " - " + record.getVaLeftWithoutGlasses());
 

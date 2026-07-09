@@ -56,6 +56,10 @@ public class PatientServiceImpl implements IPatientService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
+        Page<Patient> patients = patientRepository.findAll(spec, pageable);
+
+        System.out.println(patients);
+
         return patientRepository.findAll(spec, pageable)
                 .map(this::convertToDto);
     }

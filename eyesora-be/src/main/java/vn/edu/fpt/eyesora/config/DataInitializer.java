@@ -40,7 +40,7 @@ public class DataInitializer {
                 facilityRepository.save(facility);
 
                 Facility facility1 = new Facility();
-                facility1.setFacilityName("THCS Dương Kỳ Nam");
+                facility1.setFacilityName("THCS Dương Kỳ Hiệp");
                 facility1.setFacilityType(Facility.FacilityType.SCHOOL);
                 facilityRepository.save(facility1);
 
@@ -48,7 +48,7 @@ public class DataInitializer {
 
             if (campaignRepository.count() == 0) {
                 ExamCampaign examCampaign = new ExamCampaign();
-                examCampaign.setCampaignTitle("THCS Le Hồng Phong - 13/04/2026");
+                examCampaign.setCampaignTitle("THCS Duong Ki Hiep - 13/04/2026");
                 examCampaign.setStartDate(LocalDate.of(2026, 4, 13));
                 examCampaign.setEndDate(LocalDate.of(2026, 4, 13));
                 campaignRepository.save(examCampaign);
