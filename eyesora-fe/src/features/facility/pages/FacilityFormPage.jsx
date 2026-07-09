@@ -9,13 +9,17 @@ const FacilityFormPage = () => {
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
-        facilityName: '', facilityType: 'CLINIC', address: '', phone: '', wardId: '', districtId: ''
+        facilityName: '',
+        facilityType: 'CLINIC',
+        address: '',
+        phone: '',
+        wardId: '',
+        districtId: ''
     });
     const [districts, setDistricts] = useState([]);
     const [wards, setWards] = useState([]);
     const [errors, setErrors] = useState({});
 
-    // Component hiển thị lỗi chuẩn (giữ nguyên phong cách bạn muốn)
     const ErrorMsg = ({ field }) => errors[field] ? (
         <div className="flex items-center gap-1 mt-1.5 text-red-600">
             <AlertCircle size={14} />
@@ -25,25 +29,41 @@ const FacilityFormPage = () => {
 
     useEffect(() => {
         axiosClient.get("/master-data/districts?size=100").then(r => setDistricts(r.data.content || []));
+
         if (isEditMode) {
             axiosClient.get(`/master-data/facilities/${id}`).then(r => {
-                setFormData(r.data);
-                if (r.data.districtId) fetchWards(r.data.districtId);
+                const data = r.data;
+                setFormData({
+                    facilityName: data.facilityName || '',
+                    facilityType: data.facilityType || 'CLINIC',
+                    address: data.address || '',
+                    phone: data.phone || '',
+                    wardId: data.wardId ? String(data.wardId) : '',
+                    districtId: data.districtId ? String(data.districtId) : ''
+                });
+                if (data.districtId) fetchWards(data.districtId);
             });
         }
     }, [id, isEditMode]);
 
     const fetchWards = async (dId) => {
+        if (!dId) return;
         const res = await axiosClient.get(`/master-data/wards?districtId=${dId}&size=100`);
         setWards(res.data.content || []);
     };
 
     const handleSave = async (e) => {
         e.preventDefault();
-        setErrors({}); // Reset lỗi trước khi validate
+        setErrors({});
         try {
-            if (isEditMode) await axiosClient.put(`/master-data/facilities/${id}`, formData);
-            else await axiosClient.post("/master-data/facilities", formData);
+            // Đảm bảo wardId gửi lên là null nếu để trống (đúng chuẩn backend)
+            const payload = {
+                ...formData,
+                wardId: formData.wardId === '' ? null : formData.wardId
+            };
+
+            if (isEditMode) await axiosClient.put(`/master-data/facilities/${id}`, payload);
+            else await axiosClient.post("/master-data/facilities", payload);
             navigate('/facilities');
         } catch (err) {
             setErrors(err.response?.data || { server: "Có lỗi xảy ra" });
@@ -72,12 +92,12 @@ const FacilityFormPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Tên cơ sở (*)</label>
-                            <input className={inputStyle} value={formData.facilityName} onChange={e => setFormData({...formData, facilityName: e.target.value})} placeholder="Nhập tên cơ sở" />
+                            <input className={inputStyle} value={formData.facilityName || ''} onChange={e => setFormData({...formData, facilityName: e.target.value})} placeholder="Nhập tên cơ sở" />
                             <ErrorMsg field="facilityName" />
                         </div>
                         <div>
                             <label className={labelStyle}>Loại hình (*)</label>
-                            <select className={inputStyle} value={formData.facilityType} onChange={e => setFormData({...formData, facilityType: e.target.value})}>
+                            <select className={inputStyle} value={formData.facilityType || 'CLINIC'} onChange={e => setFormData({...formData, facilityType: e.target.value})}>
                                 <option value="CLINIC">Phòng khám</option>
                                 <option value="HOSPITAL">Bệnh viện</option>
                                 <option value="SCHOOL">Trường học</option>
@@ -89,7 +109,7 @@ const FacilityFormPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Quận/Huyện (*)</label>
-                            <select className={inputStyle} value={formData.districtId} onChange={e => { setFormData({...formData, districtId: e.target.value, wardId: ''}); fetchWards(e.target.value); }}>
+                            <select className={inputStyle} value={formData.districtId || ''} onChange={e => { setFormData({...formData, districtId: e.target.value, wardId: ''}); fetchWards(e.target.value); }}>
                                 <option value="">Chọn Quận/Huyện</option>
                                 {districts.map(d => <option key={d.id} value={d.id}>{d.districtName}</option>)}
                             </select>
@@ -97,7 +117,7 @@ const FacilityFormPage = () => {
                         </div>
                         <div>
                             <label className={labelStyle}>Phường/Xã (*)</label>
-                            <select className={inputStyle} value={formData.wardId} onChange={e => setFormData({...formData, wardId: e.target.value})}>
+                            <select className={inputStyle} value={formData.wardId || ''} onChange={e => setFormData({...formData, wardId: e.target.value})}>
                                 <option value="">Chọn Phường/Xã</option>
                                 {wards.map(w => <option key={w.id} value={w.id}>{w.wardName}</option>)}
                             </select>
@@ -107,18 +127,13 @@ const FacilityFormPage = () => {
 
                     <div>
                         <label className={labelStyle}>Số điện thoại (*)</label>
-                        <input
-                            className={inputStyle}
-                            value={formData.phone}
-                            onChange={e => setFormData({...formData, phone: e.target.value})}
-                            placeholder="Nhập số điện thoại (10-11 số)"
-                        />
+                        <input className={inputStyle} value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="Nhập số điện thoại" />
                         <ErrorMsg field="phone" />
                     </div>
 
                     <div>
                         <label className={labelStyle}>Địa chỉ</label>
-                        <input className={inputStyle} value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Số nhà, đường..." />
+                        <input className={inputStyle} value={formData.address || ''} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Số nhà, đường..." />
                         <ErrorMsg field="address" />
                     </div>
 

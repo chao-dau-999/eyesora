@@ -31,7 +31,7 @@ public class FacilityServiceImpl implements IFacilityService {
     @Override
     public FacilityResponse createFacility(FacilityRequest req) {
         Facility f = new Facility();
-        if (req.wardId() != null) {
+        if (req.wardId() != null && !req.wardId().isBlank()) {
             Ward ward = wardRepository.findById(req.wardId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã"));
             f.setWard(ward);
@@ -56,25 +56,42 @@ public class FacilityServiceImpl implements IFacilityService {
         existing.setAddress(req.address());
         existing.setPhone(req.phone());
 
-        if (req.wardId() != null && !req.wardId().equals(existing.getWard().getId())) {
-            Ward newWard = wardRepository.findById(req.wardId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã với ID: " + req.wardId()));
-            existing.setWard(newWard);
+        // Kiểm tra an toàn: Lấy ID ward hiện tại nếu có
+        String currentWardId = (existing.getWard() != null) ? existing.getWard().getId() : null;
+
+        // Chỉ cập nhật Ward nếu có wardId mới và khác với wardId hiện tại
+        if (req.wardId() != null && !req.wardId().isBlank()) {
+            if (!req.wardId().equals(currentWardId)) {
+                Ward newWard = wardRepository.findById(req.wardId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã với ID: " + req.wardId()));
+                existing.setWard(newWard);
+            }
+        } else {
+            // Nếu gửi wardId rỗng/null, xóa ward khỏi cơ sở
+            existing.setWard(null);
         }
 
         return mapToResponse(facilityRepository.save(existing));
     }
 
     private FacilityResponse mapToResponse(Facility f) {
+        // Kiểm tra null ở mọi cấp độ để tránh NullPointerException
+        String wardName = (f.getWard() != null) ? f.getWard().getWardName() : null;
+        String wardId = (f.getWard() != null) ? f.getWard().getId() : null;
+
+        // Kiểm tra District: chỉ lấy ID nếu Ward và District tồn tại
+        String districtId = (f.getWard() != null && f.getWard().getDistrict() != null)
+                ? f.getWard().getDistrict().getId() : null;
+
         return new FacilityResponse(
                 f.getId(),
                 f.getFacilityName(),
                 f.getFacilityType(),
                 f.getAddress(),
                 f.getPhone(),
-                f.getWard() != null ? f.getWard().getWardName() : null,
-                f.getWard() != null ? f.getWard().getId() : null,
-                f.getWard() != null ? f.getWard().getDistrict().getId() : null
+                wardName,
+                wardId,
+                districtId
         );
     }
 
