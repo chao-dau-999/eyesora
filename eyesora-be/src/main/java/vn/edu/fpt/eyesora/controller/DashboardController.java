@@ -31,4 +31,9 @@ public class DashboardController {
     public ResponseEntity<List<MyopiaTimelineResponse>> getMyopiaTimeline() {
         return ResponseEntity.ok(dashboardService.getMyopiaTimeline());
     }
+
+    @GetMapping("/facility-stats")
+    public ResponseEntity<List<FacilityMyopiaResponse>> getFacilityStats() {
+        return ResponseEntity.ok(dashboardService.getFacilityStats());
+    }
 }

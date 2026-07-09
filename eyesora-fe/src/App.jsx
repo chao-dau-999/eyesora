@@ -1,6 +1,7 @@
 import {Route, Routes, BrowserRouter} from 'react-router-dom'
 import AppLayout from "./shared/layout/AppLayout";
 import AdminDashboard from "./features/dashboard/pages/Dashboard.jsx";
+import FacilityDashboard from "./features/facility-dashboard/pages/FacilityDashboard.jsx";
 import LoginPage from "./features/auth/page/LoginPage.jsx";
 import PatientPage from "./features/patient/pages/PatientPage.jsx";
 import FacilitiesPage from "./features/facility/pages/FacilitiesPage.jsx";
@@ -34,9 +35,9 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
                 <Route path="/reset-password" element={<ResetPasswordPage/>}/>
                 <Route element={<ProtectedRoute/>}>
-
                     <Route path="/" element={<AppLayout/>}>
                         <Route index element={<AdminDashboard/>}/>
+                        <Route path="/facility-dashboard" element={<FacilityDashboard />} />
                         <Route path="/classes" element={<ClassesPage/>}/>
                         <Route path="/classes/create" element={<ClassFormPage/>}/>
                         <Route path="/classes/edit/:id" element={<ClassFormPage/>}/>
@@ -61,9 +62,10 @@ function App() {
                         <Route path="/wards/edit/:id" element={<WardsFormPage/>}/>
                         <Route path="/eye-exam-records" element={<ExamRecordPage/>}/>
                         <Route path="/eye-exam-records/create" element={<ExamRecordCreatePage/>}/>
-                        <Route path="/profile" element={<UserProfilePage/>}/>
                         <Route path="/eye-exam-records/edit/:id" element={<ExamRecordFormPage/>}/>
                         <Route path="/eye-exam-records/import" element={<ExamRecordImportPage/>}/>
+                        <Route path="/profile" element={<UserProfilePage/>}/>
+
                     </Route>
                 </Route>
             </Routes>

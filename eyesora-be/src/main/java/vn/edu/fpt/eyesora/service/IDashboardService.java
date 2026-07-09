@@ -7,4 +7,5 @@ public interface IDashboardService {
     DashboardSummaryResponse getSummaryCounters();
     List<GradeMyopiaResponse> getGradeStats();
     List<MyopiaTimelineResponse> getMyopiaTimeline();
+    List<FacilityMyopiaResponse> getFacilityStats();
 }
