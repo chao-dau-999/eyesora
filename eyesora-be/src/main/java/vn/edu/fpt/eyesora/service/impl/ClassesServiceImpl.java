@@ -13,6 +13,7 @@ import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.entity.Classes;
 import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Patient;
+import vn.edu.fpt.eyesora.exceptions.BusinessException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.ClassesRepository;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
@@ -125,5 +126,18 @@ public class ClassesServiceImpl implements IClassesService {
                 cls.getPatientCount(),
                 new PageImpl<>(content, pageable, allPatients.size())
         );
+    }
+
+    @Override
+    public void deleteClass(String id) {
+        Classes classes = classesRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + id));
+
+        if (classes.getPatients() != null && !classes.getPatients().isEmpty()) {
+            throw new BusinessException("Không thể xóa lớp đang có học sinh. Vui lòng chuyển học sinh sang lớp khác trước.");
+        }
+
+        classes.setDeleted(true);
+        classesRepository.save(classes);
     }
 }

@@ -59,6 +59,8 @@ public class Classes {
         return startYear + "-" + endYear;
     }
 
+    private boolean isDeleted = false;
+
     public void updateSchoolYear() {
         this.schoolYear = calculateSchoolYear();
     }

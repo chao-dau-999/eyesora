@@ -1,6 +1,6 @@
 import { Trash, SquarePen, Users } from "lucide-react";
 
-const ClassTable = ({ classes, loading, page, onOpenDetail, onEdit }) => (
+const ClassTable = ({ classes, loading, page, onOpenDetail, onEdit, onDelete }) => (
     <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
         <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase font-black text-gray-500">
@@ -37,7 +37,7 @@ const ClassTable = ({ classes, loading, page, onOpenDetail, onEdit }) => (
                             <button onClick={() => onEdit(cls)} className="text-blue-900 hover:text-blue-700 transition-colors" title="Chỉnh sửa">
                                 <SquarePen size={20}/>
                             </button>
-                            <button className="text-red-500 hover:text-red-700 transition-colors" title="Xóa">
+                            <button onClick={() => onDelete(cls)} className="text-red-500 hover:text-red-700 transition-colors" title="Xóa">
                                 <Trash size={20}/>
                             </button>
                         </td>

@@ -122,4 +122,10 @@ public class MasterDataController {
     public ResponseEntity<ClassesResponse> getClassById(@PathVariable String id) {
         return ResponseEntity.ok(classesService.getClassById(id));
     }
+
+    @DeleteMapping("/classes/{id}")
+    public ResponseEntity<Void> deleteClass(@PathVariable String id) {
+        classesService.deleteClass(id);
+        return ResponseEntity.noContent().build();
+    }
 }
