@@ -30,15 +30,17 @@ public class FacilityServiceImpl implements IFacilityService {
 
     @Override
     public FacilityResponse createFacility(FacilityRequest req) {
-        Ward ward = wardRepository.findById(req.wardId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã"));
-
         Facility f = new Facility();
+        if (req.wardId() != null) {
+            Ward ward = wardRepository.findById(req.wardId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã"));
+            f.setWard(ward);
+        }
+
         f.setFacilityName(req.facilityName());
         f.setFacilityType(req.facilityType());
         f.setAddress(req.address());
         f.setPhone(req.phone());
-        f.setWard(ward);
 
         f = facilityRepository.save(f);
         return mapToResponse(f);

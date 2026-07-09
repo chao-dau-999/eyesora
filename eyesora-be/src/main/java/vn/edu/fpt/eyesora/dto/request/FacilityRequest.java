@@ -17,10 +17,10 @@ public record FacilityRequest(
         @Size(max = 255, message = "Địa chỉ không được vượt quá 255 ký tự")
         String address,
 
-        @Pattern(
-                regexp = "^[0-9]{10,11}$",
-                message = "Số điện thoại phải có từ 10 đến 11 chữ số"
-        )
+//        @Pattern(
+//                regexp = "^[0-9]{10,11}$",
+//                message = "Số điện thoại phải có từ 10 đến 11 chữ số"
+//        )
         String phone,
 
 //        @NotBlank(message = "Mã quận/huyện là bắt buộc")
