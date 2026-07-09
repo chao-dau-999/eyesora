@@ -9,7 +9,7 @@ const PatientTable = ({ patients, loading, pageInfo, onDetail, onEdit, onDelete,
                 <th className="px-4 py-3 font-bold">Mã bệnh nhân</th>
                 <th className="px-4 py-3 font-bold">Họ và Tên</th>
                 <th className="px-4 py-3 font-bold">Lớp</th>
-                <th className="px-4 py-3 font-bold text-center">Ngày Sinh</th>
+                <th className="px-4 py-3 font-bold text-center">Cơ sở</th>
                 <th className="px-4 py-3 font-bold text-center">Giới tính</th>
                 <th className="px-6 py-3 font-bold text-right">Hành động</th>
             </tr>
@@ -26,7 +26,7 @@ const PatientTable = ({ patients, loading, pageInfo, onDetail, onEdit, onDelete,
                         <td className="px-4 py-4 font-mono text-xs text-blue-950 font-bold">{p.patientId}</td>
                         <td className="px-4 py-4 font-semibold text-gray-900">{p.patientName}</td>
                         <td className="px-4 py-4 text-sm font-bold text-blue-800">{p.className || '---'}</td>
-                        <td className="px-4 py-4 text-sm text-center text-gray-900">{p.dob}</td>
+                        <td className="px-4 py-4 text-sm text-center text-gray-900 font-medium">{p.facilityName || '---'}</td>
                         <td className="px-4 py-4 text-center">
                             <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${p.gender === 'MALE' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
                                 {p.gender === 'MALE' ? 'Nam' : 'Nữ'}

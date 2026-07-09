@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from "../../../shared/axios/axiosClient.js";
-import ClassActions from "../components/ClassActions.jsx";
 import ClassTable from "../components/ClassTable.jsx";
 import ClassDetailModal from "../components/ClassDetailModal.jsx";
+import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
 import Pagination from "../../../shared/components/Pagination.jsx";
 
 const ClassesPage = () => {
@@ -13,6 +13,9 @@ const ClassesPage = () => {
     const [pageData, setPageData] = useState({ page: 0, totalPages: 0, totalElements: 0 });
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [detailData, setDetailData] = useState(null);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [deleteError, setDeleteError] = useState(null);
 
     useEffect(() => { fetchClasses(); }, []);
 
@@ -36,8 +39,6 @@ const ClassesPage = () => {
     const openDetailModal = async (cls, page = 0) => {
         try {
             const res = await axiosClient.get(`/master-data/classes/${cls.id}/patients?page=${page}&size=10`);
-            // console.log("DỮ LIỆU TỪ API CHI TIẾT LỚP:", res.data);
-
             setDetailData({
                 ...res.data,
                 patients: res.data.patients?.content || [],
@@ -47,6 +48,28 @@ const ClassesPage = () => {
             });
             setIsDetailOpen(true);
         } catch (error) { alert("Error loading details!"); }
+    };
+
+    const handleDelete = async () => {
+        if (!selectedClass) return;
+        setDeleteError(null);
+        try {
+            // Kiểm tra lại đường dẫn: nếu axiosClient đã có baseURL chứa /api thì dùng path dưới,
+            // nếu chưa có thì phải thêm /api vào trước
+            await axiosClient.delete(`/master-data/classes/${selectedClass.id}`);
+
+            setIsDeleteOpen(false);
+            fetchClasses(pageData.page);
+        } catch (error) {
+            const errData = error.response?.data;
+
+            // Logic lấy thông báo: Ưu tiên lấy thuộc tính message, nếu không thì lấy trực tiếp chuỗi trả về
+            const errorMessage = (errData && typeof errData === 'object')
+                ? (errData.message || JSON.stringify(errData))
+                : (errData || "Không thể xóa lớp học này!");
+
+            setDeleteError(errorMessage);
+        }
     };
 
     return (
@@ -71,6 +94,7 @@ const ClassesPage = () => {
                     page={pageData.page}
                     onOpenDetail={openDetailModal}
                     onEdit={(cls) => navigate(`/classes/edit/${cls.id}`)}
+                    onDelete={(cls) => { setSelectedClass(cls); setIsDeleteOpen(true); }}
                 />
                 <div className="px-6 py-5 border-t border-gray-100 flex justify-between items-center">
                     <span className="text-sm font-semibold text-gray-500">Trang {pageData.page + 1} / {pageData.totalPages || 1}</span>
@@ -85,6 +109,15 @@ const ClassesPage = () => {
                     onPageChange={(p) => openDetailModal(detailData.classInfo, p)}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={isDeleteOpen}
+                onClose={() => { setIsDeleteOpen(false); setDeleteError(null); }}
+                onConfirm={handleDelete}
+                error={deleteError}
+                title="Xác nhận xóa lớp học"
+                message={`Bạn có chắc chắn muốn xóa lớp ${selectedClass?.className}? Hành động này không thể hoàn tác.`}
+            />
         </div>
     );
 };

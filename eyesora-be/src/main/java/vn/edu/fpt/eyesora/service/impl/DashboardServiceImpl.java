@@ -1,16 +1,23 @@
 package vn.edu.fpt.eyesora.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.response.*;
 import vn.edu.fpt.eyesora.entity.EyeExamRecord;
+import vn.edu.fpt.eyesora.exceptions.BusinessException;
 import vn.edu.fpt.eyesora.repository.EyeExamRecordRepository;
 import vn.edu.fpt.eyesora.service.IDashboardService;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -169,5 +176,159 @@ public class DashboardServiceImpl implements IDashboardService {
 
         facilityStats.sort((a, b) -> Double.compare(b.rate(), a.rate()));
         return facilityStats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ByteArrayInputStream exportDashboardReport() {
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            CellStyle greenHeaderStyle = createLightGreenHeaderStyle(workbook);
+            CellStyle dataStyle = createDataBorderStyle(workbook);
+
+            // --- SHEET 1: TỔNG QUAN---
+            DashboardSummaryResponse summary = getSummaryCounters();
+            Sheet sheetSummary = workbook.createSheet("Tổng Quan");
+            createStyledRow(sheetSummary, 0, new String[]{"Chỉ số", "Giá trị"}, greenHeaderStyle);
+            createRowWithBorder(sheetSummary, 1, "Tổng học sinh đã khám", summary.totalExaminedStudents(), dataStyle);
+            createRowWithBorder(sheetSummary, 2, "Tỉ lệ cận thị (%)", summary.currentMyopiaRate(), dataStyle);
+            createRowWithBorder(sheetSummary, 3, "Số ca cảnh báo", summary.totalAlertCases(), dataStyle);
+            sheetSummary.autoSizeColumn(0); sheetSummary.autoSizeColumn(1);
+
+            // --- SHEET 2 & 3: THỐNG KÊ KHỐI & CƠ SỞ ---
+            createStatSheet(workbook.createSheet("Thống Kê Theo Khối"), greenHeaderStyle, "Khối Lớp", "Tỉ lệ cận thị (%)", getGradeStats());
+            createStatSheet(workbook.createSheet("Thống Kê Cơ Sở"), greenHeaderStyle, "Tên Cơ Sở", "Tỉ lệ cận thị (%)", getFacilityStats());
+
+            // --- SHEET 4: DANH SÁCH CA BỆNH CẦN CẢNH BÁO GẤP ---
+            Sheet sheetHeavy = workbook.createSheet("Danh sách ca bệnh cần cảnh báo gấp");
+            createDetailHeader(sheetHeavy, greenHeaderStyle);
+
+            List<EyeExamRecord> alertRecords = eyeExamRecordRepository.findByIsDeletedFalse().stream()
+                    .filter(e -> (e.getSphLeft() != null && e.getSphLeft() <= -6.00) ||
+                            (e.getSphRight() != null && e.getSphRight() <= -6.00))
+                    .collect(Collectors.toList());
+
+            int rowIdx = 2;
+            for (EyeExamRecord r : alertRecords) {
+                writeDetailRow(sheetHeavy.createRow(rowIdx++), r, dataStyle);
+            }
+            for(int i = 0; i < 20; i++) sheetHeavy.autoSizeColumn(i);
+
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (Exception e) {
+            throw new BusinessException("Lỗi xuất báo cáo: " + e.getMessage());
+        }
+    }
+
+    // --- CÁC HÀM HỖ TRỢ EXCEL ---
+    // Ghi hàng tiêu đề với style màu xanh lá
+    private void createStyledRow(Sheet sheet, int rowNum, String[] headers, CellStyle style) {
+        Row row = sheet.createRow(rowNum);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = row.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(style);
+        }
+    }
+
+    // Ghi hàng dữ liệu có viền bao quanh
+    private void createRowWithBorder(Sheet sheet, int rowNum, String label, Object value, CellStyle borderStyle) {
+        Row row = sheet.createRow(rowNum);
+        createCell(row, 0, label, borderStyle);
+        createCell(row, 1, value, borderStyle);
+    }
+
+    // Ghi bảng thống kê (Khối/Cơ sở)
+    private void createStatSheet(Sheet sheet, CellStyle headerStyle, String col1, String label, List<?> data) {
+        createStyledRow(sheet, 0, new String[]{col1, label}, headerStyle);
+        CellStyle dataStyle = createDataBorderStyle(sheet.getWorkbook());
+        int rowIdx = 1;
+        for (Object obj : data) {
+            Row row = sheet.createRow(rowIdx++);
+            if (obj instanceof GradeMyopiaResponse s) {
+                createCell(row, 0, s.gradeName(), dataStyle); createCell(row, 1, s.rate(), dataStyle);
+            } else if (obj instanceof FacilityMyopiaResponse s) {
+                createCell(row, 0, s.facilityName(), dataStyle); createCell(row, 1, s.rate(), dataStyle);
+            }
+        }
+        sheet.autoSizeColumn(0); sheet.autoSizeColumn(1);
+    }
+
+    private void writeDetailRow(Row row, EyeExamRecord r, CellStyle style) {
+        createCell(row, 0, row.getRowNum() - 1, style); // STT
+        createCell(row, 1, r.getPatient() != null ? r.getPatient().getPatientName() : "", style);
+        createCell(row, 2, r.getClassesField() != null ? r.getClassesField().getClassName() : "", style);
+        createCell(row, 3, r.getClassesField() != null ? r.getClassesField().getFacility().getFacilityName() : "", style);
+        createCell(row, 4, r.getExamDate() != null ? r.getExamDate().toString() : "", style);
+        createCell(row, 5, (r.getCampaign() != null) ? r.getCampaign().getCampaignTitle() : "", style);
+        createCell(row, 6, (r.getExaminer() != null) ? r.getExaminer().getFull_name() : "", style);
+
+        // Mắt Trái
+        createCell(row, 7, r.getVaLeftWithoutGlasses(), style); createCell(row, 8, r.getVaLeftOldGlasses(), style);
+        createCell(row, 9, r.getVaLeftPinhole(), style); createCell(row, 10, r.getVaLeftWithGlasses(), style);
+        createCell(row, 11, r.getSphLeft(), style); createCell(row, 12, r.getCylLeft(), style);
+        createCell(row, 13, r.getAxisLeft(), style); createCell(row, 14, r.getPdLeft(), style);
+
+        // Mắt Phải
+        createCell(row, 15, r.getVaRightWithoutGlasses(), style); createCell(row, 16, r.getVaRightOldGlasses(), style);
+        createCell(row, 17, r.getVaRightPinhole(), style); createCell(row, 18, r.getVaRightWithGlasses(), style);
+        createCell(row, 19, r.getSphRight(), style); createCell(row, 20, r.getCylRight(), style);
+        createCell(row, 21, r.getAxisRight(), style); createCell(row, 22, r.getPdRight(), style);
+    }
+
+    private void createDetailHeader(Sheet sheet, CellStyle style) {
+        Row row0 = sheet.createRow(0);
+        Row row1 = sheet.createRow(1);
+
+        String[] main = {
+                "STT", "HỌ TÊN", "LỚP", "CƠ SỞ", "NGÀY KHÁM", "CHIẾN DỊCH", "NGƯỜI KHÁM",
+                "THỊ LỰC KK", "", "CÓ KÍNH", "", "KÍNH LỖ", "", "TLCK", "",
+                "ĐỘ CẦU", "", "ĐỘ TRỤ", "", "TRỤC", "", "KCĐT", ""
+        };
+
+        String[] sub = {
+                "", "", "", "", "", "", "",
+                "MP", "MT", "MP", "MT", "MP", "MT", "MP", "MT", "MP", "MT", "MP", "MT", "MP", "MT", "MP", "MT"
+        };
+
+        for (int i = 0; i < main.length; i++) {
+            // 1. Merge theo chiều ngang cho các cặp MP/MT (bắt đầu từ index 7)
+            if (i >= 7 && i % 2 != 0) {
+                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, i, i + 1));
+            }
+            // 2. Merge theo chiều dọc cho các cột thông tin đơn (STT đến Người khám)
+            else if (i < 7) {
+                sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 1, i, i));
+            }
+
+            createCell(row0, i, main[i], style);
+            createCell(row1, i, sub[i], style);
+        }
+    }
+
+    // Helper tạo Cell (Xử lý đa kiểu dữ liệu)
+    private void createCell(Row row, int colIdx, Object value, CellStyle style) {
+        Cell cell = row.createCell(colIdx);
+        if (style != null) cell.setCellStyle(style);
+        if (value instanceof Number n) cell.setCellValue(n.doubleValue());
+        else cell.setCellValue(value != null ? value.toString() : "");
+    }
+
+    private CellStyle createLightGreenHeaderStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        s.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        s.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        s.setAlignment(HorizontalAlignment.CENTER);
+        s.setBorderBottom(BorderStyle.THIN); s.setBorderTop(BorderStyle.THIN);
+        s.setBorderLeft(BorderStyle.THIN); s.setBorderRight(BorderStyle.THIN);
+        Font f = wb.createFont(); f.setBold(true); f.setColor(IndexedColors.BLACK.getIndex());
+        s.setFont(f); return s;
+    }
+
+    private CellStyle createDataBorderStyle(Workbook wb) {
+        CellStyle s = wb.createCellStyle();
+        s.setBorderBottom(BorderStyle.THIN); s.setBorderLeft(BorderStyle.THIN);
+        s.setBorderRight(BorderStyle.THIN); s.setBorderTop(BorderStyle.THIN);
+        return s;
     }
 }
