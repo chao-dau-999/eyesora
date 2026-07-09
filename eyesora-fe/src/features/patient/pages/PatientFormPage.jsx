@@ -1,11 +1,11 @@
-import {useState, useEffect} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
-import {ArrowLeft, AlertCircle} from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import axiosClient from "../../../shared/axios/axiosClient.js";
 
 const PatientFormPage = () => {
     const navigate = useNavigate();
-    const {id} = useParams();
+    const { id } = useParams();
     const isEditMode = !!id;
 
     const [formData, setFormData] = useState({
@@ -13,26 +13,33 @@ const PatientFormPage = () => {
         campaignId: '', facilityId: '', classId: '', wardId: '', patientId: null
     });
 
-    const [options, setOptions] = useState({campaigns: [], facilities: [], classes: [], wards: []});
+    const [options, setOptions] = useState({ campaigns: [], facilities: [], classes: [], wards: [] });
     const [errors, setErrors] = useState({});
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
-    // FIX: Cập nhật component ErrorMsg để hiện icon + chữ đỏ giống giao diện User
-    const ErrorMsg = ({field}) => errors[field] ? (
+    const ErrorMsg = ({ field }) => errors[field] ? (
         <div className="flex items-center gap-1 mt-1.5 text-red-600">
             <AlertCircle size={14} />
             <span className="text-[11px] font-bold">{errors[field]}</span>
         </div>
     ) : null;
 
+    // Lọc lớp dựa trên facilityName (do API trả về facilityName thay vì facilityId trong object lớp)
+    const filteredClasses = formData.facilityId
+        ? options.classes.filter(c => {
+            const selectedFacility = options.facilities.find(f => String(f.id) === String(formData.facilityId));
+            return selectedFacility && c.facilityName?.trim() === selectedFacility.facilityName?.trim();
+        })
+        : [];
+
     useEffect(() => {
         const fetchMasterData = async () => {
             try {
                 const [c, f, cl, w] = await Promise.all([
-                    axiosClient.get('/campaigns?size=999').catch(() => ({data: []})),
-                    axiosClient.get('/master-data/facilities?size=999').catch(() => ({data: []})),
-                    axiosClient.get('/master-data/classes?size=999').catch(() => ({data: []})),
-                    axiosClient.get('/master-data/wards?size=999').catch(() => ({data: []}))
+                    axiosClient.get('/campaigns?size=999').catch(() => ({ data: [] })),
+                    axiosClient.get('/master-data/facilities?size=999').catch(() => ({ data: [] })),
+                    axiosClient.get('/master-data/classes?size=999').catch(() => ({ data: [] })),
+                    axiosClient.get('/master-data/wards?size=999').catch(() => ({ data: [] }))
                 ]);
 
                 setOptions({
@@ -69,7 +76,7 @@ const PatientFormPage = () => {
                     }
                 } catch (err) {
                     console.error("Lỗi fetch chi tiết bệnh nhân:", err);
-                    setErrors({server: "Không thể tải dữ liệu bệnh nhân này."});
+                    setErrors({ server: "Không thể tải dữ liệu bệnh nhân này." });
                 } finally {
                     setPageLoading(false);
                 }
@@ -78,7 +85,14 @@ const PatientFormPage = () => {
         }
     }, [id, isEditMode]);
 
-    // FIX: Cập nhật logic handleSubmit để bắt lỗi từ Backend trả về dạng Object trực tiếp
+    const handleFacilityChange = (e) => {
+        setFormData({
+            ...formData,
+            facilityId: e.target.value,
+            classId: ''
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrors({});
@@ -104,9 +118,9 @@ const PatientFormPage = () => {
         } catch (err) {
             const errorData = err.response?.data;
             if (errorData && typeof errorData === 'object' && !errorData.message) {
-                setErrors(errorData); // Gán lỗi trực tiếp vào state nếu backend trả về dạng {field: msg}
+                setErrors(errorData);
             } else {
-                setErrors({server: errorData?.message || "Thao tác thất bại."});
+                setErrors({ server: errorData?.message || "Thao tác thất bại." });
             }
         }
     };
@@ -124,28 +138,20 @@ const PatientFormPage = () => {
 
     return (
         <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto scrollbar-thin">
-
             <div className="flex items-center gap-3 mb-6 w-full">
-                <button
-                    onClick={() => navigate('/patients')}
-                    className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-blue-900 shadow-sm transition-colors cursor-pointer flex items-center justify-center"
-                >
-                    <ArrowLeft size={18}/>
+                <button onClick={() => navigate('/patients')} className="p-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-blue-900 shadow-sm transition-colors cursor-pointer flex items-center justify-center">
+                    <ArrowLeft size={18} />
                 </button>
                 <div>
-                    <h1 className="text-lg font-bold text-gray-900">
-                        {isEditMode ? "Chỉnh sửa hồ sơ học sinh" : "Thêm mới hồ sơ học sinh"}
-                    </h1>
+                    <h1 className="text-lg font-bold text-gray-900">{isEditMode ? "Chỉnh sửa hồ sơ học sinh" : "Thêm mới hồ sơ học sinh"}</h1>
                     <p className="text-xs text-gray-500">Quản lý và cập nhật thông tin y tế khúc xạ</p>
                 </div>
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm w-full p-6 md:p-8">
-
                 {errors.server && (
-                    <div
-                        className="mb-6 p-4 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-bold flex items-center gap-2 w-full">
-                        <AlertCircle size={16}/>
+                    <div className="mb-6 p-4 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-bold flex items-center gap-2 w-full">
+                        <AlertCircle size={16} />
                         {errors.server}
                     </div>
                 )}
@@ -154,37 +160,30 @@ const PatientFormPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Mã bệnh nhân (Mặc định)</label>
-                            <input className={`${inputStyle} bg-gray-50 cursor-not-allowed`}
-                                   value={formData.patientId || 'Hệ thống tự động tạo'} disabled/>
+                            <input className={`${inputStyle} bg-gray-50 cursor-not-allowed`} value={formData.patientId || 'Hệ thống tự động tạo'} disabled />
                         </div>
                         <div>
                             <label className={labelStyle}>Họ và Tên (*)</label>
-                            <input className={inputStyle} value={formData.patientName}
-                                   onChange={e => setFormData({...formData, patientName: e.target.value})}
-                                   placeholder="Nhập họ và tên học sinh"/>
-                            <ErrorMsg field="patientName"/>
+                            <input className={inputStyle} value={formData.patientName} onChange={e => setFormData({ ...formData, patientName: e.target.value })} placeholder="Nhập họ và tên học sinh" />
+                            <ErrorMsg field="patientName" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Số điện thoại phụ huynh</label>
-                            <input className={inputStyle} value={formData.parentPhone}
-                                   onChange={e => setFormData({...formData, parentPhone: e.target.value})}
-                                   placeholder="Ví dụ: 0912345678"/>
-                            <ErrorMsg field="parentPhone"/>
+                            <input className={inputStyle} value={formData.parentPhone} onChange={e => setFormData({ ...formData, parentPhone: e.target.value })} placeholder="Ví dụ: 0912345678" />
+                            <ErrorMsg field="parentPhone" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             <div>
                                 <label className={labelStyle}>Ngày sinh</label>
-                                <input className={inputStyle} type="date" value={formData.dob}
-                                       onChange={e => setFormData({...formData, dob: e.target.value})}/>
-                                <ErrorMsg field="dob"/>
+                                <input className={inputStyle} type="date" value={formData.dob} onChange={e => setFormData({ ...formData, dob: e.target.value })} />
+                                <ErrorMsg field="dob" />
                             </div>
                             <div>
                                 <label className={labelStyle}>Giới tính</label>
-                                <select className={inputStyle} value={formData.gender}
-                                        onChange={e => setFormData({...formData, gender: e.target.value})}>
+                                <select className={inputStyle} value={formData.gender} onChange={e => setFormData({ ...formData, gender: e.target.value })}>
                                     <option value="MALE">Nam</option>
                                     <option value="FEMALE">Nữ</option>
                                 </select>
@@ -197,62 +196,44 @@ const PatientFormPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Địa chỉ (Phường/Xã)</label>
-                            <select className={inputStyle} value={formData.wardId}
-                                    onChange={e => setFormData({...formData, wardId: e.target.value})}>
+                            <select className={inputStyle} value={formData.wardId} onChange={e => setFormData({ ...formData, wardId: e.target.value })}>
                                 <option value="">Chọn Phường/Xã...</option>
                                 {options.wards.map(w => <option key={w.id} value={String(w.id)}>{w.wardName}</option>)}
                             </select>
-                            <ErrorMsg field="wardId"/>
+                            <ErrorMsg field="wardId" />
                         </div>
                         <div>
                             <label className={labelStyle}>Chiến dịch khám (*)</label>
-                            <select className={inputStyle} value={formData.campaignId}
-                                    onChange={e => setFormData({...formData, campaignId: e.target.value})}>
+                            <select className={inputStyle} value={formData.campaignId} onChange={e => setFormData({ ...formData, campaignId: e.target.value })}>
                                 <option value="">Chọn chiến dịch...</option>
-                                {options.campaigns.map(i => <option key={i.campaignId}
-                                                                    value={String(i.campaignId)}>{i.campaignTitle}</option>)}
+                                {options.campaigns.map(i => <option key={i.campaignId} value={String(i.campaignId)}>{i.campaignTitle}</option>)}
                             </select>
-                            <ErrorMsg field="campaignId"/>
+                            <ErrorMsg field="campaignId" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
                             <label className={labelStyle}>Cơ sở khám (*)</label>
-                            <select className={inputStyle} value={formData.facilityId}
-                                    onChange={e => setFormData({...formData, facilityId: e.target.value})}>
+                            <select className={inputStyle} value={formData.facilityId} onChange={handleFacilityChange}>
                                 <option value="">Chọn cơ sở...</option>
-                                {options.facilities.map(i => <option key={i.id}
-                                                                     value={String(i.id)}>{i.facilityName}</option>)}
+                                {options.facilities.map(i => <option key={i.id} value={String(i.id)}>{i.facilityName}</option>)}
                             </select>
-                            <ErrorMsg field="facilityId"/>
+                            <ErrorMsg field="facilityId" />
                         </div>
                         <div>
                             <label className={labelStyle}>Lớp học (*)</label>
-                            <select className={inputStyle} value={formData.classId}
-                                    onChange={e => setFormData({...formData, classId: e.target.value})}>
-                                <option value="">Chọn lớp học...</option>
-                                {options.classes.map(i => <option key={i.id}
-                                                                  value={String(i.id)}>{i.className}</option>)}
+                            <select className={inputStyle} value={formData.classId} disabled={!formData.facilityId} onChange={e => setFormData({ ...formData, classId: e.target.value })}>
+                                <option value="">{formData.facilityId ? "Chọn lớp học..." : "Vui lòng chọn cơ sở trước"}</option>
+                                {filteredClasses.map(i => <option key={i.id} value={String(i.id)}>{i.className}</option>)}
                             </select>
-                            <ErrorMsg field="classId"/>
+                            <ErrorMsg field="classId" />
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-8 w-full">
-                        <button
-                            type="button"
-                            onClick={() => navigate('/patients')}
-                            className="px-6 py-2.5 border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all rounded-xl text-sm cursor-pointer"
-                        >
-                            Hủy bỏ
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-8 py-2.5 bg-blue-900 text-white font-bold hover:bg-blue-800 active:scale-95 transition-all rounded-xl text-sm shadow-sm cursor-pointer"
-                        >
-                            Lưu hồ sơ bệnh nhân
-                        </button>
+                        <button type="button" onClick={() => navigate('/patients')} className="px-6 py-2.5 border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 transition-all rounded-xl text-sm cursor-pointer">Hủy bỏ</button>
+                        <button type="submit" className="px-8 py-2.5 bg-blue-900 text-white font-bold hover:bg-blue-800 active:scale-95 transition-all rounded-xl text-sm shadow-sm cursor-pointer">Lưu hồ sơ bệnh nhân</button>
                     </div>
                 </form>
             </div>

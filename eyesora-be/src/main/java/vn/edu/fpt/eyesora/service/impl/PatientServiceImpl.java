@@ -89,6 +89,10 @@ public class PatientServiceImpl implements IPatientService {
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã: " + req.wardId()));
         }
 
+        if (!patientClass.getFacility().getId().equals(req.facilityId())) {
+            throw new BusinessException("Lớp học bạn chọn không thuộc cơ sở này. Vui lòng kiểm tra lại!");
+        }
+
         Patient patient = new Patient();
 
         patient.setPatientName(req.patientName());
@@ -139,6 +143,10 @@ public class PatientServiceImpl implements IPatientService {
         if (req.wardId() != null && !req.wardId().isBlank()) {
             patientWard = wardRepository.findById(req.wardId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phường/xã: " + req.wardId()));
+        }
+
+        if (!patientClass.getFacility().getId().equals(req.facilityId())) {
+            throw new BusinessException("Lớp học bạn chọn không thuộc cơ sở này. Vui lòng kiểm tra lại!");
         }
 
         patient.setPatientName(req.patientName());
