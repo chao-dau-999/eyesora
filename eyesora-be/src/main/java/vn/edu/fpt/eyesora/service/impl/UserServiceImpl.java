@@ -103,7 +103,7 @@ public class UserServiceImpl implements IUserService {
         boolean needsFacility = roles.stream()
                 .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
                         !role.getName().equalsIgnoreCase("EXAMINER") &&
-                        !role.getName().equalsIgnoreCase("OWNER"));
+                        !role.getName().equalsIgnoreCase("FACILITY_ADMIN"));
 
         User user = new User();
         user.setUsername(request.username());
@@ -151,7 +151,7 @@ public class UserServiceImpl implements IUserService {
         boolean needsFacility = user.getRoles().stream()
                 .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
                         !role.getName().equalsIgnoreCase("EXAMINER") &&
-                        !role.getName().equalsIgnoreCase("OWNER"));
+                        !role.getName().equalsIgnoreCase("FACILITY_ADMIN"));
 
         if (needsFacility) {
             if ((request.facilityId() == null || request.facilityId().isBlank()) && user.getFacility() == null) {
