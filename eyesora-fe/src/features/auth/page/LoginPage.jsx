@@ -181,7 +181,7 @@ export default function LoginPage() {
                                     />
                                     <span>Ghi nhớ</span>
                                 </label>
-                                <a href="#forgot" className="font-medium text-[#0057c2] hover:underline">Quên mật khẩu?</a>
+page                                <a href="/forgot-password" className="font-medium text-[#0057c2] hover:underline">Quên mật khẩu?</a>
                             </div>
 
                             {/* Submit Button */}

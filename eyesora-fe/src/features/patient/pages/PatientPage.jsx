@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from "../../../shared/components/SearchBar.jsx";
-import PatientAction from "../components/PatientAction.jsx";
 import PatientTable from "../components/PatientTable.jsx";
-import PatientDetailModal from "../components/PatientDetailModal.jsx";
 import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
 import Pagination from "../../../shared/components/Pagination.jsx";
 import axiosClient from "../../../shared/axios/axiosClient.js";
@@ -16,7 +14,6 @@ const PatientPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [deleteError, setDeleteError] = useState(null);
@@ -101,7 +98,8 @@ const PatientPage = () => {
                     pageInfo={pageInfo}
                     formatDate={formatDate}
                     onEdit={(p) => navigate(`/patients/edit/${p.patientId}`)}
-                    onDetail={(p) => { setSelectedPatient(p); setIsDetailModalOpen(true); }}
+
+                    onDetail={(p) => navigate(`/patients/detail/${p.patientId}`)}
                     onDelete={(p) => { setSelectedPatient(p); setIsDeleteModalOpen(true); }}
                 />
 
@@ -116,14 +114,6 @@ const PatientPage = () => {
                     />
                 </div>
             </div>
-
-            {isDetailModalOpen && (
-                <PatientDetailModal
-                    patient={selectedPatient}
-                    formatDate={formatDate}
-                    onClose={() => setIsDetailModalOpen(false)}
-                />
-            )}
 
             <ConfirmModal
                 isOpen={isDeleteModalOpen}
