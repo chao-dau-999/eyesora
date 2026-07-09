@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {useNavigate} from 'react-router-dom';
 import { ArrowLeft, User, Mail, ShieldAlert, ShieldCheck, Activity, Landmark, RefreshCw } from 'lucide-react';
 import axiosClient from "../../../shared/axios/axiosClient.js";
+import {useAuthStore} from "../../auth/store/authStore.js";
 
 const UserProfilePage = () => {
     // State quản lý thông tin người dùng lâm sàng
@@ -9,13 +10,15 @@ const UserProfilePage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { user } = useAuthStore();
+    const { id } = user || {};
 
     // Fetch thông tin profile từ endpoint API của bạn
     useEffect(() => {
         const fetchUserProfile = async () => {
             setLoading(true);
             try {
-                const response = await axiosClient.get('/admin/users/b3e82f45-8f77-46ae-8ac9-c46c9e24b1fb');
+                const response = await axiosClient.get(`/admin/users/${id}`);
                 // Hoặc nếu endpoint động: await axiosClient.get(`/api/admin/users/${currentUserId}`);
 
                 setProfile(response.data);
