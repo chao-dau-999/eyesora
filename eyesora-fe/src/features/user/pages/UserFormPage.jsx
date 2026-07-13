@@ -79,7 +79,9 @@ const UserFormPage = () => {
         if (!formData.username?.trim()) newErrors.username = "Tên đăng nhập là bắt buộc";
         if (!isEditMode && !formData.password) newErrors.password = "Mật khẩu là bắt buộc";
         if (!formData.fullName?.trim()) newErrors.fullName = "Họ và tên là bắt buộc";
-        if (!formData.email?.trim()) newErrors.email = "Email là bắt buộc";
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Email không đúng định dạng";
+        }
         if (formData.roleNames.length === 0) newErrors.roleNames = "Vui lòng chọn ít nhất một vai trò";
 
         const hasAdminOrExaminer = formData.roleNames.includes('ADMIN') || formData.roleNames.includes('EXAMINER');
