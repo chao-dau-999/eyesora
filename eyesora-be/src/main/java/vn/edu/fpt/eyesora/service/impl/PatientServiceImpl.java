@@ -7,6 +7,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.PatientRequest;
@@ -18,10 +20,13 @@ import vn.edu.fpt.eyesora.repository.*;
 import vn.edu.fpt.eyesora.service.IPatientService;
 
 import jakarta.persistence.criteria.Predicate;
+import vn.edu.fpt.eyesora.util.SecurityUtil;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,14 +42,47 @@ public class PatientServiceImpl implements IPatientService {
     @Override
     @Transactional(readOnly = true)
     public Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, String classId, String facilityId, Pageable pageable) {
+        User currentUser = SecurityUtil.getCurrentUser();
+        if (currentUser == null) {
+            throw new AccessDeniedException("User must be authenticated");
+        }
+
+        // 1. Kiểm tra role của user hiện tại
+        Set<String> roles = currentUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
+        String finalFacilityId = facilityId;
+        boolean hasAccess = false;
+
+        // 2. Quyết định giá trị finalFacilityId dựa trên Role
+        if (roles.contains("ROLE_ADMIN")) {
+            // SYSTEM_ADMIN giữ nguyên facilityId truyền từ client (có thể lọc hoặc xem hết nếu null)
+            hasAccess = true;
+        } else if (roles.contains("ROLE_FACILITY_ADMIN")) {
+            // FACILITY_ADMIN bắt buộc chỉ được xem học sinh thuộc cơ sở của mình
+            finalFacilityId = currentUser.getFacility().getId();
+            hasAccess = true;
+        }
+
+        // Thiết lập sort cố định
         Sort hardcodedSort = Sort.by(Sort.Direction.ASC, "classes.className")
                 .and(Sort.by(Sort.Direction.ASC, "facility.facilityName"))
                 .and(Sort.by(Sort.Direction.ASC, "patientName"));
 
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), hardcodedSort);
 
+        // Tạo biến hiệu dụng final cho Specification sử dụng
+        final String targetFacilityId = finalFacilityId;
+        final boolean canViewData = hasAccess;
+
         Specification<Patient> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
+            // Nếu không thuộc các role được phép truy cập, chặn luôn tại đây
+            if (!canViewData) {
+                return cb.disjunction(); // Điều kiện luôn sai (1=0) -> trả về trang rỗng
+            }
+
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
 
             // Tránh lỗi N+1 và lỗi sắp xếp trên thực thể LAZY (chỉ fetch khi không phải câu query COUNT)
             if (Long.class != query.getResultType()) {
@@ -52,17 +90,22 @@ public class PatientServiceImpl implements IPatientService {
                 root.fetch("facility", JoinType.LEFT);
             }
 
-            // Lọc theo Ward
-            if (wardId != null && !wardId.isEmpty()) {
-                predicates.add(cb.equal(root.get("ward").get("id"), wardId));
-            }
-
             // Luôn lọc các bản ghi chưa xóa
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
+            // Lọc theo Facility (Đã được resolve theo phân quyền ở trên)
+            if (targetFacilityId != null && !targetFacilityId.isBlank()) {
+                predicates.add(cb.equal(root.get("facility").get("id"), targetFacilityId.trim()));
+            }
+
+            // Lọc theo Ward
+            if (wardId != null && !wardId.isBlank()) {
+                predicates.add(cb.equal(root.get("ward").get("id"), wardId.trim()));
+            }
+
             // Lọc theo Tên học sinh
-            if (name != null && !name.isEmpty()) {
-                predicates.add(cb.like(root.get("patientName"), "%" + name + "%"));
+            if (name != null && !name.isBlank()) {
+                predicates.add(cb.like(cb.lower(root.get("patientName")), "%" + name.trim().toLowerCase() + "%"));
             }
 
             // Lọc theo Năm sinh
@@ -74,20 +117,19 @@ public class PatientServiceImpl implements IPatientService {
                 ));
             }
 
-            // Lọc theo Class (Mới thêm)
-            if (classId != null && !classId.isEmpty()) {
-                predicates.add(cb.equal(root.get("classes").get("id"), classId)); // Lưu ý: map theo tên thuộc tính "classes" trong Entity Patient
+            // Lọc theo Class
+            if (classId != null && !classId.isBlank()) {
+                predicates.add(cb.equal(root.get("classes").get("id"), classId.trim()));
             }
 
-            // Lọc theo Facility (Mới thêm)
-            if (facilityId != null && !facilityId.isEmpty()) {
-                predicates.add(cb.equal(root.get("facility").get("id"), facilityId));
+            // Xử lý an toàn: nếu không có điều kiện nào thì trả về 1=1 thay vì lỗi mảng trống
+            if (predicates.isEmpty()) {
+                return cb.conjunction();
             }
 
-            return cb.and(predicates.toArray(new Predicate[0]));
+            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
 
-        // Đã loại bỏ dòng log thừa gọi db 2 lần liên tiếp
         return patientRepository.findAll(spec, sortedPageable)
                 .map(this::convertToDto);
     }

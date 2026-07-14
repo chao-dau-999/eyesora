@@ -44,10 +44,10 @@ const Header = ({ onMenuClick }) => {
             </div>
 
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                <button className="text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer relative">
-                    <Bell size={20} />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                {/*<button className="text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer relative">*/}
+                {/*    <Bell size={20} />*/}
+                {/*    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>*/}
+                {/*</button>*/}
 
                 <div className="relative" ref={dropdownRef}>
                     {isAuthenticated ? (

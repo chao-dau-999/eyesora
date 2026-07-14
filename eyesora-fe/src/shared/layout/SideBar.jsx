@@ -4,13 +4,14 @@ import { useAuthStore } from '../../features/auth/store/authStore';
 
 const MENU_ITEMS = [
     { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Dashboard', path: '/', roles: ['ROLE_ADMIN'] },
-    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Facility-Dashboard', path: '/facility-dashboard', roles: ['ROLE_FACILITY_ADMIN'] },
-    { icon: <University className="w-5 h-5" />, label: 'Facilities', path: '/facilities', roles: ['ROLE_ADMIN'] },
-    { icon: <GraduationCap className="w-5 h-5" />, label: 'Classes', path: '/classes', roles: ['ROLE_ADMIN', 'ROLE_FACILITY_ADMIN'] },
     { icon: <ClipboardList className="w-5 h-5" />, label: 'Exam Records', path: '/eye-exam-records', roles: ['ROLE_ADMIN', 'ROLE_FACILITY_ADMIN', 'ROLE_EXAMINER'] },
     { icon: <UsersRound className="w-5 h-5" />, label: 'Patients', path: '/patients', roles: ['ROLE_ADMIN', 'ROLE_FACILITY_ADMIN', 'ROLE_EXAMINER'] },
     { icon: <CalendarDays className="w-5 h-5" />, label: 'Campaigns', path: '/campaigns', roles: ['ROLE_ADMIN'] },
     { icon: <ShieldAlert className="w-5 h-5" />, label: 'Admin Users', path: '/admin/users', roles: ['ROLE_ADMIN'] },
+    { icon: <LayoutDashboard className="w-5 h-5" />, label: 'Facility-Dashboard', path: '/facility-dashboard', roles: ['ROLE_FACILITY_ADMIN'] },
+    { icon: <University className="w-5 h-5" />, label: 'Facilities', path: '/facilities', roles: ['ROLE_ADMIN'] },
+    { icon: <GraduationCap className="w-5 h-5" />, label: 'Classes', path: '/classes', roles: ['ROLE_ADMIN', 'ROLE_FACILITY_ADMIN'] },
+
 ];
 
 const SideBar = ({ isOpen, setIsOpen }) => {

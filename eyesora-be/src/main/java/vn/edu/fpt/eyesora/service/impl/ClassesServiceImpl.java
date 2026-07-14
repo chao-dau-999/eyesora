@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.fpt.eyesora.dto.request.ClassesRequest;
@@ -13,13 +15,17 @@ import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.entity.Classes;
 import vn.edu.fpt.eyesora.entity.Facility;
 import vn.edu.fpt.eyesora.entity.Patient;
+import vn.edu.fpt.eyesora.entity.User;
 import vn.edu.fpt.eyesora.exceptions.BusinessException;
 import vn.edu.fpt.eyesora.exceptions.ResourceNotFoundException;
 import vn.edu.fpt.eyesora.repository.ClassesRepository;
 import vn.edu.fpt.eyesora.repository.FacilityRepository;
 import vn.edu.fpt.eyesora.service.IClassesService;
+import vn.edu.fpt.eyesora.util.SecurityUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +37,43 @@ public class ClassesServiceImpl implements IClassesService {
     @Override
     @Transactional(readOnly = true)
     public Page<ClassesResponse> getAllClasses(Pageable pageable) {
-        return classesRepository.findAll(pageable)
+        User currentUser = SecurityUtil.getCurrentUser();
+        if (currentUser == null) {
+            throw new AccessDeniedException("User must be authenticated");
+        }
+
+        // 1. Kiểm tra role của user hiện tại
+        boolean isFacilityAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_FACILITY_ADMIN"));
+
+        boolean isSystemAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        Specification<Classes> spec = (root, query, criteriaBuilder) -> {
+            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+            // Giả sử hệ thống của bạn có flag xóa mềm giống như bài trước
+            // predicates.add(criteriaBuilder.equal(root.get("isDeleted"), false));
+
+            // 2. Lọc dữ liệu dựa trên Role
+            if (isSystemAdmin) {
+                // SYSTEM_ADMIN được xem hết sạch, không cần thêm điều kiện filter facility
+            } else if (isFacilityAdmin) {
+                // FACILITY_ADMIN chỉ được xem các lớp thuộc cơ sở (facility) của mình
+                String userFacilityId = currentUser.getFacility().getId();
+                predicates.add(criteriaBuilder.equal(
+                        root.get("facility").get("id"), userFacilityId
+                ));
+            } else {
+                // Các role khác không có quyền (hoặc bạn có thể cho xem danh sách trống)
+                return criteriaBuilder.disjunction(); // Tạo ra điều kiện luôn sai (1=0) để trả về trống
+            }
+
+            return criteriaBuilder.and(predicates.toArray((new jakarta.persistence.criteria.Predicate[0])));
+        };
+
+        // 3. Thực hiện query với Specification và map sang Response
+        return classesRepository.findAll(spec, pageable)
                 .map(this::mapToResponse);
     }
 

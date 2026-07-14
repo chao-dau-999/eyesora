@@ -5,6 +5,7 @@ import PatientTable from "../components/PatientTable.jsx";
 import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
 import Pagination from "../../../shared/components/Pagination.jsx";
 import axiosClient from "../../../shared/axios/axiosClient.js";
+import {useAuthStore} from "../../auth/store/authStore.js";
 
 const PatientPage = () => {
     const navigate = useNavigate();
@@ -25,6 +26,8 @@ const PatientPage = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [deleteError, setDeleteError] = useState(null);
+    const {user} = useAuthStore();
+    const isFacilityAdmin = user?.roles?.includes("ROLE_FACILITY_ADMIN");
 
     // 1. Fetch danh sách trường học và chiến dịch ban đầu (chỉ chạy 1 lần khi mount)
     useEffect(() => {
@@ -141,7 +144,7 @@ const PatientPage = () => {
                 </div>
 
                 {/* Bộ đôi select tích hợp gọn gàng bên phải */}
-                <div className="flex flex-row gap-3 w-full md:w-auto flex-shrink-0">
+                {isFacilityAdmin ? '' : <div className="flex flex-row gap-3 w-full md:w-auto flex-shrink-0">
                     <select
                         value={selectedFacility}
                         onChange={handleFacilityChange}
@@ -167,7 +170,7 @@ const PatientPage = () => {
                             </option>
                         ))}
                     </select>
-                </div>
+                </div>}
             </div>
 
             {/* Bảng dữ liệu chính */}

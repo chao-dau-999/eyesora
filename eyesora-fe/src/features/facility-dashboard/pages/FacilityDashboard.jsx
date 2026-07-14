@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import axiosClient from "../../../shared/axios/axiosClient.js";
 import FacilityCharts from "../components/FacilityCharts.jsx";
 import FacilityStatsCards from "../components/FacilityStatsCards.jsx";
 import AlertRecordsTable from "../../dashboard/components/AlertRecordsTable.jsx";
 import ExamRecordDetailModal from "../../eye-exam-record/components/ExamRecordDetailModal.jsx";
+import {useAuthStore} from "../../auth/store/authStore.js";
 
 const FacilityDashboard = () => {
+    const {user, fetchProfile} = useAuthStore();
     const [facilities, setFacilities] = useState([]);
     const [selectedFacilityId, setSelectedFacilityId] = useState("");
 
@@ -17,7 +19,7 @@ const FacilityDashboard = () => {
     const [gradeStats, setGradeStats] = useState([]);
 
     const [records, setRecords] = useState([]);
-    const [pageData, setPageData] = useState({ page: 0, totalPages: 1, totalElements: 0 });
+    const [pageData, setPageData] = useState({page: 0, totalPages: 1, totalElements: 0});
 
     const [chartLoading, setChartLoading] = useState(false);
     const [animateBars, setAnimateBars] = useState(false);
@@ -25,13 +27,30 @@ const FacilityDashboard = () => {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
 
+    const isFacilityAdmin = user?.roles?.includes("ROLE_FACILITY_ADMIN");
+
     useEffect(() => {
         const fetchFacilities = async () => {
             try {
+                let currentFacilityId = user?.facilityId;
+                if (isFacilityAdmin && !currentFacilityId) {
+                    currentFacilityId = await fetchProfile();
+                }
+
                 const res = await axiosClient.get('/dashboard/facility/list');
                 const list = res.data || [];
                 setFacilities(list);
                 if (list.length > 0) {
+                    if (isFacilityAdmin && currentFacilityId) {
+                        // Khớp ID tìm từ profile với danh sách để chắc chắn cơ sở đó có tồn tại
+                        const hasFacility = list.some(fac => String(fac.id) === String(currentFacilityId));
+                        if (hasFacility) {
+                            setSelectedFacilityId(currentFacilityId);
+                            return;
+                        }
+                    }
+
+                    // Mặc định chọn trường đầu tiên nếu là SUPER_ADMIN hoặc không tìm thấy cơ sở tương ứng
                     setSelectedFacilityId(list[0].id);
                 }
             } catch (error) {
@@ -45,7 +64,7 @@ const FacilityDashboard = () => {
         if (!facilityId) return;
         try {
             const res = await axiosClient.get(`/dashboard/facility/alert-records`, {
-                params: { facilityId }
+                params: {facilityId}
             });
 
             const rawDataArray = res.data || [];
@@ -82,15 +101,15 @@ const FacilityDashboard = () => {
         try {
             setChartLoading(true);
             setAnimateBars(false);
-            const params = { facilityId };
+            const params = {facilityId};
 
             const [gradeRes, summaryRes] = await Promise.all([
-                axiosClient.get('/dashboard/facility/grade-stats', { params }),
-                axiosClient.get('/dashboard/facility/summary', { params })
+                axiosClient.get('/dashboard/facility/grade-stats', {params}),
+                axiosClient.get('/dashboard/facility/summary', {params})
             ]);
 
             setGradeStats(gradeRes.data || []);
-            setSummary(summaryRes.data || { totalExaminedStudents: 0, currentMyopiaRate: 0, totalAlertCases: 0 });
+            setSummary(summaryRes.data || {totalExaminedStudents: 0, currentMyopiaRate: 0, totalAlertCases: 0});
             setTimeout(() => setAnimateBars(true), 150);
         } catch (error) {
             console.error("Lỗi khi tải báo cáo thống kê cơ sở:", error);
@@ -126,16 +145,18 @@ const FacilityDashboard = () => {
     return (
         <div className="p-6 bg-[#f5f7fa] h-full overflow-y-auto text-gray-950">
             {/* Bộ lọc Select Box chọn trường */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+            <div
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
                 <div>
                     <h1 className="text-lg font-bold text-gray-900">Báo cáo Thống kê theo Cơ sở</h1>
-                    <p className="text-xs text-gray-500">Chọn cơ sở giáo dục có trong hệ thống để xem dữ liệu phân tích</p>
+                    {/*<p className="text-xs text-gray-500">Chọn cơ sở giáo dục có trong hệ thống để xem dữ liệu phân tích</p>*/}
                 </div>
                 <div className="w-full sm:w-80">
                     <select
                         className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#004194] focus:border-[#004194] p-2.5 outline-none font-semibold transition-all cursor-pointer"
                         value={selectedFacilityId}
                         onChange={(e) => setSelectedFacilityId(e.target.value)}
+                        disabled={isFacilityAdmin}
                     >
                         {facilities.length === 0 && <option value="">Đang tải danh sách các cơ sở...</option>}
                         {facilities.map((fac) => (
@@ -145,16 +166,18 @@ const FacilityDashboard = () => {
                 </div>
             </div>
 
-            <FacilityStatsCards summary={summary} />
+            <FacilityStatsCards summary={summary}/>
 
             {chartLoading ? (
-                <div className="flex flex-col items-center justify-center h-72 bg-white border border-gray-200 rounded-xl shadow-sm mb-6">
-                    <div className="w-8 h-8 border-4 border-[#004194] border-t-transparent rounded-full animate-spin mb-3"></div>
+                <div
+                    className="flex flex-col items-center justify-center h-72 bg-white border border-gray-200 rounded-xl shadow-sm mb-6">
+                    <div
+                        className="w-8 h-8 border-4 border-[#004194] border-t-transparent rounded-full animate-spin mb-3"></div>
                     <p className="text-xs text-gray-400 italic">Đang đồng bộ dữ liệu đồ thị...</p>
                 </div>
             ) : (
                 <>
-                    <FacilityCharts gradeStats={gradeStats} animateBars={animateBars} />
+                    <FacilityCharts gradeStats={gradeStats} animateBars={animateBars}/>
 
                     <div className="mt-6">
                         <AlertRecordsTable

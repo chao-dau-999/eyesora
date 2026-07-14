@@ -8,11 +8,13 @@ import ExamRecordAction from "../components/ExamRecordAction.jsx";
 import ExamRecordTable from '../components/ExamRecordTable.jsx';
 import ExamRecordDetailModal from '../components/ExamRecordDetailModal.jsx';
 import ConfirmModal from "../../../shared/components/ConfirmModal.jsx";
+import {useAuthStore} from "../../auth/store/authStore.js";
 
 const ExamRecordPage = () => {
     const navigate = useNavigate();
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
+    const {user} = useAuthStore();
 
     const [searchQuery, setSearchQuery] = useState(
         () => sessionStorage.getItem('exam_searchQuery') || ''
@@ -33,8 +35,8 @@ const ExamRecordPage = () => {
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [recordToDelete, setRecordToDelete] = useState(null);
-
     const [pageData, setPageData] = useState({ page: 0, totalPages: 0, totalElements: 0 });
+    const isFacilityAdmin = user?.roles?.includes("ROLE_FACILITY_ADMIN");
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -200,7 +202,7 @@ const ExamRecordPage = () => {
                     />
                 </div>
 
-                <div className="flex flex-row gap-3 w-full md:w-auto flex-shrink-0">
+                {isFacilityAdmin ? '' : <div className="flex flex-row gap-3 w-full md:w-auto flex-shrink-0">
                     <select
                         value={selectedFacility}
                         onChange={(e) => setSelectedFacility(e.target.value)}
@@ -226,7 +228,7 @@ const ExamRecordPage = () => {
                             </option>
                         ))}
                     </select>
-                </div>
+                </div>}
             </div>
 
             <ExamRecordTable
