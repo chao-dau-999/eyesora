@@ -56,7 +56,7 @@ public class PatientServiceImpl implements IPatientService {
         boolean hasAccess = false;
 
         // 2. Quyết định giá trị finalFacilityId dựa trên Role
-        if (roles.contains("ROLE_ADMIN")) {
+        if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_EXAMINER")) {
             // SYSTEM_ADMIN giữ nguyên facilityId truyền từ client (có thể lọc hoặc xem hết nếu null)
             hasAccess = true;
         } else if (roles.contains("ROLE_FACILITY_ADMIN")) {

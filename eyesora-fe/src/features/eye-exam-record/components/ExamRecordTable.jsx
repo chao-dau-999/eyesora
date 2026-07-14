@@ -14,10 +14,7 @@ const ExamRecordTable = ({
                          }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50/50 px-8 py-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 className="text-lg font-black text-gray-950">Hồ sơ khám mắt</h3>
-                <p className="text-gray-500 font-semibold text-sm">Tổng số: {pageData.totalElements} bản ghi</p>
-            </div>
+            
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
