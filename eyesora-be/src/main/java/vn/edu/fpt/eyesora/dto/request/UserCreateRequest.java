@@ -12,7 +12,6 @@ public record UserCreateRequest(
         @Size(min = 6, message = "Mật khẩu phải từ 6 ký tự trở lên")
         String password,
 
-        @NotBlank(message = "Email không được để trống")
         @Email(message = "Email không đúng định dạng")
         String email,
 

@@ -114,6 +114,7 @@ public class UserServiceImpl implements IUserService {
         user.setFull_name(request.fullName());
         user.setRoles(roles);
         user.setStatus(User.AccountStatus.ACTIVE);
+        System.out.println(user.getId());
 
         if (needsFacility) {
             if (request.facilityId() == null || request.facilityId().isBlank()) {
