@@ -1,8 +1,11 @@
 package vn.edu.fpt.eyesora.service.impl;
 
+import jakarta.persistence.criteria.JoinType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,18 +36,36 @@ public class PatientServiceImpl implements IPatientService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, Pageable pageable) {
+    public Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, String classId, String facilityId, Pageable pageable) {
+        Sort hardcodedSort = Sort.by(Sort.Direction.ASC, "classes.className")
+                .and(Sort.by(Sort.Direction.ASC, "facility.facilityName"))
+                .and(Sort.by(Sort.Direction.ASC, "patientName"));
+
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), hardcodedSort);
+
         Specification<Patient> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // Tránh lỗi N+1 và lỗi sắp xếp trên thực thể LAZY (chỉ fetch khi không phải câu query COUNT)
+            if (Long.class != query.getResultType()) {
+                root.fetch("classes", JoinType.LEFT);
+                root.fetch("facility", JoinType.LEFT);
+            }
+
+            // Lọc theo Ward
             if (wardId != null && !wardId.isEmpty()) {
                 predicates.add(cb.equal(root.get("ward").get("id"), wardId));
             }
 
+            // Luôn lọc các bản ghi chưa xóa
             predicates.add(cb.equal(root.get("isDeleted"), false));
 
-            if (name != null && !name.isEmpty())
+            // Lọc theo Tên học sinh
+            if (name != null && !name.isEmpty()) {
                 predicates.add(cb.like(root.get("patientName"), "%" + name + "%"));
+            }
 
+            // Lọc theo Năm sinh
             if (birthYear != null) {
                 predicates.add(cb.between(
                         root.get("dob"),
@@ -53,14 +74,21 @@ public class PatientServiceImpl implements IPatientService {
                 ));
             }
 
+            // Lọc theo Class (Mới thêm)
+            if (classId != null && !classId.isEmpty()) {
+                predicates.add(cb.equal(root.get("classes").get("id"), classId)); // Lưu ý: map theo tên thuộc tính "classes" trong Entity Patient
+            }
+
+            // Lọc theo Facility (Mới thêm)
+            if (facilityId != null && !facilityId.isEmpty()) {
+                predicates.add(cb.equal(root.get("facility").get("id"), facilityId));
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<Patient> patients = patientRepository.findAll(spec, pageable);
-
-        System.out.println(patients);
-
-        return patientRepository.findAll(spec, pageable)
+        // Đã loại bỏ dòng log thừa gọi db 2 lần liên tiếp
+        return patientRepository.findAll(spec, sortedPageable)
                 .map(this::convertToDto);
     }
 

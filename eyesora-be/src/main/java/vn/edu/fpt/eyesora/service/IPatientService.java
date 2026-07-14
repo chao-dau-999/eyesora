@@ -7,7 +7,7 @@ import vn.edu.fpt.eyesora.dto.response.PatientResponse;
 import vn.edu.fpt.eyesora.entity.Patient;
 
 public interface IPatientService {
-    Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, Pageable pageable);
+    Page<PatientResponse> getPatients(String wardId, String name, Integer birthYear, String classId, String facilityId, Pageable pageable);
     PatientResponse getPatientById(String id);
     void createPatient(PatientRequest req);
     Integer countPatientsByCampaign(String campaignId);

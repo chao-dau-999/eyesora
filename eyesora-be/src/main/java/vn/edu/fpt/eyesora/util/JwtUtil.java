@@ -5,11 +5,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import vn.edu.fpt.eyesora.entity.User;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtUtil {
@@ -20,16 +24,23 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
     }
 
-    public String generateToken(UserDetails user) {
+    public String generateToken(UserDetails userDetails) {
         String source = "user";  // default
-        String role   = user.getAuthorities().iterator().next().getAuthority();
 
-        System.out.println("Role: " + role);
-        System.out.println("Username: " + user.getUsername());
+        User user = (User) userDetails;
+
+        String id = user.getId();
+        String name = user.getFull_name();
+        Set<String> roles = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
 
         return Jwts.builder()
                 .subject(user.getUsername())
-                .claim("role",   role)
+                .claim("id", id)
+                .claim("name", name)
+                .claim("roles", roles)
                 .claim("source", source)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expMs))

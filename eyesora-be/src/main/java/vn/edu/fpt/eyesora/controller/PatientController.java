@@ -27,10 +27,12 @@ public class PatientController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer birthYear,
+            @RequestParam(required = false) String classId,
+            @RequestParam(required = false) String facilityId,
             @RequestHeader(value = "Ward-Id", required = false) String wardId) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("patientName").ascending());
-        return ResponseEntity.ok(patientService.getPatients(wardId, name, birthYear, pageable));
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(patientService.getPatients(wardId, name, birthYear, classId, facilityId, pageable));
     }
 
     @GetMapping("/{id}")

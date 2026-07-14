@@ -3,8 +3,6 @@ import {Search} from "lucide-react";
 const SearchBar = ({
                        searchQuery,
                        setSearchQuery,
-                       // onAddClick,
-                       // onBulkClick,
                        placeholder = "Tìm kiếm theo Tên hoặc Mã HS..."
                    }) => {
     return (<>
@@ -23,18 +21,7 @@ const SearchBar = ({
                     />
                 </div>
 
-                <select
-                    className="rounded-lg border border-gray-200 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 py-2 pl-3 pr-8 min-w-[140px] cursor-pointer outline-none">
-                    <option className="text-gray-900 bg-white">Chọn Lớp</option>
-                    <option className="text-gray-900 bg-white">Lớp 10A1</option>
-                    <option className="text-gray-900 bg-white">Lớp 10A2</option>
-                </select>
 
-                <select
-                    className="rounded-lg border border-gray-200 bg-white text-sm text-gray-800 focus:ring-2 focus:ring-blue-900/20 focus:border-blue-900 py-2 pl-3 pr-8 min-w-[140px] cursor-pointer outline-none">
-                    <option className="text-gray-900 bg-white">Năm Học 2023-2024</option>
-                    <option className="text-gray-900 bg-white">Năm Học 2022-2023</option>
-                </select>
             </div>
         </>
     );
