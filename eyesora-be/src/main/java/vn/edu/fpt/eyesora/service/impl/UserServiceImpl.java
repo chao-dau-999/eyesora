@@ -100,10 +100,12 @@ public class UserServiceImpl implements IUserService {
                         .orElseThrow(() -> new ResourceNotFoundException("Quyền không tồn tại: " + name)))
                 .collect(Collectors.toSet());
 
-        boolean needsFacility = roles.stream()
-                .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
-                        !role.getName().equalsIgnoreCase("EXAMINER") &&
-                        !role.getName().equalsIgnoreCase("OWNER"));
+        boolean hasAdminOrExaminer = roles.stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("EXAMINER"));
+        boolean isFacilityAdmin = roles.stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("FACILITY_ADMIN"));
+
+        boolean needsFacility = isFacilityAdmin && !hasAdminOrExaminer;
 
         User user = new User();
         user.setUsername(request.username());
@@ -112,6 +114,7 @@ public class UserServiceImpl implements IUserService {
         user.setFull_name(request.fullName());
         user.setRoles(roles);
         user.setStatus(User.AccountStatus.ACTIVE);
+        System.out.println(user.getId());
 
         if (needsFacility) {
             if (request.facilityId() == null || request.facilityId().isBlank()) {
@@ -148,10 +151,12 @@ public class UserServiceImpl implements IUserService {
             user.setRoles(roles);
         }
 
-        boolean needsFacility = user.getRoles().stream()
-                .anyMatch(role -> !role.getName().equalsIgnoreCase("ADMIN") &&
-                        !role.getName().equalsIgnoreCase("EXAMINER") &&
-                        !role.getName().equalsIgnoreCase("OWNER"));
+        boolean hasAdminOrExaminer = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("ADMIN") || r.getName().equalsIgnoreCase("EXAMINER"));
+        boolean isFacilityAdmin = user.getRoles().stream()
+                .anyMatch(r -> r.getName().equalsIgnoreCase("FACILITY_ADMIN"));
+
+        boolean needsFacility = isFacilityAdmin && !hasAdminOrExaminer;
 
         if (needsFacility) {
             if ((request.facilityId() == null || request.facilityId().isBlank()) && user.getFacility() == null) {

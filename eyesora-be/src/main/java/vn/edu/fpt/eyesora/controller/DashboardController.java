@@ -31,10 +31,10 @@ public class DashboardController {
         return ResponseEntity.ok(dashboardService.getGradeStats());
     }
 
-    @GetMapping("/myopia-timeline")
-    public ResponseEntity<List<MyopiaTimelineResponse>> getMyopiaTimeline() {
-        return ResponseEntity.ok(dashboardService.getMyopiaTimeline());
-    }
+//    @GetMapping("/myopia-timeline")
+//    public ResponseEntity<List<MyopiaTimelineResponse>> getMyopiaTimeline() {
+//        return ResponseEntity.ok(dashboardService.getMyopiaTimeline());
+//    }
 
     @GetMapping("/facility-stats")
     public ResponseEntity<List<FacilityMyopiaResponse>> getFacilityStats() {

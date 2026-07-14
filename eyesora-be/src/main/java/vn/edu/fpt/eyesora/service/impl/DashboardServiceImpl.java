@@ -117,41 +117,41 @@ public class DashboardServiceImpl implements IDashboardService {
         return gradeStats;
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<MyopiaTimelineResponse> getMyopiaTimeline() {
-        List<EyeExamRecordResponse> allRecords = eyeExamRecordRepository.findByIsDeletedFalse().stream()
-                .map(this::mapToResponse).toList();
-
-        Map<String, List<EyeExamRecordResponse>> groupByYear = allRecords.stream()
-                .filter(r -> r.schoolYear() != null && !r.schoolYear().equals("N/A"))
-                .collect(Collectors.groupingBy(EyeExamRecordResponse::schoolYear));
-
-        List<MyopiaTimelineResponse> timelineStats = new ArrayList<>();
-        groupByYear.forEach((schoolYear, yearRecords) -> {
-            long totalInYear = yearRecords.size();
-            long myopiaInYear = yearRecords.stream()
-                    .filter(r -> (r.sphLeft() != null && r.sphLeft() < 0) || (r.sphRight() != null && r.sphRight() < 0))
-                    .count();
-            double rate = Math.round((myopiaInYear * 100.0 / totalInYear) * 10.0) / 10.0;
-            timelineStats.add(new MyopiaTimelineResponse(schoolYear, rate, "ACTUAL"));
-        });
-        timelineStats.sort(Comparator.comparing(MyopiaTimelineResponse::schoolYear));
-
-        if (timelineStats.size() >= 2) {
-            MyopiaTimelineResponse latest = timelineStats.get(timelineStats.size() - 1);
-            MyopiaTimelineResponse previous = timelineStats.get(timelineStats.size() - 2);
-            double diff = Math.round((latest.rate() - previous.rate()) * 10.0) / 10.0;
-
-            try {
-                int startYear = Integer.parseInt(latest.schoolYear().substring(0, 4));
-                String nextSchoolYear = (startYear + 1) + "-" + (startYear + 2);
-                double predictedRate = Math.round((latest.rate() + diff) * 10.0) / 10.0;
-                timelineStats.add(new MyopiaTimelineResponse(nextSchoolYear, Math.max(0, predictedRate), "PREDICTED"));
-            } catch (Exception ignored) {}
-        }
-        return timelineStats;
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<MyopiaTimelineResponse> getMyopiaTimeline() {
+//        List<EyeExamRecordResponse> allRecords = eyeExamRecordRepository.findByIsDeletedFalse().stream()
+//                .map(this::mapToResponse).toList();
+//
+//        Map<String, List<EyeExamRecordResponse>> groupByYear = allRecords.stream()
+//                .filter(r -> r.schoolYear() != null && !r.schoolYear().equals("N/A"))
+//                .collect(Collectors.groupingBy(EyeExamRecordResponse::schoolYear));
+//
+//        List<MyopiaTimelineResponse> timelineStats = new ArrayList<>();
+//        groupByYear.forEach((schoolYear, yearRecords) -> {
+//            long totalInYear = yearRecords.size();
+//            long myopiaInYear = yearRecords.stream()
+//                    .filter(r -> (r.sphLeft() != null && r.sphLeft() < 0) || (r.sphRight() != null && r.sphRight() < 0))
+//                    .count();
+//            double rate = Math.round((myopiaInYear * 100.0 / totalInYear) * 10.0) / 10.0;
+//            timelineStats.add(new MyopiaTimelineResponse(schoolYear, rate, "ACTUAL"));
+//        });
+//        timelineStats.sort(Comparator.comparing(MyopiaTimelineResponse::schoolYear));
+//
+//        if (timelineStats.size() >= 2) {
+//            MyopiaTimelineResponse latest = timelineStats.get(timelineStats.size() - 1);
+//            MyopiaTimelineResponse previous = timelineStats.get(timelineStats.size() - 2);
+//            double diff = Math.round((latest.rate() - previous.rate()) * 10.0) / 10.0;
+//
+//            try {
+//                int startYear = Integer.parseInt(latest.schoolYear().substring(0, 4));
+//                String nextSchoolYear = (startYear + 1) + "-" + (startYear + 2);
+//                double predictedRate = Math.round((latest.rate() + diff) * 10.0) / 10.0;
+//                timelineStats.add(new MyopiaTimelineResponse(nextSchoolYear, Math.max(0, predictedRate), "PREDICTED"));
+//            } catch (Exception ignored) {}
+//        }
+//        return timelineStats;
+//    }
 
     @Override
     @Transactional(readOnly = true)

@@ -16,9 +16,9 @@ const UserFormPage = () => {
     const [pageLoading, setPageLoading] = useState(isEditMode);
 
     const availableRoles = [
-        { id: 'OWNER', name: 'OWNER' },
-        { id: 'USER', name: 'USER' },
-        { id: 'ADMIN', name: 'Quản trị viên' }
+        { id: 'FACILITY_ADMIN', name: 'Quản trị cơ sở' },
+        { id: 'EXAMINER', name: 'Người khám' },
+        { id: 'ADMIN', name: 'Quản trị viên hệ thống' }
     ];
 
     const ErrorMsg = ({ field }) => errors[field] ? (
@@ -79,16 +79,17 @@ const UserFormPage = () => {
         if (!formData.username?.trim()) newErrors.username = "Tên đăng nhập là bắt buộc";
         if (!isEditMode && !formData.password) newErrors.password = "Mật khẩu là bắt buộc";
         if (!formData.fullName?.trim()) newErrors.fullName = "Họ và tên là bắt buộc";
-        if (!formData.email?.trim()) newErrors.email = "Email là bắt buộc";
+        if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = "Email không đúng định dạng";
+        }
         if (formData.roleNames.length === 0) newErrors.roleNames = "Vui lòng chọn ít nhất một vai trò";
 
-        // Logic khớp với Backend: Chỉ cần cơ sở nếu KHÔNG PHẢI là ADMIN, EXAMINER hoặc OWNER
-        const needsFacility = formData.roleNames.some(
-            role => role !== 'ADMIN' && role !== 'OWNER' && role !== 'EXAMINER'
-        );
+        const hasAdminOrExaminer = formData.roleNames.includes('ADMIN') || formData.roleNames.includes('EXAMINER');
+        const isFacilityAdmin = formData.roleNames.includes('FACILITY_ADMIN');
+        const needsFacility = isFacilityAdmin && !hasAdminOrExaminer;
 
-        if (needsFacility && !formData.facilityId) {
-            newErrors.facilityId = "Tài khoản này yêu cầu cơ sở quản lý, vui lòng chọn cơ sở!";
+        if (needsFacility && (!formData.facilityId || formData.facilityId === "")) {
+            newErrors.facilityId = "Với vai trò Quản trị cơ sở, bạn bắt buộc phải chọn cơ sở!";
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -97,10 +98,15 @@ const UserFormPage = () => {
         }
 
         try {
+            const payload = {
+                ...formData,
+                facilityId: (formData.facilityId && formData.facilityId !== "") ? formData.facilityId : null
+            };
+
             if (isEditMode) {
-                await axiosClient.put(`/admin/users/${id}`, formData);
+                await axiosClient.put(`/admin/users/${id}`, payload);
             } else {
-                await axiosClient.post('/admin/users/create', formData);
+                await axiosClient.post('/admin/users/create', payload);
             }
             navigate('/admin/users');
         } catch (err) {
